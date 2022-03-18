@@ -1,11 +1,11 @@
 import {api, operation, param, requestBody} from '@loopback/rest';
-import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
-import {GoodOracleInput} from '../models/good-oracle-input.model';
-import {GoodOracle} from '../models/good-oracle.model';
 import {GoodActivityInput} from '../models/good-activity-input.model';
 import {GoodActivity} from '../models/good-activity.model';
 import {GoodCategoryInput} from '../models/good-category-input.model';
 import {GoodCategory} from '../models/good-category.model';
+import {GoodOracleInput} from '../models/good-oracle-input.model';
+import {GoodOracle} from '../models/good-oracle.model';
+import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
 
 /**
  * The controller class is generated from OpenAPI spec with operations tagged
@@ -301,7 +301,8 @@ import {GoodCategory} from '../models/good-category.model';
           },
           units: {
             type: 'number',
-            exclusiveMinimum: 0,
+            exclusiveMinimum: true,
+            minimum: 0,
             description: 'Number of units performed for the `GoodActivity`',
           },
           proofURL: {
@@ -341,7 +342,7 @@ import {GoodCategory} from '../models/good-category.model';
   paths: {},
 })
 export class OpenApiController {
-  constructor() {}
+  constructor() { }
 
   /**
    *
@@ -349,20 +350,51 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('post', '/pog', {
-  summary: 'Create a ProofOfGoodEntry',
-  operationId: 'post-pog-entry',
-  responses: {
-    '201': {
-      description: 'Entry Created',
+    summary: 'Create a ProofOfGoodEntry',
+    operationId: 'post-pog-entry',
+    responses: {
+      '201': {
+        description: 'Entry Created',
+      },
+      '400': {
+        description: 'Missing Required Information',
+      },
+      '401': {
+        description: 'Unauthorized',
+      },
     },
-    '400': {
-      description: 'Missing Required Information',
+    requestBody: {
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/ProofOfGoodEntry_Input',
+          },
+          examples: {
+            'New Entry': {
+              value: {
+                tokenId: 'string',
+                doGooder: 'string',
+                goodActivityId: 0,
+                units: 1,
+                proofURL: 'string',
+                timestamp: 0,
+                externalId: 'string',
+              },
+            },
+          },
+        },
+      },
+      description: '',
     },
-    '401': {
-      description: 'Unauthorized',
-    },
-  },
-  requestBody: {
+    description: '',
+    parameters: [],
+    security: [
+      {
+        Oracle_API_Key: [],
+      },
+    ],
+  })
+  async postPogEntry(@requestBody({
     content: {
       'application/json': {
         schema: {
@@ -384,38 +416,7 @@ export class OpenApiController {
       },
     },
     description: '',
-  },
-  description: '',
-  parameters: [],
-  security: [
-    {
-      Oracle_API_Key: [],
-    },
-  ],
-})
-  async postPogEntry(@requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/ProofOfGoodEntry_Input',
-      },
-      examples: {
-        'New Entry': {
-          value: {
-            tokenId: 'string',
-            doGooder: 'string',
-            goodActivityId: 0,
-            units: 1,
-            proofURL: 'string',
-            timestamp: 0,
-            externalId: 'string',
-          },
-        },
-      },
-    },
-  },
-  description: '',
-}) _requestBody: ProofOfGoodEntryInput): Promise<unknown> {
+  }) _requestBody: ProofOfGoodEntryInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -426,44 +427,90 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('post', '/oracle/{id}', {
-  summary: 'Create an Oracle',
-  operationId: 'post-oracle',
-  responses: {
-    '201': {
-      description: 'Oracle Created',
-    },
-    '400': {
-      description: 'Missing Required Information',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Create an Oracle',
+    operationId: 'post-oracle',
+    responses: {
+      '201': {
+        description: 'Oracle Created',
+      },
+      '400': {
+        description: 'Missing Required Information',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+      '404': {
+        description: 'Oracle Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
           },
         },
       },
     },
-    '401': {
-      description: 'Unauthorized',
+    requestBody: {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+            $ref: '#/components/schemas/GoodOracle_Input',
+          },
+          examples: {
+            'Create an Oracle': {
+              value: {
+                name: 'Leyline',
+                goodOracleURI: 'leyline.gg',
+              },
+            },
           },
         },
       },
+      description: '',
     },
-    '404': {
-      description: 'Oracle Not Found',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
-          },
+    description: 'Create a new Oracle',
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
         },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the oracle',
       },
+    ],
+    security: [
+      {
+        Oracle_API_Key: [],
+      },
+    ],
+  })
+  async postOracle(@param({
+    schema: {
+      type: 'integer',
+      example: 3,
     },
-  },
-  requestBody: {
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the oracle',
+  }) id: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -480,53 +527,7 @@ export class OpenApiController {
       },
     },
     description: '',
-  },
-  description: 'Create a new Oracle',
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the oracle',
-    },
-  ],
-  security: [
-    {
-      Oracle_API_Key: [],
-    },
-  ],
-})
-  async postOracle(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the oracle',
-}) id: number, @requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/GoodOracle_Input',
-      },
-      examples: {
-        'Create an Oracle': {
-          value: {
-            name: 'Leyline',
-            goodOracleURI: 'leyline.gg',
-          },
-        },
-      },
-    },
-  },
-  description: '',
-}) _requestBody: GoodOracleInput): Promise<unknown> {
+  }) _requestBody: GoodOracleInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -537,35 +538,73 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('put', '/oracle/{id}', {
-  summary: 'Change Oracle Details',
-  operationId: 'put-oracle',
-  responses: {
-    '200': {
-      description: 'Oracle Updated',
-    },
-    '401': {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Change Oracle Details',
+    operationId: 'put-oracle',
+    responses: {
+      '200': {
+        description: 'Oracle Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Oracle Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
           },
         },
       },
-      headers: {},
     },
-    '404': {
-      description: 'Oracle Not Found',
+    requestBody: {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+            $ref: '#/components/schemas/GoodOracle_Input',
           },
+          examples: {},
         },
       },
     },
-  },
-  requestBody: {
+    description: "Update an Oracle's details",
+    security: [
+      {
+        Oracle_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the oracle',
+      },
+    ],
+  })
+  async putOracle(@param({
+    schema: {
+      type: 'integer',
+      example: 3,
+    },
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the oracle',
+  }) id: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -574,45 +613,7 @@ export class OpenApiController {
         examples: {},
       },
     },
-  },
-  description: "Update an Oracle's details",
-  security: [
-    {
-      Oracle_API_Key: [],
-    },
-  ],
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the oracle',
-    },
-  ],
-})
-  async putOracle(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the oracle',
-}) id: number, @requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/GoodOracle_Input',
-      },
-      examples: {},
-    },
-  },
-}) _requestBody: GoodOracleInput): Promise<unknown> {
+  }) _requestBody: GoodOracleInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -623,55 +624,55 @@ export class OpenApiController {
    * @returns A Proof of Good Oracle
    */
   @operation('get', '/oracle/{id}', {
-  summary: 'Get Oracle',
-  operationId: 'get-oracle',
-  responses: {
-    '200': {
-      description: 'A Proof of Good Oracle',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle',
-          },
-          examples: {},
-        },
-      },
-    },
-    '404': {
-      description: 'Oracle Not Found',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Get Oracle',
+    operationId: 'get-oracle',
+    responses: {
+      '200': {
+        description: 'A Proof of Good Oracle',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/GoodOracle',
+            },
+            examples: {},
           },
         },
       },
-    },
-  },
-  description: 'Retrieve a Proof of Good Oracle',
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
+      '404': {
+        description: 'Oracle Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
       },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the oracle',
     },
-  ],
-})
+    description: 'Retrieve a Proof of Good Oracle',
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the oracle',
+      },
+    ],
+  })
   async getOracle(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the oracle',
-}) id: number): Promise<GoodOracle> {
+    schema: {
+      type: 'integer',
+      example: 3,
+    },
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the oracle',
+  }) id: number): Promise<GoodOracle> {
     throw new Error('Not implemented');
   }
 
@@ -682,44 +683,94 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('post', '/activity/{id}', {
-  summary: 'Create an Activity',
-  operationId: 'post-activity',
-  responses: {
-    '201': {
-      description: 'Activity Created',
-    },
-    '400': {
-      description: 'Missing Required Information',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Create an Activity',
+    operationId: 'post-activity',
+    responses: {
+      '201': {
+        description: 'Activity Created',
+      },
+      '400': {
+        description: 'Missing Required Information',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+      '404': {
+        description: 'Activity Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
           },
         },
       },
     },
-    '401': {
-      description: 'Unauthorized',
+    requestBody: {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+            $ref: '#/components/schemas/GoodActivity_Input',
+          },
+          examples: {
+            'Create an Activity': {
+              value: {
+                name: 'Good Deed Post on Discord - Local Cleanup',
+                deleted: false,
+                goodCategoryId: 8,
+                goodTypeId: 6,
+                valuePerUnit: 100,
+                unitDescription: 'per post',
+              },
+            },
           },
         },
       },
+      description: '',
     },
-    '404': {
-      description: 'Activity Not Found',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
-          },
+    description: 'Create a new Activity',
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
         },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the activity',
       },
+    ],
+    security: [
+      {
+        Activity_API_Key: [],
+      },
+    ],
+  })
+  async postActivity(@param({
+    schema: {
+      type: 'integer',
+      example: 3,
     },
-  },
-  requestBody: {
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the activity',
+  }) id: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -740,57 +791,7 @@ export class OpenApiController {
       },
     },
     description: '',
-  },
-  description: 'Create a new Activity',
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the activity',
-    },
-  ],
-  security: [
-    {
-      Activity_API_Key: [],
-    },
-  ],
-})
-  async postActivity(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the activity',
-}) id: number, @requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/GoodActivity_Input',
-      },
-      examples: {
-        'Create an Activity': {
-          value: {
-            name: 'Good Deed Post on Discord - Local Cleanup',
-            deleted: false,
-            goodCategoryId: 8,
-            goodTypeId: 6,
-            valuePerUnit: 100,
-            unitDescription: 'per post',
-          },
-        },
-      },
-    },
-  },
-  description: '',
-}) _requestBody: GoodActivityInput): Promise<unknown> {
+  }) _requestBody: GoodActivityInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -801,35 +802,83 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('put', '/activity/{id}', {
-  summary: 'Change Activity Details',
-  operationId: 'put-activity',
-  responses: {
-    '200': {
-      description: 'Activity Updated',
-    },
-    '401': {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Change Activity Details',
+    operationId: 'put-activity',
+    responses: {
+      '200': {
+        description: 'Activity Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Activity Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
           },
         },
       },
-      headers: {},
     },
-    '404': {
-      description: 'Activity Not Found',
+    requestBody: {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+            $ref: '#/components/schemas/GoodActivity_Input',
+          },
+          examples: {
+            'Change Activity Details': {
+              value: {
+                name: 'Good Deed Post on Discord - Local Cleanup',
+                goodCategoryId: 8,
+                goodTypeId: 6,
+                valuePerUnit: 100,
+                unitDescription: 'per image',
+              },
+            },
           },
         },
       },
     },
-  },
-  requestBody: {
+    description: "Update an Activity's details",
+    security: [
+      {
+        Activity_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the activity',
+      },
+    ],
+  })
+  async putActivity(@param({
+    schema: {
+      type: 'integer',
+      example: 3,
+    },
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the activity',
+  }) id: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -848,55 +897,7 @@ export class OpenApiController {
         },
       },
     },
-  },
-  description: "Update an Activity's details",
-  security: [
-    {
-      Activity_API_Key: [],
-    },
-  ],
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the activity',
-    },
-  ],
-})
-  async putActivity(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the activity',
-}) id: number, @requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/GoodActivity_Input',
-      },
-      examples: {
-        'Change Activity Details': {
-          value: {
-            name: 'Good Deed Post on Discord - Local Cleanup',
-            goodCategoryId: 8,
-            goodTypeId: 6,
-            valuePerUnit: 100,
-            unitDescription: 'per image',
-          },
-        },
-      },
-    },
-  },
-}) _requestBody: GoodActivityInput): Promise<unknown> {
+  }) _requestBody: GoodActivityInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -907,55 +908,55 @@ export class OpenApiController {
    * @returns A Proof of Good Activity
    */
   @operation('get', '/activity/{id}', {
-  summary: 'Get Activity',
-  operationId: 'get-activity',
-  responses: {
-    '200': {
-      description: 'A Proof of Good Activity',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodActivity',
-          },
-          examples: {},
-        },
-      },
-    },
-    '404': {
-      description: 'Activity Not Found',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Get Activity',
+    operationId: 'get-activity',
+    responses: {
+      '200': {
+        description: 'A Proof of Good Activity',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/GoodActivity',
+            },
+            examples: {},
           },
         },
       },
-    },
-  },
-  description: 'Retrieve a Proof of Good Activity',
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
+      '404': {
+        description: 'Activity Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
       },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the activity',
     },
-  ],
-})
+    description: 'Retrieve a Proof of Good Activity',
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the activity',
+      },
+    ],
+  })
   async getActivity(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the activity',
-}) id: number): Promise<GoodActivity> {
+    schema: {
+      type: 'integer',
+      example: 3,
+    },
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the activity',
+  }) id: number): Promise<GoodActivity> {
     throw new Error('Not implemented');
   }
 
@@ -966,44 +967,89 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('post', '/category/{id}', {
-  summary: 'Create a Category',
-  operationId: 'post-category',
-  responses: {
-    '201': {
-      description: 'Category Created',
-    },
-    '400': {
-      description: 'Missing Required Information',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Create a Category',
+    operationId: 'post-category',
+    responses: {
+      '201': {
+        description: 'Category Created',
+      },
+      '400': {
+        description: 'Missing Required Information',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+      '404': {
+        description: 'Category Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
           },
         },
       },
     },
-    '401': {
-      description: 'Unauthorized',
+    requestBody: {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+            $ref: '#/components/schemas/GoodCategory_Input',
+          },
+          examples: {
+            'Create a Category': {
+              value: {
+                name: 'Mental Health',
+              },
+            },
           },
         },
       },
+      description: '',
     },
-    '404': {
-      description: 'Category Not Found',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
-          },
+    description: 'Create a new Category',
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
         },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the category',
       },
+    ],
+    security: [
+      {
+        Oracle_API_Key: [],
+      },
+    ],
+  })
+  async postCategory(@param({
+    schema: {
+      type: 'integer',
+      example: 3,
     },
-  },
-  requestBody: {
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the category',
+  }) id: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -1019,52 +1065,7 @@ export class OpenApiController {
       },
     },
     description: '',
-  },
-  description: 'Create a new Category',
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the category',
-    },
-  ],
-  security: [
-    {
-      Oracle_API_Key: [],
-    },
-  ],
-})
-  async postCategory(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the category',
-}) id: number, @requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/GoodCategory_Input',
-      },
-      examples: {
-        'Create a Category': {
-          value: {
-            name: 'Mental Health',
-          },
-        },
-      },
-    },
-  },
-  description: '',
-}) _requestBody: GoodCategoryInput): Promise<unknown> {
+  }) _requestBody: GoodCategoryInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -1075,35 +1076,80 @@ export class OpenApiController {
    * @param _requestBody
    */
   @operation('put', '/category/{id}', {
-  summary: 'Change Category Details',
-  operationId: 'put-category',
-  responses: {
-    '200': {
-      description: 'Category Updated',
-    },
-    '401': {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Change Category Details',
+    operationId: 'put-category',
+    responses: {
+      '200': {
+        description: 'Category Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Category Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
           },
         },
       },
-      headers: {},
     },
-    '404': {
-      description: 'Category Not Found',
+    requestBody: {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+            $ref: '#/components/schemas/GoodCategory_Input',
+          },
+          examples: {
+            'Change Category Details': {
+              value: {
+                name: 'Animal Welfare',
+              },
+            },
           },
         },
       },
+      description: '',
     },
-  },
-  requestBody: {
+    description: "Update a Category's details",
+    security: [
+      {
+        Category_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the category',
+      },
+    ],
+  })
+  async putCategory(@param({
+    schema: {
+      type: 'integer',
+      example: 3,
+    },
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the category',
+  }) id: number, @requestBody({
     content: {
       'application/json': {
         schema: {
@@ -1119,52 +1165,7 @@ export class OpenApiController {
       },
     },
     description: '',
-  },
-  description: "Update a Category's details",
-  security: [
-    {
-      Category_API_Key: [],
-    },
-  ],
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the category',
-    },
-  ],
-})
-  async putCategory(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the category',
-}) id: number, @requestBody({
-  content: {
-    'application/json': {
-      schema: {
-        $ref: '#/components/schemas/GoodCategory_Input',
-      },
-      examples: {
-        'Change Category Details': {
-          value: {
-            name: 'Animal Welfare',
-          },
-        },
-      },
-    },
-  },
-  description: '',
-}) _requestBody: GoodCategoryInput): Promise<unknown> {
+  }) _requestBody: GoodCategoryInput): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -1175,55 +1176,55 @@ export class OpenApiController {
    * @returns A Proof of Good Category
    */
   @operation('get', '/category/{id}', {
-  summary: 'Get Category',
-  operationId: 'get-category',
-  responses: {
-    '200': {
-      description: 'A Proof of Good Category',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodCategory',
-          },
-          examples: {},
-        },
-      },
-    },
-    '404': {
-      description: 'Category Not Found',
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/ErrorResponse',
+    summary: 'Get Category',
+    operationId: 'get-category',
+    responses: {
+      '200': {
+        description: 'A Proof of Good Category',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/GoodCategory',
+            },
+            examples: {},
           },
         },
       },
-    },
-  },
-  description: 'Retrieve a Proof of Good Category',
-  parameters: [
-    {
-      schema: {
-        type: 'integer',
-        example: 3,
+      '404': {
+        description: 'Category Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
       },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the category',
     },
-  ],
-})
+    description: 'Retrieve a Proof of Good Category',
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the category',
+      },
+    ],
+  })
   async getCategory(@param({
-  schema: {
-    type: 'integer',
-    example: 3,
-  },
-  name: 'id',
-  in: 'path',
-  required: true,
-  description: 'The PoG ID of the category',
-}) id: number): Promise<GoodCategory> {
+    schema: {
+      type: 'integer',
+      example: 3,
+    },
+    name: 'id',
+    in: 'path',
+    required: true,
+    description: 'The PoG ID of the category',
+  }) id: number): Promise<GoodCategory> {
     throw new Error('Not implemented');
   }
 
