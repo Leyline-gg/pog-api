@@ -4,7 +4,7 @@ import {Entity, model, property} from '@loopback/repository';
  * The model class is generated from OpenAPI schema - GoodOracle
  * GoodOracle
  */
-@model({name: 'goodoracle'})
+@model({name: 'goodoracle', settings: {strict: false}})
 export class GoodOracle extends Entity {
   constructor(data?: Partial<GoodOracle>) {
     super(data);
