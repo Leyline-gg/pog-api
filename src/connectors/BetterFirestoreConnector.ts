@@ -153,19 +153,20 @@ class BetterFirestoreConnector extends Connector {
     callback: ICallback,
   ) => {
     const self = this;
+    where.id = where.id.toString();
     this.exists(model, where.id, null, (err, res: boolean) => {
       if (err) callback(err);
       if (res) {
         self.db
           .collection(model)
           .doc(where.id)
-          .update(data)
+          .update(data.toObject())
           .then(() => {
             // Document updated successfully.
             callback(null, []);
           });
       } else {
-        callback(new Error('Document not found'));
+        callback(new Error('404'));
       }
     });
   };

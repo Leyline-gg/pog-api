@@ -3,7 +3,6 @@ import {GoodActivityInput} from '../models/good-activity-input.model';
 import {GoodActivity} from '../models/good-activity.model';
 import {GoodCategoryInput} from '../models/good-category-input.model';
 import {GoodCategory} from '../models/good-category.model';
-import {GoodOracleInput} from '../models/good-oracle-input.model';
 import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
 
 /**
@@ -401,97 +400,6 @@ export class OpenApiController {
       description: '',
     })
     _requestBody: ProofOfGoodEntryInput,
-  ): Promise<unknown> {
-    throw new Error('Not implemented');
-  }
-
-  /**
-   * Update an Oracle's details
-   *
-   * @param id The PoG ID of the oracle
-   * @param _requestBody
-   */
-  @operation('put', '/oracle/{id}', {
-    summary: 'Change Oracle Details',
-    operationId: 'put-oracle',
-    responses: {
-      '200': {
-        description: 'Oracle Updated',
-      },
-      '401': {
-        description: 'Unauthorized',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-        headers: {},
-      },
-      '404': {
-        description: 'Oracle Not Found',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-      },
-    },
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
-          examples: {},
-        },
-      },
-    },
-    description: "Update an Oracle's details",
-    security: [
-      {
-        Oracle_API_Key: [],
-      },
-    ],
-    parameters: [
-      {
-        schema: {
-          type: 'integer',
-          example: 3,
-        },
-        name: 'id',
-        in: 'path',
-        required: true,
-        description: 'The PoG ID of the oracle',
-      },
-    ],
-  })
-  async putOracle(
-    @param({
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the oracle',
-    })
-    id: number,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
-          examples: {},
-        },
-      },
-    })
-    _requestBody: GoodOracleInput,
   ): Promise<unknown> {
     throw new Error('Not implemented');
   }

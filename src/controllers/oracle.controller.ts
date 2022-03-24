@@ -1,14 +1,5 @@
-import {Count, CountSchema, repository, Where} from '@loopback/repository';
-import {
-  get,
-  getModelSchemaRef,
-  HttpErrors,
-  operation,
-  param,
-  post,
-  requestBody,
-  response,
-} from '@loopback/rest';
+import {repository} from '@loopback/repository';
+import {HttpErrors, operation, param, requestBody} from '@loopback/rest';
 import {GoodOracle, GoodOracleInput} from '../models';
 import {GoodOracleRepository} from '../repositories';
 
@@ -129,41 +120,10 @@ export class OracleController {
       },
       description: '',
     })
-    oracle: GoodOracleInput,
+    oracle: GoodOracle,
   ): Promise<unknown> {
+    oracle.id = id;
     return this.goodOracleRepository.create(oracle);
-  }
-
-  @post('/oracle')
-  @response(200, {
-    description: 'GoodOracle model instance',
-    content: {'application/json': {schema: getModelSchemaRef(GoodOracle)}},
-  })
-  async create(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(GoodOracle, {
-            title: 'NewGoodOracle',
-            exclude: ['id'],
-          }),
-        },
-      },
-    })
-    goodOracle: Omit<GoodOracle, 'id'>,
-  ): Promise<GoodOracle> {
-    return this.goodOracleRepository.create(goodOracle);
-  }
-
-  @get('/oracle/count')
-  @response(200, {
-    description: 'GoodOracle model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async count(
-    @param.where(GoodOracle) where?: Where<GoodOracle>,
-  ): Promise<Count> {
-    return this.goodOracleRepository.count(where);
   }
 
   /**
@@ -226,26 +186,102 @@ export class OracleController {
     id: number,
   ): Promise<GoodOracle> {
     return this.goodOracleRepository.findById(id);
-    const res = await this.goodOracleRepository.find({where: {id}});
-    if (!res.length) throw new HttpErrors.NotFound('Oracle Not Found');
-    return res.shift()!;
   }
 
-  // @get('/oracle')
-  // @response(200, {
-  //   description: 'Array of GoodOracle model instances',
-  //   content: {
-  //     'application/json': {
-  //       schema: {
-  //         type: 'array',
-  //         items: getModelSchemaRef(GoodOracle, {includeRelations: true}),
-  //       },
-  //     },
-  //   },
-  // })
-  // async find(
-  //   @param.filter(GoodOracle) filter?: Filter<GoodOracle>,
-  // ): Promise<GoodOracle[]> {
-  //   return this.goodOracleRepository.find(filter);
-  // }
+  /**
+   * Update an Oracle's details
+   *
+   * @param id The PoG ID of the oracle
+   * @param oracle
+   */
+  @operation('put', '/oracle/{id}', {
+    summary: 'Change Oracle Details',
+    operationId: 'put-oracle',
+    responses: {
+      '200': {
+        description: 'Oracle Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Oracle Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+    },
+    requestBody: {
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodOracle_Input',
+          },
+          examples: {},
+        },
+      },
+    },
+    description: "Update an Oracle's details",
+    security: [
+      {
+        Oracle_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the oracle',
+      },
+    ],
+  })
+  async putOracle(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the oracle',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodOracle_Input',
+          },
+          examples: {},
+        },
+      },
+    })
+    oracle: GoodOracleInput | any,
+  ): Promise<unknown> {
+    delete oracle?.id;
+    return this.goodOracleRepository
+      .updateById(id, oracle)
+      .catch((err: Error) => {
+        if (err.message == '404')
+          throw new HttpErrors.NotFound('Oracle Not Found');
+      });
+  }
 }

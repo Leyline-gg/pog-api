@@ -1,12 +1,13 @@
-import {model, property} from '@loopback/repository';
+import {Entity, model, property} from '@loopback/repository';
 
 /**
  * The model class is generated from OpenAPI schema - GoodOracle_Input
  * GoodOracle_Input
  */
 @model({name: 'goodoracle'})
-export class GoodOracleInput {
+export class GoodOracleInput extends Entity {
   constructor(data?: Partial<GoodOracleInput>) {
+    super(data);
     if (data != null && typeof data === 'object') {
       Object.assign(this, data);
     }
