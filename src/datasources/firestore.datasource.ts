@@ -1,11 +1,12 @@
 import {inject, lifeCycleObserver, LifeCycleObserver} from '@loopback/core';
 import {juggler} from '@loopback/repository';
 import * as dotenv from 'dotenv';
+import BetterFirestoreConnector from '../connectors/BetterFirestoreConnector';
 dotenv.config();
 
 const config = {
   name: 'firestore',
-  connector: 'loopback-connector-firestore',
+  connector: BetterFirestoreConnector,
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   privateKey: process.env.FIREBASE_PRIVATE_KEY,
