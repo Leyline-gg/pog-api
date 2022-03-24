@@ -1,3 +1,4 @@
+//adapted from https://github.com/dyaa/loopback-connector-firestore
 export interface IFilter {
   where?: any;
   order?: string | string[];

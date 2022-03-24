@@ -1,3 +1,4 @@
+//adapted from https://github.com/dyaa/loopback-connector-firestore
 import {
   DocumentReference,
   DocumentSnapshot,
