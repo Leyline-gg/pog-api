@@ -9,7 +9,6 @@ import {
 } from '@google-cloud/firestore'; //@ts-ignore
 import {Connector} from 'loopback-connector';
 import {ICallback, IDataSource, IFilter} from './interfaces';
-//import { operators } from './config';
 
 const initialize = function initializeDataSource(
   dataSource: IDataSource,
