@@ -18,12 +18,11 @@ export class GoodOracle extends Entity {
    */
   @property({
     id: true,
-    required: true,
     jsonSchema: {
       type: 'number',
     },
   })
-  id: number;
+  id: number = Date.now();
 
   /**
    * Oracle name

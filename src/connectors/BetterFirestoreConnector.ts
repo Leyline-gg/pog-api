@@ -338,7 +338,8 @@ class BetterFirestoreConnector extends Connector {
   public create = (model: string, data: any, callback: ICallback) => {
     this.db
       .collection(model)
-      .add(data)
+      .doc(data.id.toString())
+      .set(data)
       .then((ref: DocumentReference) => {
         callback(null, ref.id);
       })

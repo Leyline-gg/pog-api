@@ -98,9 +98,8 @@ export class OracleController {
       },
       description: '',
     })
-    oracle: GoodOracle,
+    oracle: Omit<GoodOracle, 'id'>,
   ): Promise<unknown> {
-    oracle.id = 0;
     return this.goodOracleRepository.create(oracle);
   }
 
