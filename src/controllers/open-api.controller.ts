@@ -3,8 +3,6 @@ import {GoodActivityInput} from '../models/good-activity-input.model';
 import {GoodActivity} from '../models/good-activity.model';
 import {GoodCategoryInput} from '../models/good-category-input.model';
 import {GoodCategory} from '../models/good-category.model';
-import {GoodOracleInput} from '../models/good-oracle-input.model';
-import {GoodOracle} from '../models/good-oracle.model';
 import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
 
 /**
@@ -34,17 +32,15 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             readOnly: true,
           },
         },
-        required: [
-          'status',
-          'message',
-        ],
+        required: ['status', 'message'],
         examples: [
           {
             status: 401,
             message: 'API key missing or invalid',
           },
         ],
-        description: 'Standard error object to be sent in the HTTP response body',
+        description:
+          'Standard error object to be sent in the HTTP response body',
       },
       GoodActivity_Input: {
         title: 'GoodActivity.input',
@@ -59,7 +55,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             unitDescription: 'per post',
           },
         ],
-        'x-internal': false,
+
         properties: {
           name: {
             type: 'string',
@@ -112,7 +108,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             unitDescription: 'per post',
           },
         ],
-        'x-internal': false,
+
         properties: {
           id: {
             type: 'string',
@@ -150,9 +146,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             example: 'per post',
           },
         },
-        required: [
-          'id',
-        ],
+        required: ['id'],
       },
       GoodCategory_Input: {
         title: 'GoodCategory.input',
@@ -162,7 +156,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             name: 'Education',
           },
         ],
-        'x-internal': false,
+
         properties: {
           name: {
             type: 'string',
@@ -174,9 +168,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             description: 'If true, cannot write to ledger with this category',
           },
         },
-        required: [
-          'name',
-        ],
+        required: ['name'],
       },
       GoodCategory: {
         title: 'GoodCategory',
@@ -189,7 +181,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             totalGood: 88000,
           },
         ],
-        'x-internal': false,
+
         properties: {
           id: {
             type: 'string',
@@ -212,9 +204,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             example: 88000,
           },
         },
-        required: [
-          'id',
-        ],
+        required: ['id'],
       },
       GoodOracle_Input: {
         title: 'GoodOracle.input',
@@ -225,7 +215,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             goodOracleURI: 'leyline.io',
           },
         ],
-        'x-internal': false,
+
         properties: {
           name: {
             type: 'string',
@@ -241,10 +231,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             description: 'if true, cannot write to ledger with this oracle',
           },
         },
-        required: [
-          'name',
-          'goodOracleURI',
-        ],
+        required: ['name', 'goodOracleURI'],
       },
       GoodOracle: {
         title: 'GoodOracle',
@@ -257,7 +244,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             deleted: false,
           },
         ],
-        'x-internal': false,
+
         properties: {
           id: {
             type: 'string',
@@ -280,15 +267,13 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             description: 'if true, cannot write to ledger with this oracle',
           },
         },
-        required: [
-          'id',
-        ],
+        required: ['id'],
       },
       ProofOfGoodEntry_Input: {
         title: 'ProofOfGoodEntry.input',
         type: 'object',
         examples: [],
-        'x-internal': false,
+
         description: '',
         properties: {
           doGooder: {
@@ -311,7 +296,8 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
           },
           timestamp: {
             type: 'integer',
-            description: 'Unix timestamp (in ms) representing when the good deed was done',
+            description:
+              'Unix timestamp (in ms) representing when the good deed was done',
           },
           userId: {
             type: 'string',
@@ -322,12 +308,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
             description: 'awaiting clarification',
           },
         },
-        required: [
-          'doGooder',
-          'goodActivityId',
-          'units',
-          'timestamp',
-        ],
+        required: ['doGooder', 'goodActivityId', 'units', 'timestamp'],
       },
     },
     securitySchemes: {
@@ -342,7 +323,7 @@ import {ProofOfGoodEntryInput} from '../models/proof-of-good-entry-input.model';
   paths: {},
 })
 export class OpenApiController {
-  constructor() { }
+  constructor() {}
 
   /**
    *
@@ -394,285 +375,32 @@ export class OpenApiController {
       },
     ],
   })
-  async postPogEntry(@requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/ProofOfGoodEntry_Input',
-        },
-        examples: {
-          'New Entry': {
-            value: {
-              tokenId: 'string',
-              doGooder: 'string',
-              goodActivityId: 0,
-              units: 1,
-              proofURL: 'string',
-              timestamp: 0,
-              externalId: 'string',
-            },
-          },
-        },
-      },
-    },
-    description: '',
-  }) _requestBody: ProofOfGoodEntryInput): Promise<unknown> {
-    throw new Error('Not implemented');
-  }
-
-  /**
-   * Create a new Oracle
-   *
-   * @param id The PoG ID of the oracle
-   * @param _requestBody
-   */
-  @operation('post', '/oracle/{id}', {
-    summary: 'Create an Oracle',
-    operationId: 'post-oracle',
-    responses: {
-      '201': {
-        description: 'Oracle Created',
-      },
-      '400': {
-        description: 'Missing Required Information',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-      },
-      '401': {
-        description: 'Unauthorized',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-      },
-      '404': {
-        description: 'Oracle Not Found',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-      },
-    },
-    requestBody: {
+  async postPogEntry(
+    @requestBody({
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
+            $ref: '#/components/schemas/ProofOfGoodEntry_Input',
           },
           examples: {
-            'Create an Oracle': {
+            'New Entry': {
               value: {
-                name: 'Leyline',
-                goodOracleURI: 'leyline.gg',
+                tokenId: 'string',
+                doGooder: 'string',
+                goodActivityId: 0,
+                units: 1,
+                proofURL: 'string',
+                timestamp: 0,
+                externalId: 'string',
               },
             },
           },
         },
       },
       description: '',
-    },
-    description: 'Create a new Oracle',
-    parameters: [
-      {
-        schema: {
-          type: 'integer',
-          example: 3,
-        },
-        name: 'id',
-        in: 'path',
-        required: true,
-        description: 'The PoG ID of the oracle',
-      },
-    ],
-    security: [
-      {
-        Oracle_API_Key: [],
-      },
-    ],
-  })
-  async postOracle(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the oracle',
-  }) id: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/GoodOracle_Input',
-        },
-        examples: {
-          'Create an Oracle': {
-            value: {
-              name: 'Leyline',
-              goodOracleURI: 'leyline.gg',
-            },
-          },
-        },
-      },
-    },
-    description: '',
-  }) _requestBody: GoodOracleInput): Promise<unknown> {
-    throw new Error('Not implemented');
-  }
-
-  /**
-   * Update an Oracle's details
-   *
-   * @param id The PoG ID of the oracle
-   * @param _requestBody
-   */
-  @operation('put', '/oracle/{id}', {
-    summary: 'Change Oracle Details',
-    operationId: 'put-oracle',
-    responses: {
-      '200': {
-        description: 'Oracle Updated',
-      },
-      '401': {
-        description: 'Unauthorized',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-        headers: {},
-      },
-      '404': {
-        description: 'Oracle Not Found',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-      },
-    },
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
-          examples: {},
-        },
-      },
-    },
-    description: "Update an Oracle's details",
-    security: [
-      {
-        Oracle_API_Key: [],
-      },
-    ],
-    parameters: [
-      {
-        schema: {
-          type: 'integer',
-          example: 3,
-        },
-        name: 'id',
-        in: 'path',
-        required: true,
-        description: 'The PoG ID of the oracle',
-      },
-    ],
-  })
-  async putOracle(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the oracle',
-  }) id: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/GoodOracle_Input',
-        },
-        examples: {},
-      },
-    },
-  }) _requestBody: GoodOracleInput): Promise<unknown> {
-    throw new Error('Not implemented');
-  }
-
-  /**
-   * Retrieve a Proof of Good Oracle
-   *
-   * @param id The PoG ID of the oracle
-   * @returns A Proof of Good Oracle
-   */
-  @operation('get', '/oracle/{id}', {
-    summary: 'Get Oracle',
-    operationId: 'get-oracle',
-    responses: {
-      '200': {
-        description: 'A Proof of Good Oracle',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodOracle',
-            },
-            examples: {},
-          },
-        },
-      },
-      '404': {
-        description: 'Oracle Not Found',
-        content: {
-          'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
-          },
-        },
-      },
-    },
-    description: 'Retrieve a Proof of Good Oracle',
-    parameters: [
-      {
-        schema: {
-          type: 'integer',
-          example: 3,
-        },
-        name: 'id',
-        in: 'path',
-        required: true,
-        description: 'The PoG ID of the oracle',
-      },
-    ],
-  })
-  async getOracle(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the oracle',
-  }) id: number): Promise<GoodOracle> {
+    })
+    _requestBody: ProofOfGoodEntryInput,
+  ): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -761,37 +489,42 @@ export class OpenApiController {
       },
     ],
   })
-  async postActivity(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the activity',
-  }) id: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/GoodActivity_Input',
-        },
-        examples: {
-          'Create an Activity': {
-            value: {
-              name: 'Good Deed Post on Discord - Local Cleanup',
-              deleted: false,
-              goodCategoryId: 8,
-              goodTypeId: 6,
-              valuePerUnit: 100,
-              unitDescription: 'per post',
+  async postActivity(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the activity',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodActivity_Input',
+          },
+          examples: {
+            'Create an Activity': {
+              value: {
+                name: 'Good Deed Post on Discord - Local Cleanup',
+                deleted: false,
+                goodCategoryId: 8,
+                goodTypeId: 6,
+                valuePerUnit: 100,
+                unitDescription: 'per post',
+              },
             },
           },
         },
       },
-    },
-    description: '',
-  }) _requestBody: GoodActivityInput): Promise<unknown> {
+      description: '',
+    })
+    _requestBody: GoodActivityInput,
+  ): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -869,35 +602,40 @@ export class OpenApiController {
       },
     ],
   })
-  async putActivity(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the activity',
-  }) id: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/GoodActivity_Input',
-        },
-        examples: {
-          'Change Activity Details': {
-            value: {
-              name: 'Good Deed Post on Discord - Local Cleanup',
-              goodCategoryId: 8,
-              goodTypeId: 6,
-              valuePerUnit: 100,
-              unitDescription: 'per image',
+  async putActivity(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the activity',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodActivity_Input',
+          },
+          examples: {
+            'Change Activity Details': {
+              value: {
+                name: 'Good Deed Post on Discord - Local Cleanup',
+                goodCategoryId: 8,
+                goodTypeId: 6,
+                valuePerUnit: 100,
+                unitDescription: 'per image',
+              },
             },
           },
         },
       },
-    },
-  }) _requestBody: GoodActivityInput): Promise<unknown> {
+    })
+    _requestBody: GoodActivityInput,
+  ): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -947,16 +685,19 @@ export class OpenApiController {
       },
     ],
   })
-  async getActivity(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the activity',
-  }) id: number): Promise<GoodActivity> {
+  async getActivity(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the activity',
+    })
+    id: number,
+  ): Promise<GoodActivity> {
     throw new Error('Not implemented');
   }
 
@@ -1040,32 +781,37 @@ export class OpenApiController {
       },
     ],
   })
-  async postCategory(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the category',
-  }) id: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/GoodCategory_Input',
-        },
-        examples: {
-          'Create a Category': {
-            value: {
-              name: 'Mental Health',
+  async postCategory(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the category',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodCategory_Input',
+          },
+          examples: {
+            'Create a Category': {
+              value: {
+                name: 'Mental Health',
+              },
             },
           },
         },
       },
-    },
-    description: '',
-  }) _requestBody: GoodCategoryInput): Promise<unknown> {
+      description: '',
+    })
+    _requestBody: GoodCategoryInput,
+  ): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -1140,32 +886,37 @@ export class OpenApiController {
       },
     ],
   })
-  async putCategory(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the category',
-  }) id: number, @requestBody({
-    content: {
-      'application/json': {
-        schema: {
-          $ref: '#/components/schemas/GoodCategory_Input',
-        },
-        examples: {
-          'Change Category Details': {
-            value: {
-              name: 'Animal Welfare',
+  async putCategory(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the category',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodCategory_Input',
+          },
+          examples: {
+            'Change Category Details': {
+              value: {
+                name: 'Animal Welfare',
+              },
             },
           },
         },
       },
-    },
-    description: '',
-  }) _requestBody: GoodCategoryInput): Promise<unknown> {
+      description: '',
+    })
+    _requestBody: GoodCategoryInput,
+  ): Promise<unknown> {
     throw new Error('Not implemented');
   }
 
@@ -1215,18 +966,19 @@ export class OpenApiController {
       },
     ],
   })
-  async getCategory(@param({
-    schema: {
-      type: 'integer',
-      example: 3,
-    },
-    name: 'id',
-    in: 'path',
-    required: true,
-    description: 'The PoG ID of the category',
-  }) id: number): Promise<GoodCategory> {
+  async getCategory(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the category',
+    })
+    id: number,
+  ): Promise<GoodCategory> {
     throw new Error('Not implemented');
   }
-
 }
-
