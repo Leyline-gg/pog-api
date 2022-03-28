@@ -15,7 +15,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @param oracle
    */
-  @operation('post', '/oracle/{id}', {
+  @operation('post', '/oracle', {
     summary: 'Create an Oracle',
     operationId: 'post-oracle',
     responses: {
@@ -72,18 +72,7 @@ export class OracleController {
       description: '',
     },
     description: 'Create a new Oracle',
-    parameters: [
-      {
-        schema: {
-          type: 'integer',
-          example: 3,
-        },
-        name: 'id',
-        in: 'path',
-        required: true,
-        description: 'The PoG ID of the oracle',
-      },
-    ],
+    parameters: [],
     security: [
       {
         Oracle_API_Key: [],
@@ -91,17 +80,6 @@ export class OracleController {
     ],
   })
   async postOracle(
-    @param({
-      schema: {
-        type: 'integer',
-        example: 3,
-      },
-      name: 'id',
-      in: 'path',
-      required: true,
-      description: 'The PoG ID of the oracle',
-    })
-    id: number,
     @requestBody({
       content: {
         'application/json': {
@@ -122,7 +100,7 @@ export class OracleController {
     })
     oracle: GoodOracle,
   ): Promise<unknown> {
-    oracle.id = id;
+    oracle.id = 0;
     return this.goodOracleRepository.create(oracle);
   }
 
