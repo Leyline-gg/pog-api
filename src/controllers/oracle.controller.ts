@@ -1,5 +1,11 @@
-import {repository} from '@loopback/repository';
-import {HttpErrors, operation, param, requestBody} from '@loopback/rest';
+import {Filter, repository} from '@loopback/repository';
+import {
+  getModelSchemaRef,
+  HttpErrors,
+  operation,
+  param,
+  requestBody,
+} from '@loopback/rest';
 import {GoodOracle, GoodOracleInput} from '../models';
 import {GoodOracleRepository} from '../repositories';
 
@@ -163,6 +169,27 @@ export class OracleController {
     id: number,
   ): Promise<GoodOracle> {
     return this.goodOracleRepository.findById(id);
+  }
+
+  @operation('get', '/oracle', {
+    responses: {
+      '200': {
+        description: 'Retrieve all Proof of Good Oracles',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: getModelSchemaRef(GoodOracle, {includeRelations: true}),
+            },
+          },
+        },
+      },
+    },
+  })
+  async getAllOracles(
+    @param.filter(GoodOracle) filter?: Filter<GoodOracle>,
+  ): Promise<GoodOracle[]> {
+    return this.goodOracleRepository.find(filter);
   }
 
   /**
