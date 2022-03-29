@@ -1,36 +1,16 @@
-import {Entity, model, property} from '@loopback/repository';
+import {model, property} from '@loopback/repository';
 
-@model({name: 'proofofgoodentry', settings: {strict: false}})
-export class ProofOfGoodEntry extends Entity {
-  constructor(data?: Partial<ProofOfGoodEntry>) {
-    super(data);
+/**
+ * The model class is generated from OpenAPI schema - GoodEntry_Input
+ * GoodEntry_Input
+ */
+@model({name: 'goodentry', settings: {strict: false}})
+export class GoodEntryInput {
+  constructor(data?: Partial<GoodEntryInput>) {
     if (data != null && typeof data === 'object') {
       Object.assign(this, data);
     }
   }
-
-  /**
-   * id
-   */
-  @property({
-    id: true,
-    jsonSchema: {
-      type: 'number',
-      description: 'ID',
-    },
-  })
-  id: number = Date.now();
-
-  /**
-   * token ID of the NFT after it has been minted
-   */
-  @property({
-    jsonSchema: {
-      type: 'string',
-      description: 'token ID of the NFT after it has been minted',
-    },
-  })
-  tokenId: string;
 
   /**
    * Wallet address of the user who did good
@@ -55,19 +35,6 @@ export class ProofOfGoodEntry extends Entity {
     },
   })
   goodActivityId: number;
-
-  /**
-   * Good points associated with the entry, calculated from this entry's `units` and the corresponding GoodActivity's `valuePerUnit`
-   */
-  @property({
-    jsonSchema: {
-      type: 'integer',
-      description:
-        "Good points associated with the entry, calculated from this entry's `units` and the corresponding GoodActivity's `valuePerUnit`",
-      readOnly: true,
-    },
-  })
-  value: number;
 
   /**
    * Number of units performed for the `GoodActivity`
@@ -118,18 +85,6 @@ export class ProofOfGoodEntry extends Entity {
   userId?: string;
 
   /**
-   * ID of the oracle submitting the entry
-   */
-  @property({
-    jsonSchema: {
-      type: 'integer',
-      description: 'ID of the oracle submitting the entry',
-      readOnly: true,
-    },
-  })
-  goodOracleId: number;
-
-  /**
    * awaiting clarification
    */
   @property({
@@ -141,9 +96,9 @@ export class ProofOfGoodEntry extends Entity {
   externalId?: string;
 }
 
-export interface ProofOfGoodEntryRelations {
+export interface GoodEntryInputRelations {
   // describe navigational properties here
 }
 
-export type ProofOfGoodEntryWithRelations = ProofOfGoodEntry &
-  ProofOfGoodEntryRelations;
+export type GoodEntryInputWithRelations = GoodEntryInput &
+  GoodEntryInputRelations;

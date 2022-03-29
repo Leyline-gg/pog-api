@@ -1,12 +1,12 @@
 import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
-import {ProofOfGoodEntry} from '../models';
-import {ProofOfGoodEntryRepository} from '../repositories';
+import {GoodEntry} from '../models';
+import {GoodEntryRepository} from '../repositories';
 
-export class ProofOfGoodEntryController {
+export class GoodEntryController {
   constructor(
-    @repository(ProofOfGoodEntryRepository)
-    public repository: ProofOfGoodEntryRepository,
+    @repository(GoodEntryRepository)
+    public repository: GoodEntryRepository,
   ) {}
 
   /**
@@ -24,7 +24,7 @@ export class ProofOfGoodEntryController {
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/ProofOfGoodEntry',
+              $ref: '#/components/schemas/GoodEntry',
             },
             examples: {},
           },
@@ -63,7 +63,7 @@ export class ProofOfGoodEntryController {
       description: 'The ID of the PoG entry',
     })
     id: number,
-  ): Promise<ProofOfGoodEntry> {
+  ): Promise<GoodEntry> {
     return this.repository.findById(id);
   }
 
@@ -75,7 +75,7 @@ export class ProofOfGoodEntryController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(ProofOfGoodEntry, {
+              items: getModelSchemaRef(GoodEntry, {
                 includeRelations: true,
               }),
             },
@@ -85,8 +85,8 @@ export class ProofOfGoodEntryController {
     },
   })
   async getAllEntries(
-    @param.filter(ProofOfGoodEntry) filter?: Filter<ProofOfGoodEntry>,
-  ): Promise<ProofOfGoodEntry[]> {
+    @param.filter(GoodEntry) filter?: Filter<GoodEntry>,
+  ): Promise<GoodEntry[]> {
     return this.repository.find(filter);
   }
 
@@ -96,7 +96,7 @@ export class ProofOfGoodEntryController {
    * @param entry
    */
   @post('/entry', {
-    summary: 'Create a ProofOfGoodEntry',
+    summary: 'Create a GoodEntry',
     operationId: 'post-pog-entry',
     responses: {
       '201': {
@@ -113,7 +113,7 @@ export class ProofOfGoodEntryController {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/ProofOfGoodEntry_Input',
+            $ref: '#/components/schemas/GoodEntry_Input',
           },
           examples: {
             'New Entry': {
@@ -161,7 +161,7 @@ export class ProofOfGoodEntryController {
       },
       description: '',
     })
-    entry: Omit<ProofOfGoodEntry, 'id'>,
+    entry: Omit<GoodEntry, 'id'>,
   ): Promise<unknown> {
     return this.repository.create(entry);
   }
