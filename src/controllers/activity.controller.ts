@@ -111,7 +111,6 @@ export class ActivityController {
     })
     activity: Omit<GoodActivity, 'id'>,
   ): Promise<unknown> {
-    console.log(JSON.stringify(activity));
     return this.repository.create(activity);
   }
 
