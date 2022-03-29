@@ -19,7 +19,7 @@ export class GoodCategory extends Entity {
   @property({
     id: true,
     jsonSchema: {
-      type: 'string',
+      type: 'number',
     },
   })
   id: number = Date.now();

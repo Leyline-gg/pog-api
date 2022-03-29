@@ -213,7 +213,7 @@ export class CategoryController {
   ): Promise<unknown> {
     delete category?.id;
     return this.repository.updateById(id, category).catch((err: Error) => {
-      if (err.message == '404')
+      if (err.message == 'Document not found')
         throw new HttpErrors.NotFound('Oracle Not Found');
     });
   }

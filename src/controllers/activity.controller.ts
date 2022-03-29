@@ -220,7 +220,7 @@ export class ActivityController {
   ): Promise<unknown> {
     delete activity?.id;
     return this.repository.updateById(id, activity).catch((err: Error) => {
-      if (err.message == '404')
+      if (err.message == 'Document not found')
         throw new HttpErrors.NotFound('Oracle Not Found');
     });
   }
