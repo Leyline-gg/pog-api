@@ -6,3 +6,4 @@ export * from './good-category.model';
 export * from './good-oracle-input.model';
 export * from './good-oracle.model';
 export * from './proof-of-good-entry-input.model';
+export * from './proof-of-good-entry.model';
