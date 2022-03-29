@@ -1,5 +1,5 @@
-import {repository} from '@loopback/repository';
-import {post, requestBody} from '@loopback/rest';
+import {Filter, repository} from '@loopback/repository';
+import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
 import {ProofOfGoodEntry} from '../models';
 import {ProofOfGoodEntryRepository} from '../repositories';
 
@@ -10,11 +10,92 @@ export class ProofOfGoodEntryController {
   ) {}
 
   /**
+   * Retrieve a Proof of Good Entry
+   *
+   * @param id The PoG ID of the entry
+   * @returns A Proof of Good Entry
+   */
+  @get('/entry/{id}', {
+    summary: 'Get Proof of Good Entry',
+    operationId: 'get-entry',
+    responses: {
+      '200': {
+        description: 'A Proof of Good Entry',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ProofOfGoodEntry',
+            },
+            examples: {},
+          },
+        },
+      },
+      '404': {
+        description: 'Entry Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+    },
+    description: 'Retrieve a Proof of Good Entry',
+    parameters: [
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The ID of the PoG entry',
+      },
+    ],
+  })
+  async getEntry(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The ID of the PoG entry',
+    })
+    id: number,
+  ): Promise<ProofOfGoodEntry> {
+    return this.repository.findById(id);
+  }
+
+  @get('/entry', {
+    responses: {
+      '200': {
+        description: 'Retrieve all Proof of Good Entries',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: getModelSchemaRef(ProofOfGoodEntry, {
+                includeRelations: true,
+              }),
+            },
+          },
+        },
+      },
+    },
+  })
+  async getAllEntries(
+    @param.filter(ProofOfGoodEntry) filter?: Filter<ProofOfGoodEntry>,
+  ): Promise<ProofOfGoodEntry[]> {
+    return this.repository.find(filter);
+  }
+
+  /**
    *
    *
    * @param entry
    */
-  @post('/pog', {
+  @post('/entry', {
     summary: 'Create a ProofOfGoodEntry',
     operationId: 'post-pog-entry',
     responses: {
