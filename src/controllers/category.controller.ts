@@ -3,33 +3,32 @@ import {
   get,
   getModelSchemaRef,
   HttpErrors,
-  operation,
   param,
   post,
   put,
   requestBody,
 } from '@loopback/rest';
-import {GoodActivity, GoodActivityInput} from '../models';
-import {GoodActivityRepository} from '../repositories';
+import {GoodCategory, GoodCategoryInput} from '../models';
+import {GoodCategoryRepository} from '../repositories';
 
-export class ActivityController {
+export class CategoryController {
   constructor(
-    @repository(GoodActivityRepository)
-    public repository: GoodActivityRepository,
+    @repository(GoodCategoryRepository)
+    public repository: GoodCategoryRepository,
   ) {}
 
   /**
-   * Create a new Activity
+   * Create a new Category
    *
-   * @param id The PoG ID of the activity
-   * @param activity
+   * @param id The PoG ID of the category
+   * @param category
    */
-  @post('/activity', {
-    summary: 'Create an Activity',
-    operationId: 'post-activity',
+  @post('/category', {
+    summary: 'Create a Category',
+    operationId: 'post-category',
     responses: {
       '201': {
-        description: 'Activity Created',
+        description: 'Category Created',
       },
       '400': {
         description: 'Missing Required Information',
@@ -52,7 +51,7 @@ export class ActivityController {
         },
       },
       '404': {
-        description: 'Activity Not Found',
+        description: 'Category Not Found',
         content: {
           'application/json': {
             schema: {
@@ -65,15 +64,13 @@ export class ActivityController {
     requestBody: {
       content: {
         'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodCategory_Input',
+          },
           examples: {
-            'Create an Activity': {
+            'Create a Category': {
               value: {
-                name: 'Good Deed Post on Discord - Local Cleanup',
-                deleted: false,
-                goodCategoryId: 8,
-                goodTypeId: 6,
-                valuePerUnit: 100,
-                unitDescription: 'per post',
+                name: 'Mental Health',
               },
             },
           },
@@ -81,27 +78,25 @@ export class ActivityController {
       },
       description: '',
     },
-    description: 'Create a new Activity',
+    description: 'Create a new Category',
     parameters: [],
     security: [
       {
-        Activity_API_Key: [],
+        Oracle_API_Key: [],
       },
     ],
   })
-  async postActivity(
+  async postCategory(
     @requestBody({
       content: {
         'application/json': {
+          schema: {
+            $ref: '#/components/schemas/GoodCategory_Input',
+          },
           examples: {
-            'Create an Activity': {
+            'Create a Category': {
               value: {
-                name: 'Good Deed Post on Discord - Local Cleanup',
-                deleted: false,
-                goodCategoryId: 8,
-                goodTypeId: 6,
-                valuePerUnit: 100,
-                unitDescription: 'per post',
+                name: 'Mental Health',
               },
             },
           },
@@ -109,23 +104,23 @@ export class ActivityController {
       },
       description: '',
     })
-    activity: Omit<GoodActivity, 'id'>,
+    category: Omit<GoodCategory, 'id'>,
   ): Promise<unknown> {
-    return this.repository.create(activity);
+    return this.repository.create(category);
   }
 
   /**
-   * Update an Activity's details
+   * Update a Category's details
    *
-   * @param id The PoG ID of the activity
-   * @param activity
+   * @param id The PoG ID of the category
+   * @param category
    */
-  @put('/activity/{id}', {
-    summary: 'Change Activity Details',
-    operationId: 'put-activity',
+  @put('/category/{id}', {
+    summary: 'Change Category Details',
+    operationId: 'put-category',
     responses: {
       '200': {
-        description: 'Activity Updated',
+        description: 'Category Updated',
       },
       '401': {
         description: 'Unauthorized',
@@ -139,7 +134,7 @@ export class ActivityController {
         headers: {},
       },
       '404': {
-        description: 'Activity Not Found',
+        description: 'Category Not Found',
         content: {
           'application/json': {
             schema: {
@@ -153,38 +148,39 @@ export class ActivityController {
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/GoodActivity_Input',
+            $ref: '#/components/schemas/GoodCategory_Input',
           },
           examples: {
-            'Change Activity Details': {
+            'Change Category Details': {
               value: {
-                name: 'Good Deed Post on Discord - Local Cleanup',
-                goodCategoryId: 8,
-                goodTypeId: 6,
-                valuePerUnit: 100,
-                unitDescription: 'per image',
+                name: 'Animal Welfare',
               },
             },
           },
         },
       },
+      description: '',
     },
-    description: "Update an Activity's details",
+    description: "Update a Category's details",
     security: [
       {
-        Activity_API_Key: [],
+        Category_API_Key: [],
       },
     ],
     parameters: [
       {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
         name: 'id',
         in: 'path',
         required: true,
-        description: 'The PoG ID of the activity',
+        description: 'The PoG ID of the category',
       },
     ],
   })
-  async putActivity(
+  async putCategory(
     @param({
       schema: {
         type: 'integer',
@@ -193,61 +189,58 @@ export class ActivityController {
       name: 'id',
       in: 'path',
       required: true,
-      description: 'The PoG ID of the activity',
+      description: 'The PoG ID of the category',
     })
     id: number,
     @requestBody({
       content: {
         'application/json': {
           schema: {
-            $ref: '#/components/schemas/GoodActivity_Input',
+            $ref: '#/components/schemas/GoodCategory_Input',
           },
           examples: {
-            'Change Activity Details': {
+            'Change Category Details': {
               value: {
-                name: 'Good Deed Post on Discord - Local Cleanup',
-                goodCategoryId: 8,
-                goodTypeId: 6,
-                valuePerUnit: 100,
-                unitDescription: 'per image',
+                name: 'Animal Welfare',
               },
             },
           },
         },
       },
+      description: '',
     })
-    activity: GoodActivityInput | any,
+    category: GoodCategoryInput | any,
   ): Promise<unknown> {
-    delete activity?.id;
-    return this.repository.updateById(id, activity).catch((err: Error) => {
+    delete category?.id;
+    return this.repository.updateById(id, category).catch((err: Error) => {
       if (err.message == '404')
         throw new HttpErrors.NotFound('Oracle Not Found');
     });
   }
 
   /**
-   * Retrieve a Proof of Good Activity
+   * Retrieve a Proof of Good Category
    *
-   * @param id The PoG ID of the activity
-   * @returns A Proof of Good Activity
+   * @param id The PoG ID of the category
+   * @returns A Proof of Good Category
    */
-  @get('/activity/{id}', {
-    summary: 'Get Activity',
-    operationId: 'get-activity',
+  @get('/category/{id}', {
+    summary: 'Get Category',
+    operationId: 'get-category',
     responses: {
       '200': {
-        description: 'A Proof of Good Activity',
+        description: 'A Proof of Good Category',
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/GoodActivity',
+              $ref: '#/components/schemas/GoodCategory',
             },
             examples: {},
           },
         },
       },
       '404': {
-        description: 'Activity Not Found',
+        description: 'Category Not Found',
         content: {
           'application/json': {
             schema: {
@@ -257,17 +250,21 @@ export class ActivityController {
         },
       },
     },
-    description: 'Retrieve a Proof of Good Activity',
+    description: 'Retrieve a Proof of Good Category',
     parameters: [
       {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
         name: 'id',
         in: 'path',
         required: true,
-        description: 'The PoG ID of the activity',
+        description: 'The PoG ID of the category',
       },
     ],
   })
-  async getActivity(
+  async getCategory(
     @param({
       schema: {
         type: 'integer',
@@ -276,31 +273,31 @@ export class ActivityController {
       name: 'id',
       in: 'path',
       required: true,
-      description: 'The PoG ID of the activity',
+      description: 'The PoG ID of the category',
     })
     id: number,
-  ): Promise<GoodActivity> {
+  ): Promise<GoodCategory> {
     return this.repository.findById(id);
   }
 
-  @operation('get', '/activity', {
+  @get('/category', {
     responses: {
       '200': {
-        description: 'Retrieve all Proof of Good Activities',
+        description: 'Retrieve all Proof of Good Categories',
         content: {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(GoodActivity, {includeRelations: true}),
+              items: getModelSchemaRef(GoodCategory, {includeRelations: true}),
             },
           },
         },
       },
     },
   })
-  async getAllActivities(
-    @param.filter(GoodActivity) filter?: Filter<GoodActivity>,
-  ): Promise<GoodActivity[]> {
+  async getAllCategories(
+    @param.filter(GoodCategory) filter?: Filter<GoodCategory>,
+  ): Promise<GoodCategory[]> {
     return this.repository.find(filter);
   }
 }
