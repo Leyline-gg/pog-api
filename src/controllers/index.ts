@@ -1,3 +1,5 @@
-export * from './ping.controller';
-export * from './open-api.controller';
+export * from './activity.controller';
+export * from './category.controller';
+export * from './good-entry.controller';
 export * from './oracle.controller';
+export * from './ping.controller';

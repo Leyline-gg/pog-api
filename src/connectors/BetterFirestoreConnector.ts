@@ -166,7 +166,7 @@ class BetterFirestoreConnector extends Connector {
             callback(null, []);
           });
       } else {
-        callback(new Error('404'));
+        callback(new Error('Document not found'));
       }
     });
   };
