@@ -214,7 +214,7 @@ export class CategoryController {
     delete category?.id;
     return this.repository.updateById(id, category).catch((err: Error) => {
       if (err.message == 'Document not found')
-        throw new HttpErrors.NotFound('Oracle Not Found');
+        throw new HttpErrors.NotFound('Category Not Found');
     });
   }
 
