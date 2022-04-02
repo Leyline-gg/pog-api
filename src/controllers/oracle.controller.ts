@@ -4,16 +4,17 @@ import {
   HttpErrors,
   operation,
   param,
-  requestBody,
+  patch,
+  requestBody
 } from '@loopback/rest';
-import {GoodOracle, GoodOracleInput} from '../models';
+import {GoodOracle} from '../models';
 import {GoodOracleRepository} from '../repositories';
 
 export class OracleController {
   constructor(
     @repository(GoodOracleRepository)
     public goodOracleRepository: GoodOracleRepository,
-  ) {}
+  ) { }
 
   /**
    * Create a new Oracle
@@ -62,9 +63,10 @@ export class OracleController {
     requestBody: {
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
+          schema: getModelSchemaRef(GoodOracle, {
+            title: 'New Oracle',
+            exclude: ['id']
+          }),
           examples: {
             'Create an Oracle': {
               value: {
@@ -89,9 +91,10 @@ export class OracleController {
     @requestBody({
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
+          schema: getModelSchemaRef(GoodOracle, {
+            title: 'New Oracle',
+            exclude: ['id']
+          }),
           examples: {
             'Create an Oracle': {
               value: {
@@ -193,11 +196,116 @@ export class OracleController {
   }
 
   /**
-   * Update an Oracle's details
-   *
-   * @param id The PoG ID of the oracle
-   * @param oracle
-   */
+  * Update an Oracle's details
+  *
+  * @param id The PoG ID of the oracle
+  * @param oracle
+  */
+  @patch('/oracle/{id}', {
+    summary: 'Change Oracle Details',
+    operationId: 'patch-oracle',
+    responses: {
+      '200': {
+        description: 'Oracle Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Oracle Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+    },
+    requestBody: {
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GoodOracle, {partial: true}),
+          examples: {
+            'Change Oracle Details': {
+              value: {
+                name: 'Leyline',
+              },
+            },
+          },
+        },
+      },
+      description: '',
+    },
+    description: "Update a Oracle's details",
+    security: [
+      {
+        Category_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the oracle',
+      },
+    ],
+  })
+  async patchOracle(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the oracle',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GoodOracle, {partial: true}),
+          examples: {
+            'Change Oracle Details': {
+              value: {
+                name: 'Leyline',
+              },
+            },
+          },
+        },
+      },
+      description: '',
+    })
+    oracle: Partial<GoodOracle>,
+  ): Promise<unknown> {
+    delete oracle?.id;
+    return this.goodOracleRepository.updateById(id, oracle).catch((err: Error) => {
+      if (err.message == 'Document not found')
+        throw new HttpErrors.NotFound('Category Not Found');
+    });
+  }
+
+  /**
+ * Update an Oracle's details
+ *
+ * @param id The PoG ID of the oracle
+ * @param oracle
+ */
   @operation('put', '/oracle/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'put-oracle',
@@ -230,9 +338,7 @@ export class OracleController {
     requestBody: {
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
+          schema: getModelSchemaRef(GoodOracle, {partial: true}),
           examples: {},
         },
       },
@@ -271,21 +377,13 @@ export class OracleController {
     @requestBody({
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodOracle_Input',
-          },
+          schema: getModelSchemaRef(GoodOracle, {partial: true}),
           examples: {},
         },
       },
     })
-    oracle: GoodOracleInput | any,
+    oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
-    delete oracle?.id;
-    return this.goodOracleRepository
-      .updateById(id, oracle)
-      .catch((err: Error) => {
-        if (err.message == '404')
-          throw new HttpErrors.NotFound('Oracle Not Found');
-      });
+    return this.patchOracle(id, oracle);
   }
 }
