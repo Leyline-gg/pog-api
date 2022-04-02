@@ -4,18 +4,19 @@ import {
   getModelSchemaRef,
   HttpErrors,
   param,
+  patch,
   post,
   put,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
-import {GoodCategory, GoodCategoryInput} from '../models';
+import {GoodCategory} from '../models';
 import {GoodCategoryRepository} from '../repositories';
 
 export class CategoryController {
   constructor(
     @repository(GoodCategoryRepository)
-    public repository: GoodCategoryRepository,
-  ) {}
+    public goodCategoryRepository: GoodCategoryRepository,
+  ) { }
 
   /**
    * Create a new Category
@@ -64,9 +65,10 @@ export class CategoryController {
     requestBody: {
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodCategory_Input',
-          },
+          schema: getModelSchemaRef(GoodCategory, {
+            title: 'New Category',
+            exclude: ['id']
+          }),
           examples: {
             'Create a Category': {
               value: {
@@ -90,9 +92,10 @@ export class CategoryController {
     @requestBody({
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodCategory_Input',
-          },
+          schema: getModelSchemaRef(GoodCategory, {
+            title: 'New Category',
+            exclude: ['id']
+          }),
           examples: {
             'Create a Category': {
               value: {
@@ -106,7 +109,106 @@ export class CategoryController {
     })
     category: Omit<GoodCategory, 'id'>,
   ): Promise<unknown> {
-    return this.repository.create(category);
+    return this.goodCategoryRepository.create(category);
+  }
+
+  @patch('/category/{id}', {
+    summary: 'Change Category Details',
+    operationId: 'patch-category',
+    responses: {
+      '200': {
+        description: 'Category Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Category Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+    },
+    requestBody: {
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GoodCategory, {partial: true}),
+          examples: {
+            'Change Category Details': {
+              value: {
+                name: 'Animal Welfare',
+              },
+            },
+          },
+        },
+      },
+      description: '',
+    },
+    description: "Update a Category's details",
+    security: [
+      {
+        Category_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        schema: {
+          type: 'integer',
+          example: 3,
+        },
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the category',
+      },
+    ],
+  })
+  async patchCategory(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the category',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GoodCategory, {partial: true}),
+          examples: {
+            'Change Category Details': {
+              value: {
+                name: 'Animal Welfare',
+              },
+            },
+          },
+        },
+      },
+      description: '',
+    })
+    category: Partial<GoodCategory>,
+  ): Promise<unknown> {
+    delete category?.id;
+    return this.goodCategoryRepository.updateById(id, category).catch((err: Error) => {
+      if (err.message == 'Document not found')
+        throw new HttpErrors.NotFound('Category Not Found');
+    });
   }
 
   /**
@@ -147,9 +249,7 @@ export class CategoryController {
     requestBody: {
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodCategory_Input',
-          },
+          schema: getModelSchemaRef(GoodCategory, {partial: true}),
           examples: {
             'Change Category Details': {
               value: {
@@ -195,9 +295,7 @@ export class CategoryController {
     @requestBody({
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodCategory_Input',
-          },
+          schema: getModelSchemaRef(GoodCategory, {partial: true}),
           examples: {
             'Change Category Details': {
               value: {
@@ -209,13 +307,10 @@ export class CategoryController {
       },
       description: '',
     })
-    category: GoodCategoryInput | any,
+    category: Partial<GoodCategory>,
   ): Promise<unknown> {
-    delete category?.id;
-    return this.repository.updateById(id, category).catch((err: Error) => {
-      if (err.message == 'Document not found')
-        throw new HttpErrors.NotFound('Category Not Found');
-    });
+
+    return this.patchCategory(id, category);
   }
 
   /**
@@ -277,7 +372,7 @@ export class CategoryController {
     })
     id: number,
   ): Promise<GoodCategory> {
-    return this.repository.findById(id);
+    return this.goodCategoryRepository.findById(id);
   }
 
   @get('/category', {
@@ -298,6 +393,6 @@ export class CategoryController {
   async getAllCategories(
     @param.filter(GoodCategory) filter?: Filter<GoodCategory>,
   ): Promise<GoodCategory[]> {
-    return this.repository.find(filter);
+    return this.goodCategoryRepository.find(filter);
   }
 }
