@@ -1,14 +1,14 @@
 import {
   Client, expect, toJSON
 } from '@loopback/testlab';
-import {PogApiApplication} from '../../application';
-import {GoodActivity} from '../../models';
-import {GoodActivityRepository} from '../../repositories';
+import {PogApiApplication} from '../../../application';
+import {GoodActivity} from '../../../models';
+import {GoodActivityRepository} from '../../../repositories';
 import {
   delay,
   givenGoodActivity,
   givenRunningApplicationWithCustomConfiguration
-} from './test-helper';
+} from '../test-helper';
 
 describe('PogApiApplication - Activity', () => {
   let app: PogApiApplication;

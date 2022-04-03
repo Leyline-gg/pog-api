@@ -1,6 +1,6 @@
 import {Client, expect} from '@loopback/testlab';
-import {PogApiApplication} from '../..';
-import {givenRunningApplicationWithCustomConfiguration} from './test-helper';
+import {PogApiApplication} from '../../..';
+import {givenRunningApplicationWithCustomConfiguration} from '../test-helper';
 
 describe('PingController', () => {
   let app: PogApiApplication;

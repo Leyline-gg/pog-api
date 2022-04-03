@@ -1,14 +1,14 @@
 import {
   Client, expect, toJSON
 } from '@loopback/testlab';
-import {PogApiApplication} from '../../application';
-import {GoodOracle} from '../../models';
-import {GoodOracleRepository} from '../../repositories';
+import {PogApiApplication} from '../../../application';
+import {GoodOracle} from '../../../models';
+import {GoodOracleRepository} from '../../../repositories';
 import {
   delay,
   givenGoodOracle,
   givenRunningApplicationWithCustomConfiguration
-} from './test-helper';
+} from '../test-helper';
 
 describe('PogApiApplication - Oracle', () => {
   let app: PogApiApplication;

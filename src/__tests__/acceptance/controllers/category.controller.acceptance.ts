@@ -2,14 +2,14 @@ import {
   Client, expect,
   toJSON
 } from '@loopback/testlab';
-import {PogApiApplication} from '../../application';
-import {GoodCategory} from '../../models';
-import {GoodCategoryRepository} from '../../repositories/';
+import {PogApiApplication} from '../../../application';
+import {GoodCategory} from '../../../models';
+import {GoodCategoryRepository} from '../../../repositories';
 import {
   delay,
   givenGoodCategory,
   givenRunningApplicationWithCustomConfiguration
-} from './test-helper';
+} from '../test-helper';
 
 
 describe('PogApiApplication', () => {
