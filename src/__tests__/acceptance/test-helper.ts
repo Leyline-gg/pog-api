@@ -3,7 +3,7 @@ import {
   givenHttpServerConfig
 } from '@loopback/testlab';
 import {PogApiApplication} from '../..';
-import {GoodCategory, GoodOracle} from '../../models/index';
+import {GoodActivity, GoodCategory, GoodOracle} from '../../models/index';
 
 export async function givenRunningApplication(): Promise<AppWithClient> {
   const restConfig = givenHttpServerConfig({
@@ -79,7 +79,7 @@ export const delay = (ms: number) => new Promise(_ => setTimeout(_, ms));
 
 /**
  * Generate a complete Good Category object for use with tests.
- * @param goodCategory A partial (or complete) Todo object.
+ * @param goodCategory A partial (or complete) GoodCategory object.
  */
 export function givenGoodCategory(goodCategory?: Partial<GoodCategory>) {
   const data = Object.assign(
@@ -94,7 +94,7 @@ export function givenGoodCategory(goodCategory?: Partial<GoodCategory>) {
 
 /**
  * Generate a complete Good Oracle object for use with tests.
- * @param goodOracle A partial (or complete) Todo object.
+ * @param goodOracle A partial (or complete) GoodOracle object.
  */
 export function givenGoodOracle(goodOracle?: Partial<GoodOracle>) {
   const data = Object.assign(
@@ -105,4 +105,23 @@ export function givenGoodOracle(goodOracle?: Partial<GoodOracle>) {
     goodOracle,
   );
   return new GoodOracle(data);
+}
+
+/**
+ * Generate a complete Good Activity object for use with tests.
+ * @param goodActivity A partial (or complete) GoodActivity object.
+ */
+export function givenGoodActivity(goodActivity?: Partial<GoodActivity>) {
+  const data = Object.assign(
+    {
+      name: 'Awesome Activity',
+      deleted: false,
+      goodCategoryId: 1234,
+      goodTypeId: 2345,
+      valuePerUnit: 100,
+      unitDescription: "Per Test"
+    },
+    goodActivity,
+  );
+  return new GoodActivity(data);
 }

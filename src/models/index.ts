@@ -1,5 +1,4 @@
 export * from './error-response.model';
-export * from './good-activity-input.model';
 export * from './good-activity.model';
 export * from './good-category.model';
 export * from './good-entry-input.model';

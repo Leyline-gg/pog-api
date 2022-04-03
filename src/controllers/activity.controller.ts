@@ -5,23 +5,23 @@ import {
   HttpErrors,
   operation,
   param,
+  patch,
   post,
   put,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
-import {GoodActivity, GoodActivityInput} from '../models';
+import {GoodActivity} from '../models';
 import {GoodActivityRepository} from '../repositories';
 
 export class ActivityController {
   constructor(
     @repository(GoodActivityRepository)
-    public repository: GoodActivityRepository,
-  ) {}
+    public goodActivityRepository: GoodActivityRepository,
+  ) { }
 
   /**
    * Create a new Activity
    *
-   * @param id The PoG ID of the activity
    * @param activity
    */
   @post('/activity', {
@@ -65,6 +65,10 @@ export class ActivityController {
     requestBody: {
       content: {
         'application/json': {
+          schema: getModelSchemaRef(GoodActivity, {
+            title: 'New Activity',
+            exclude: ['id']
+          }),
           examples: {
             'Create an Activity': {
               value: {
@@ -93,6 +97,10 @@ export class ActivityController {
     @requestBody({
       content: {
         'application/json': {
+          schema: getModelSchemaRef(GoodActivity, {
+            title: 'New Activity',
+            exclude: ['id']
+          }),
           examples: {
             'Create an Activity': {
               value: {
@@ -111,7 +119,114 @@ export class ActivityController {
     })
     activity: Omit<GoodActivity, 'id'>,
   ): Promise<unknown> {
-    return this.repository.create(activity);
+    return this.goodActivityRepository.create(activity);
+  }
+
+  /**
+* Update an Activity's details
+*
+* @param id The PoG ID of the Activity
+* @param oracle
+*/
+  @patch('/activity/{id}', {
+    summary: 'Change Activity Details',
+    operationId: 'put-activity',
+    responses: {
+      '200': {
+        description: 'Activity Updated',
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+        headers: {},
+      },
+      '404': {
+        description: 'Activity Not Found',
+        content: {
+          'application/json': {
+            schema: {
+              $ref: '#/components/schemas/ErrorResponse',
+            },
+          },
+        },
+      },
+    },
+    requestBody: {
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GoodActivity, {partial: true}),
+          examples: {
+            'Change Activity Details': {
+              value: {
+                name: 'Good Deed Post on Discord - Local Cleanup',
+                goodCategoryId: 8,
+                goodTypeId: 6,
+                valuePerUnit: 100,
+                unitDescription: 'per image',
+              },
+            },
+          },
+        },
+      },
+    },
+    description: "Update an Activity's details",
+    security: [
+      {
+        Activity_API_Key: [],
+      },
+    ],
+    parameters: [
+      {
+        name: 'id',
+        in: 'path',
+        required: true,
+        description: 'The PoG ID of the activity',
+      },
+    ],
+  })
+  async patchActivity(
+    @param({
+      schema: {
+        type: 'integer',
+        example: 3,
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The PoG ID of the activity',
+    })
+    id: number,
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: getModelSchemaRef(GoodActivity, {partial: true}),
+          examples: {
+            'Change Activity Details': {
+              value: {
+                name: 'Good Deed Post on Discord - Local Cleanup',
+                goodCategoryId: 8,
+                goodTypeId: 6,
+                valuePerUnit: 100,
+                unitDescription: 'per image',
+              },
+            },
+          },
+        },
+      },
+    })
+    activity: Partial<GoodActivity>,
+  ): Promise<unknown> {
+    delete activity?.id;
+    return this.goodActivityRepository.updateById(id, activity).catch((err: Error) => {
+      if (err.message == 'Document not found')
+        throw new HttpErrors.NotFound('Category Not Found');
+    });
   }
 
   /**
@@ -152,9 +267,7 @@ export class ActivityController {
     requestBody: {
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodActivity_Input',
-          },
+          schema: getModelSchemaRef(GoodActivity, {partial: true}),
           examples: {
             'Change Activity Details': {
               value: {
@@ -199,9 +312,7 @@ export class ActivityController {
     @requestBody({
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodActivity_Input',
-          },
+          schema: getModelSchemaRef(GoodActivity, {partial: true}),
           examples: {
             'Change Activity Details': {
               value: {
@@ -216,13 +327,9 @@ export class ActivityController {
         },
       },
     })
-    activity: GoodActivityInput | any,
+    activity: Partial<GoodActivity>,
   ): Promise<unknown> {
-    delete activity?.id;
-    return this.repository.updateById(id, activity).catch((err: Error) => {
-      if (err.message == 'Document not found')
-        throw new HttpErrors.NotFound('Oracle Not Found');
-    });
+    return this.patchActivity(id, activity);
   }
 
   /**
@@ -280,7 +387,7 @@ export class ActivityController {
     })
     id: number,
   ): Promise<GoodActivity> {
-    return this.repository.findById(id);
+    return this.goodActivityRepository.findById(id);
   }
 
   @operation('get', '/activity', {
@@ -301,6 +408,6 @@ export class ActivityController {
   async getAllActivities(
     @param.filter(GoodActivity) filter?: Filter<GoodActivity>,
   ): Promise<GoodActivity[]> {
-    return this.repository.find(filter);
+    return this.goodActivityRepository.find(filter);
   }
 }
