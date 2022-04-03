@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //adapted from https://github.com/dyaa/loopback-connector-firestore
 export interface IFilter {
   where?: any;

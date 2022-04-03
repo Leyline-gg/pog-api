@@ -224,7 +224,7 @@ export class ActivityController {
   ): Promise<unknown> {
     delete activity?.id;
     return this.goodActivityRepository.updateById(id, activity).catch((err: Error) => {
-      if (err.message == 'Document not found')
+      if (err.message === 'Document not found')
         throw new HttpErrors.NotFound('Category Not Found');
     });
   }

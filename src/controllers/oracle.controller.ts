@@ -295,7 +295,7 @@ export class OracleController {
   ): Promise<unknown> {
     delete oracle?.id;
     return this.goodOracleRepository.updateById(id, oracle).catch((err: Error) => {
-      if (err.message == 'Document not found')
+      if (err.message === 'Document not found')
         throw new HttpErrors.NotFound('Category Not Found');
     });
   }

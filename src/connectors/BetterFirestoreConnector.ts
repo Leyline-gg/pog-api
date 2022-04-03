@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 //adapted from https://github.com/dyaa/loopback-connector-firestore
 import {
   DocumentReference,
@@ -5,12 +6,12 @@ import {
   Firestore as Admin,
   Query,
   QueryDocumentSnapshot,
-  QuerySnapshot,
-} from '@google-cloud/firestore'; //@ts-ignore
+  QuerySnapshot
+} from '@google-cloud/firestore';
 import {Connector} from 'loopback-connector';
 import {ICallback, IDataSource, IFilter} from './interfaces';
 
-const initialize = function initializeDataSource(
+const _initialize = function initializeDataSource(
   dataSource: IDataSource,
   callback: any,
 ) {
@@ -32,8 +33,8 @@ class BetterFirestoreConnector extends Connector {
 
     const firestore = new Admin({
       credentials: {
-        private_key: privateKey!.replace(/\\n/g, '\n'), // eslint-disable-line camelcase
-        client_email: clientEmail, // eslint-disable-line camelcase
+        private_key: privateKey!.replace(/\\n/g, '\n'),
+        client_email: clientEmail,
       },
       projectId,
     });
@@ -58,7 +59,7 @@ class BetterFirestoreConnector extends Connector {
 
     try {
       let result: any[];
-      if (where && where.id) {
+      if (where?.id) {
         const {id} = where;
         result = await this.findById(model, id);
       } else if (this.hasFilter(filter)) {
@@ -310,7 +311,7 @@ class BetterFirestoreConnector extends Connector {
       .get()
       .then(snapshot => {
         // When there are no documents left, we are done
-        if (snapshot.size == 0) {
+        if (snapshot.size === 0) {
           return 0;
         }
 
@@ -408,16 +409,12 @@ class BetterFirestoreConnector extends Connector {
    */
   private findById = async (model: string, id: string) => {
     id = id.toString();
-    try {
       const documentSnapshot = await this.db.collection(model).doc(id).get();
       if (!documentSnapshot.exists) return Promise.resolve([]);
 
       const result = {id: documentSnapshot.id, ...documentSnapshot.data()};
 
       return Promise.resolve([result]);
-    } catch (error) {
-      throw error;
-    }
   };
 
   /**
@@ -425,7 +422,6 @@ class BetterFirestoreConnector extends Connector {
    * @param {String} model The model name
    */
   private findAllOfModel = async (model: string) => {
-    try {
       const collectionRef = this.db.collection(model);
       const snapshots = await collectionRef.get();
 
@@ -434,9 +430,6 @@ class BetterFirestoreConnector extends Connector {
       const result = this.completeDocumentResults(snapshots.docs);
 
       return Promise.resolve(result);
-    } catch (error) {
-      throw error;
-    }
   };
 
   /**
@@ -463,7 +456,7 @@ class BetterFirestoreConnector extends Connector {
 
     if (where) {
       for (const key in where) {
-        if (where.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(where,'key')) {
           const value = {[key]: where[key]};
           query = this.addFiltersToQuery(query, value);
         }
@@ -492,7 +485,7 @@ class BetterFirestoreConnector extends Connector {
 
     if (fields) {
       for (const key in fields) {
-        if (fields.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(fields, 'key')) {
           const field = fields[key];
           if (field) query = query.select(key);
         }
@@ -530,7 +523,7 @@ class BetterFirestoreConnector extends Connector {
     let resultQuery = query;
 
     for (const operation in value) {
-      if (!value.hasOwnProperty(operation)) {
+      if (!Object.prototype.hasOwnProperty.call(value,'operation')) {
         continue;
       }
       const comparison = value[operation];
@@ -555,5 +548,5 @@ class BetterFirestoreConnector extends Connector {
   };
 }
 
-//export default {Firestore, initialize};
+//export default {Firestore, _initialize};
 export default BetterFirestoreConnector;

@@ -206,7 +206,7 @@ export class CategoryController {
   ): Promise<unknown> {
     delete category?.id;
     return this.goodCategoryRepository.updateById(id, category).catch((err: Error) => {
-      if (err.message == 'Document not found')
+      if (err.message === 'Document not found')
         throw new HttpErrors.NotFound('Category Not Found');
     });
   }
