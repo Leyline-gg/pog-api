@@ -3,7 +3,7 @@ import {
   givenHttpServerConfig
 } from '@loopback/testlab';
 import {PogApiApplication} from '../..';
-import {GoodActivity, GoodCategory, GoodOracle} from '../../models/index';
+import {GoodActivity, GoodCategory, GoodEntry, GoodOracle} from '../../models/index';
 
 export async function givenRunningApplication(): Promise<AppWithClient> {
   const restConfig = givenHttpServerConfig({
@@ -124,4 +124,24 @@ export function givenGoodActivity(goodActivity?: Partial<GoodActivity>) {
     goodActivity,
   );
   return new GoodActivity(data);
+}
+
+/**
+ * Generate a complete Good Activity object for use with tests.
+ * @param goodEntry A partial (or complete) GoodEntry object.
+ */
+export function givenGoodEntry(goodEntry?: Partial<GoodEntry>) {
+  const data = Object.assign(
+    {
+      doGooder: '0x9999999999999999999999999',
+      goodActivityId: 0,
+      units: 1,
+      proofURL: 'https://proof.url',
+      timestamp: 1231456789123,
+      userId: '1234567890',
+      externalId: 'string',
+    },
+    goodEntry,
+  );
+  return new GoodEntry(data);
 }

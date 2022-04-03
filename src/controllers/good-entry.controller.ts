@@ -6,8 +6,8 @@ import {GoodEntryRepository} from '../repositories';
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
-    public repository: GoodEntryRepository,
-  ) {}
+    public goodEntryRepository: GoodEntryRepository,
+  ) { }
 
   /**
    * Retrieve a Proof of Good Entry
@@ -64,7 +64,7 @@ export class GoodEntryController {
     })
     id: number,
   ): Promise<GoodEntry> {
-    return this.repository.findById(id);
+    return this.goodEntryRepository.findById(id);
   }
 
   @get('/entry', {
@@ -87,13 +87,14 @@ export class GoodEntryController {
   async getAllEntries(
     @param.filter(GoodEntry) filter?: Filter<GoodEntry>,
   ): Promise<GoodEntry[]> {
-    return this.repository.find(filter);
+    return this.goodEntryRepository.find(filter);
   }
 
   /**
+   * Create a Proof of Good Entry
    *
-   *
-   * @param entry
+   * @param entry The PoG ID of the entry
+   * @returns A Proof of Good Entry
    */
   @post('/entry', {
     summary: 'Create a GoodEntry',
@@ -112,9 +113,10 @@ export class GoodEntryController {
     requestBody: {
       content: {
         'application/json': {
-          schema: {
-            $ref: '#/components/schemas/GoodEntry_Input',
-          },
+          schema: getModelSchemaRef(GoodEntry, {
+            title: 'New Entry',
+            exclude: ['id']
+          }),
           examples: {
             'New Entry': {
               value: {
@@ -140,10 +142,14 @@ export class GoodEntryController {
       },
     ],
   })
-  async postPogEntry(
+  async postEntry(
     @requestBody({
       content: {
         'application/json': {
+          schema: getModelSchemaRef(GoodEntry, {
+            title: 'New Entry',
+            exclude: ['id']
+          }),
           examples: {
             'New Entry': {
               value: {
@@ -163,6 +169,6 @@ export class GoodEntryController {
     })
     entry: Omit<GoodEntry, 'id'>,
   ): Promise<unknown> {
-    return this.repository.create(entry);
+    return this.goodEntryRepository.create(entry);
   }
 }

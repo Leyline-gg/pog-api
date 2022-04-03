@@ -12,7 +12,7 @@ import {
 } from '../test-helper';
 
 
-describe('PogApiApplication', () => {
+describe('PogApiApplication - Category', () => {
   let app: PogApiApplication;
   let client: Client;
   let goodCategoryRepo: GoodCategoryRepository;
