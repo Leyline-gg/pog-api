@@ -66,7 +66,7 @@ describe('PogApiApplication', () => {
         .send(updatedGoodCategory)
         .expect(204);
       const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
-      const {id, ...updatedGoodCategoryBody} = updatedGoodCategory;
+      const {id: _, ...updatedGoodCategoryBody} = updatedGoodCategory;
       expect(result).to.containEql(updatedGoodCategoryBody);
     });
 

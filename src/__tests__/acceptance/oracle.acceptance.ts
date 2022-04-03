@@ -64,7 +64,7 @@ describe('PogApiApplication - Oracle', () => {
         .send(updatedGoodOracle)
         .expect(204);
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
-      const {id, ...updatedGoodOracleBody} = updatedGoodOracle;
+      const {id: _, ...updatedGoodOracleBody} = updatedGoodOracle;
       expect(result).to.containEql(updatedGoodOracleBody);
     });
 
