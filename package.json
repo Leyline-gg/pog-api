@@ -25,6 +25,7 @@
     "test": "lb-mocha --allow-console-logs \"dist/__tests__\"",
     "posttest": "npm run lint",
     "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
+    "test:ci": "lb-mocha --allow-console-logs dist/__tests__/**/*.js",
     "docker:build": "docker build -t pog-api .",
     "docker:run": "docker run -p 3000:3000 -d pog-api",
     "premigrate": "npm run build",
