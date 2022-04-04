@@ -6,7 +6,7 @@ import {
   operation,
   param,
   patch,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
 import {GoodOracle} from '../models';
 import {GoodOracleRepository} from '../repositories';
@@ -18,7 +18,7 @@ export class OracleController {
     public goodOracleRepository: GoodOracleRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) {}
+  ) { }
 
   /**
    * Create a new Oracle
@@ -113,12 +113,14 @@ export class OracleController {
     })
     oracle: Omit<GoodOracle, 'id'>,
   ): Promise<unknown> {
-    const firestorePersistedOracle = await this.goodOracleRepository.create(
-      oracle,
-    );
-    await this.proofOfGoodSmartContractService.addGoodOracle(
-      firestorePersistedOracle,
-    );
+    // const firestorePersistedOracle = await this.goodOracleRepository.create(
+    //   oracle,
+    // );
+    // await this.proofOfGoodSmartContractService.addGoodOracle(
+    //   firestorePersistedOracle,
+    // );
+    // console.log(this.goodOracleRepository)
+    const firestorePersistedOracle = await this.goodOracleRepository.create(oracle);
     return firestorePersistedOracle;
   }
 
