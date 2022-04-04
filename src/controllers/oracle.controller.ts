@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
   getModelSchemaRef,
@@ -5,16 +6,19 @@ import {
   operation,
   param,
   patch,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
 import {GoodOracle} from '../models';
 import {GoodOracleRepository} from '../repositories';
+import {ProofOfGoodSmartContractService} from '../services';
 
 export class OracleController {
   constructor(
     @repository(GoodOracleRepository)
     public goodOracleRepository: GoodOracleRepository,
-  ) { }
+    @service(ProofOfGoodSmartContractService)
+    private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
+  ) {}
 
   /**
    * Create a new Oracle
@@ -65,7 +69,7 @@ export class OracleController {
         'application/json': {
           schema: getModelSchemaRef(GoodOracle, {
             title: 'New Oracle',
-            exclude: ['id']
+            exclude: ['id'],
           }),
           examples: {
             'Create an Oracle': {
@@ -93,7 +97,7 @@ export class OracleController {
         'application/json': {
           schema: getModelSchemaRef(GoodOracle, {
             title: 'New Oracle',
-            exclude: ['id']
+            exclude: ['id'],
           }),
           examples: {
             'Create an Oracle': {
@@ -109,7 +113,13 @@ export class OracleController {
     })
     oracle: Omit<GoodOracle, 'id'>,
   ): Promise<unknown> {
-    return this.goodOracleRepository.create(oracle);
+    const firestorePersistedOracle = await this.goodOracleRepository.create(
+      oracle,
+    );
+    await this.proofOfGoodSmartContractService.addGoodOracle(
+      firestorePersistedOracle,
+    );
+    return firestorePersistedOracle;
   }
 
   /**
@@ -196,11 +206,11 @@ export class OracleController {
   }
 
   /**
-  * Update an Oracle's details
-  *
-  * @param id The PoG ID of the oracle
-  * @param oracle
-  */
+   * Update an Oracle's details
+   *
+   * @param id The PoG ID of the oracle
+   * @param oracle
+   */
   @patch('/oracle/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'patch-oracle',
@@ -294,18 +304,20 @@ export class OracleController {
     oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
     delete oracle?.id;
-    return this.goodOracleRepository.updateById(id, oracle).catch((err: Error) => {
-      if (err.message === 'Document not found')
-        throw new HttpErrors.NotFound('Category Not Found');
-    });
+    return this.goodOracleRepository
+      .updateById(id, oracle)
+      .catch((err: Error) => {
+        if (err.message === 'Document not found')
+          throw new HttpErrors.NotFound('Category Not Found');
+      });
   }
 
   /**
- * Update an Oracle's details
- *
- * @param id The PoG ID of the oracle
- * @param oracle
- */
+   * Update an Oracle's details
+   *
+   * @param id The PoG ID of the oracle
+   * @param oracle
+   */
   @operation('put', '/oracle/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'put-oracle',

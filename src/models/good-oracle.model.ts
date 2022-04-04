@@ -57,6 +57,28 @@ export class GoodOracle extends Entity {
     },
   })
   deleted?: boolean = false;
+
+  @property({
+    jsonSchema: {
+      type: 'number',
+      default: 0,
+      description:
+        'enum for status of oracle, defaults to 0 - ACTIVE, others: 1 - DELETED, 2 - PAUSED, 3 - QUARANTINED',
+    },
+  })
+  status?: number;
+
+  @property.array(Number)
+  approvedActivityIdArray?: number[];
+
+  @property({
+    jsonSchema: {
+      type: 'boolean',
+      default: false,
+      description: 'flag whether changes has been persisted to the ledger',
+    },
+  })
+  isUpdatedOnLedger?: boolean;
 }
 
 export interface GoodOracleRelations {
