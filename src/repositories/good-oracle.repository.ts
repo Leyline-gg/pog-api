@@ -13,18 +13,4 @@ export class GoodOracleRepository extends DefaultCrudRepository<
   ) {
     super(GoodOracle, dataSource);
   }
-
-  // async createOracle(oracle: GoodOracle): Promise<GoodOracle> {
-  //   return await this.createOracle(oracle)
-  // this.db
-  //   .collection(model)
-  //   .doc(data.id.toString())
-  //   .set(data)
-  //   .then((ref: DocumentReference) => {
-  //     callback(null, ref.id);
-  //   })
-  //   .catch((err: Error) => {
-  //     callback(err);
-  //   });
-  // };
 }

@@ -46,39 +46,20 @@ export class GoodOracle extends Entity {
   })
   goodOracleURI?: string;
 
-  /**
-   * if true, cannot write to ledger with this oracle
-   */
   @property({
-    jsonSchema: {
-      type: 'boolean',
-      default: false,
-      description: 'if true, cannot write to ledger with this oracle',
-    },
-  })
-  deleted?: boolean = false;
-
-  @property({
+    default: 2,
     jsonSchema: {
       type: 'number',
-      default: 0,
-      description:
-        'enum for status of oracle, defaults to 0 - ACTIVE, others: 1 - DELETED, 2 - PAUSED, 3 - QUARANTINED',
+      description: 'status of oracle',
     },
   })
-  status?: number;
-
-  @property.array(Number)
-  approvedActivityIdArray?: number[];
+  status?: number = 2;
 
   @property({
-    jsonSchema: {
-      type: 'boolean',
-      default: false,
-      description: 'flag whether changes has been persisted to the ledger',
-    },
+    type: 'array',
+    itemType: 'number',
   })
-  isUpdatedOnLedger?: boolean;
+  approvedActivityIdArray?: number[] = [];
 }
 
 export interface GoodOracleRelations {

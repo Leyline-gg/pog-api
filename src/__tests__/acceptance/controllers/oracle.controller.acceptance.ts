@@ -1,13 +1,11 @@
-import {
-  Client, expect, toJSON
-} from '@loopback/testlab';
+import {Client, expect, toJSON} from '@loopback/testlab';
 import {PogApiApplication} from '../../../application';
 import {GoodOracle} from '../../../models';
 import {GoodOracleRepository} from '../../../repositories';
 import {
   delay,
   givenGoodOracle,
-  givenRunningApplicationWithCustomConfiguration
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
 describe('PogApiApplication - Oracle', () => {
@@ -27,10 +25,7 @@ describe('PogApiApplication - Oracle', () => {
 
   it('creates a Good Oracle', async function () {
     const goodOracle = givenGoodOracle();
-    const response = await client
-      .post('/oracle')
-      .send(goodOracle)
-      .expect(200);
+    const response = await client.post('/oracle').send(goodOracle).expect(200);
     expect(response.body).to.containDeep(goodOracle);
     const result = await goodOracleRepo.findById(response.body.id);
     expect(result).to.containDeep(goodOracle);
@@ -57,7 +52,7 @@ describe('PogApiApplication - Oracle', () => {
     it('replaces the Good Oracle by ID', async () => {
       const updatedGoodOracle = givenGoodOracle({
         name: 'DO SOMETHING AWESOME',
-        deleted: false,
+        status: 1,
       });
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
@@ -69,16 +64,13 @@ describe('PogApiApplication - Oracle', () => {
     });
 
     it('returns 204 when replacing a Good Oracle that does not exist', () => {
-      return client
-        .put('/oracle/99999')
-        .send(givenGoodOracle())
-        .expect(204);
+      return client.put('/oracle/99999').send(givenGoodOracle()).expect(204);
     });
 
     it('updates the Good Oracle by ID ', async () => {
       const updatedGoodOracle = givenGoodOracle({
         name: 'DO SOMETHING AWESOME',
-        deleted: true,
+        status: 0,
       });
       await client
         .patch(`/oracle/${persistedGoodOracle.id}`)
@@ -86,29 +78,28 @@ describe('PogApiApplication - Oracle', () => {
         .expect(204);
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
       expect(result.name).to.be.equal(updatedGoodOracle.name);
-      expect(result.deleted).to.be.equal(updatedGoodOracle.deleted);
+      expect(result.status).to.be.equal(updatedGoodOracle.status);
     });
 
     it('returns 204 when updating a Good Oracle that does not exist', () => {
       return client
         .patch('/oracle/99999')
-        .send(givenGoodOracle({deleted: true}))
+        .send(givenGoodOracle({status: 0}))
         .expect(204);
     });
-
   });
 
   it('queries Good Oracle with a filter', async () => {
-    await givenGoodOracleInstance({name: 'wake up', deleted: true});
+    await givenGoodOracleInstance({name: 'wake up', status: 0});
     await delay(1000);
     const goodOracleInProgress = await givenGoodOracleInstance({
       name: 'go to sleep',
-      deleted: false,
+      status: 1,
     });
 
     await client
       .get('/oracle')
-      .query({filter: {where: {deleted: false}}})
+      .query({filter: {where: {status: 1}}})
       .expect(200, [toJSON(goodOracleInProgress)]);
   });
 

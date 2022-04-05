@@ -6,7 +6,7 @@ import {
   operation,
   param,
   patch,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
 import {GoodOracle} from '../models';
 import {GoodOracleRepository} from '../repositories';
@@ -18,7 +18,7 @@ export class OracleController {
     public goodOracleRepository: GoodOracleRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) { }
+  ) {}
 
   /**
    * Create a new Oracle
@@ -111,16 +111,28 @@ export class OracleController {
       },
       description: '',
     })
-    oracle: Omit<GoodOracle, 'id'>,
+    oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
-    // const firestorePersistedOracle = await this.goodOracleRepository.create(
-    //   oracle,
-    // );
-    // await this.proofOfGoodSmartContractService.addGoodOracle(
-    //   firestorePersistedOracle,
-    // );
-    // console.log(this.goodOracleRepository)
-    const firestorePersistedOracle = await this.goodOracleRepository.create(oracle);
+    // if (!oracle.approvedActivityIdArray) {
+    //   oracle.approvedActivityIdArray = [];
+    // }
+    // if (!oracle.status) {
+    //   oracle.status = 2;
+    // }
+    const tempOracle = new GoodOracle(oracle);
+    const highestOracleData =
+      await this.proofOfGoodSmartContractService.addGoodOracle(tempOracle);
+    const [id, name, goodOracleURI, status, approvedActivityIdArray] =
+      highestOracleData;
+
+    const firestorePersistedOracle = await this.goodOracleRepository.create({
+      id: id.toString(),
+      name,
+      goodOracleURI,
+      status: status.toString(),
+      approvedActivityIdArray,
+    } as GoodOracle);
+    console.log(firestorePersistedOracle);
     return firestorePersistedOracle;
   }
 

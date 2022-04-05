@@ -27,21 +27,16 @@ export class ProofOfGoodSmartContractService {
     ).connect(this.signer);
   }
 
-  async addGoodOracle(oracle: GoodOracle) {
-    const {id, name, goodOracleURI} = oracle;
-    const status = 0;
-    const approvedActivityIdArray: number[] = [];
+  async addGoodOracle(oracle: Partial<GoodOracle>) {
+    console.log(oracle);
+    const oracleData = Object.assign(oracle, {
+      id: 0,
+    });
     try {
-      const txResponse = await this.contract.addGoodOracle({
-        id,
-        name,
-        goodOracleURI,
-        status,
-        approvedActivityIdArray,
-      });
+      const txResponse = await this.contract.addGoodOracle(oracleData);
       const receipt = await txResponse.wait();
       const events = receipt.events;
-      console.log(events);
+      return events[0].args.slice(0, 5);
     } catch (err) {
       console.log('Woops', err);
     }

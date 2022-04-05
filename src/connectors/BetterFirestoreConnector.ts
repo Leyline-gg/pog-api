@@ -6,7 +6,7 @@ import {
   Firestore as Admin,
   Query,
   QueryDocumentSnapshot,
-  QuerySnapshot
+  QuerySnapshot,
 } from '@google-cloud/firestore';
 import {Connector} from 'loopback-connector';
 import {ICallback, IDataSource, IFilter} from './interfaces';
@@ -348,27 +348,6 @@ class BetterFirestoreConnector extends Connector {
         callback(err);
       });
   };
-
-  // public createOracle = (model: string, data: any, callback: ICallback) => {
-  //   this.db.collection(model)
-  //     .orderBy('id', 'desc')
-  //     .limit(1)
-  //     .then((ref: DocumentReference) => callback(null, ref.id))
-  //     .catch((err: Error) => {
-  //       callback(err);
-  //     });
-
-  // this.db
-  //   .collection(model)
-  //   .doc(data.id.toString())
-  //   .set(data)
-  //   .then((ref: DocumentReference) => {
-  //     callback(null, ref.id);
-  //   })
-  //   .catch((err: Error) => {
-  //     callback(err);
-  //   });
-  // };
 
   public updateAll = (
     model: string,
