@@ -113,27 +113,20 @@ export class OracleController {
     })
     oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
-    // if (!oracle.approvedActivityIdArray) {
-    //   oracle.approvedActivityIdArray = [];
-    // }
-    // if (!oracle.status) {
-    //   oracle.status = 2;
-    // }
     const tempOracle = new GoodOracle(oracle);
-    const highestOracleData =
-      await this.proofOfGoodSmartContractService.addGoodOracle(tempOracle);
+    const oracleData = await this.proofOfGoodSmartContractService.addGoodOracle(
+      tempOracle,
+    );
     const [id, name, goodOracleURI, status, approvedActivityIdArray] =
-      highestOracleData;
+      oracleData;
 
-    const firestorePersistedOracle = await this.goodOracleRepository.create({
+    return await this.goodOracleRepository.create({
       id: id.toString(),
       name,
       goodOracleURI,
       status: status.toString(),
       approvedActivityIdArray,
     } as GoodOracle);
-    console.log(firestorePersistedOracle);
-    return firestorePersistedOracle;
   }
 
   /**
@@ -262,6 +255,7 @@ export class OracleController {
             'Change Oracle Details': {
               value: {
                 name: 'Leyline',
+                goodOracleURI: 'Leyline.gg',
               },
             },
           },
@@ -308,6 +302,9 @@ export class OracleController {
             'Change Oracle Details': {
               value: {
                 name: 'Leyline',
+                goodOracleURI: 'leyline.gg',
+                approvedActivityIdArray: [],
+                status: 0,
               },
             },
           },
@@ -318,11 +315,28 @@ export class OracleController {
     oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
     delete oracle?.id;
+
+    const fetchedOracleData = await this.goodOracleRepository.findById(id);
+
+    const updatedData = new GoodOracle(
+      Object.assign(fetchedOracleData, oracle),
+    );
+
+    if (oracle.name) {
+      await this.proofOfGoodSmartContractService.updateGoodOracleName(
+        id,
+        oracle.name,
+      );
+    }
+    console.log('running updateGoodOracle');
+    console.log(updatedData);
+    await this.proofOfGoodSmartContractService.updateGoodOracle(updatedData);
+
     return this.goodOracleRepository
-      .updateById(id, oracle)
+      .updateById(id, updatedData)
       .catch((err: Error) => {
         if (err.message === 'Document not found')
-          throw new HttpErrors.NotFound('Category Not Found');
+          throw new HttpErrors.NotFound('Oracle Not Found');
       });
   }
 

@@ -60,6 +60,11 @@ export class GoodOracle extends Entity {
     itemType: 'number',
   })
   approvedActivityIdArray?: number[] = [];
+
+  @property({
+    type: 'object',
+  })
+  goodOracleUsers?: object = {};
 }
 
 export interface GoodOracleRelations {
