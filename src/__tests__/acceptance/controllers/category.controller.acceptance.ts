@@ -1,16 +1,12 @@
-import {
-  Client, expect,
-  toJSON
-} from '@loopback/testlab';
+import {Client, expect, toJSON} from '@loopback/testlab';
 import {PogApiApplication} from '../../../application';
 import {GoodCategory} from '../../../models';
 import {GoodCategoryRepository} from '../../../repositories';
 import {
   delay,
   givenGoodCategory,
-  givenRunningApplicationWithCustomConfiguration
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
-
 
 describe('PogApiApplication - Category', () => {
   let app: PogApiApplication;
@@ -59,7 +55,7 @@ describe('PogApiApplication - Category', () => {
     it('replaces the Good Category by ID', async () => {
       const updatedGoodCategory = givenGoodCategory({
         name: 'DO SOMETHING AWESOME',
-        deleted: false,
+        status: 0,
       });
       await client
         .put(`/category/${persistedGoodCategory.id}`)
@@ -80,7 +76,7 @@ describe('PogApiApplication - Category', () => {
     it('updates the Good Category by ID ', async () => {
       const updatedGoodCategory = givenGoodCategory({
         name: 'DO SOMETHING AWESOME',
-        deleted: true,
+        status: 1,
       });
       await client
         .patch(`/category/${persistedGoodCategory.id}`)
@@ -88,29 +84,28 @@ describe('PogApiApplication - Category', () => {
         .expect(204);
       const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
       expect(result.name).to.be.equal(updatedGoodCategory.name);
-      expect(result.deleted).to.be.equal(updatedGoodCategory.deleted);
+      expect(result.status).to.be.equal(updatedGoodCategory.status);
     });
 
     it('returns 204 when updating a Good Category that does not exist', () => {
       return client
         .patch('/category/99999')
-        .send(givenGoodCategory({deleted: true}))
+        .send(givenGoodCategory({status: 1}))
         .expect(204);
     });
-
   });
 
   it('queries Good Categories with a filter', async () => {
-    await givenGoodCategoryInstance({name: 'wake up', deleted: true});
+    await givenGoodCategoryInstance({name: 'wake up', status: 1});
     await delay(1000);
     const goodCategoryInProgress = await givenGoodCategoryInstance({
       name: 'go to sleep',
-      deleted: false,
+      status: 0,
     });
 
     await client
       .get('/category')
-      .query({filter: {where: {deleted: false}}})
+      .query({filter: {where: {status: 0}}})
       .expect(200, [toJSON(goodCategoryInProgress)]);
   });
 
@@ -130,8 +125,9 @@ describe('PogApiApplication - Category', () => {
     goodCategoryRepo = await app.getRepository(GoodCategoryRepository);
   }
 
-  async function givenGoodCategoryInstance(goodCategory?: Partial<GoodCategory>) {
+  async function givenGoodCategoryInstance(
+    goodCategory?: Partial<GoodCategory>,
+  ) {
     return goodCategoryRepo.create(givenGoodCategory(goodCategory));
   }
-
 });

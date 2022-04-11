@@ -33,7 +33,7 @@ export class GoodOracle extends Entity {
       description: 'Oracle name',
     },
   })
-  name?: string;
+  name?: string = '';
 
   /**
    * reference to metadata on IPFS
@@ -44,27 +44,22 @@ export class GoodOracle extends Entity {
       description: 'reference to metadata on IPFS',
     },
   })
-  goodOracleURI?: string;
+  goodOracleURI?: string = '';
 
   @property({
-    default: 2,
+    default: 0,
     jsonSchema: {
       type: 'number',
       description: 'status of oracle',
     },
   })
-  status?: number = 2;
+  status?: number = 0;
 
   @property({
     type: 'array',
     itemType: 'number',
   })
   approvedActivityIdArray?: number[] = [];
-
-  @property({
-    type: 'object',
-  })
-  goodOracleUsers?: object = {};
 }
 
 export interface GoodOracleRelations {

@@ -316,24 +316,11 @@ export class OracleController {
   ): Promise<unknown> {
     delete oracle?.id;
 
-    const fetchedOracleData = await this.goodOracleRepository.findById(id);
-
-    const updatedData = new GoodOracle(
-      Object.assign(fetchedOracleData, oracle),
-    );
-
-    if (oracle.name) {
-      await this.proofOfGoodSmartContractService.updateGoodOracleName(
-        id,
-        oracle.name,
-      );
-    }
-    console.log('running updateGoodOracle');
-    console.log(updatedData);
-    await this.proofOfGoodSmartContractService.updateGoodOracle(updatedData);
+    const oracleData = Object.assign(oracle, {id});
+    await this.proofOfGoodSmartContractService.updateGoodOracle(oracleData);
 
     return this.goodOracleRepository
-      .updateById(id, updatedData)
+      .updateById(id, oracleData)
       .catch((err: Error) => {
         if (err.message === 'Document not found')
           throw new HttpErrors.NotFound('Oracle Not Found');

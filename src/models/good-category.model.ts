@@ -35,17 +35,14 @@ export class GoodCategory extends Entity {
   })
   name?: string;
 
-  /**
-   * If true, cannot write to ledger with this category
-   */
   @property({
+    default: 0,
     jsonSchema: {
-      type: 'boolean',
-      default: false,
-      description: 'If true, cannot write to ledger with this category',
+      type: 'number',
+      description: 'status of good category',
     },
   })
-  deleted?: boolean = false;
+  status?: number = 0;
 
   /**
    * non-decrementing summary of total good by category
