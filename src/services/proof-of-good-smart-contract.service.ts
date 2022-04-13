@@ -1,8 +1,13 @@
 import {/* inject, */ BindingScope, injectable} from '@loopback/core';
 import {ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
-import {GoodCategory, GoodOracle, GoodType} from '../models';
+import {GoodActivity, GoodCategory, GoodOracle, GoodType} from '../models';
 
+type InputModel =
+  | Partial<GoodOracle>
+  | Partial<GoodCategory>
+  | Partial<GoodType>
+  | Partial<GoodActivity>;
 @injectable({scope: BindingScope.TRANSIENT})
 export class ProofOfGoodSmartContractService {
   secret: string;
@@ -27,157 +32,65 @@ export class ProofOfGoodSmartContractService {
     ).connect(this.signer);
   }
 
-  async addGoodOracle(oracle: Partial<GoodOracle>) {
-    const oracleData = Object.assign(oracle, {
-      id: 0,
-    });
-    const response = await ethers.utils.poll(
-      async () => {
-        const txResponse = await this.contract.addGoodOracle(oracleData);
-        const receipt = await txResponse.wait();
-        const events = receipt.events;
-        console.log(receipt);
-        return events[0].args.slice(0, 5);
-      },
-      {retryLimit: 5, interval: 5000},
-    );
-    console.log('Response:', response);
-    return response;
-  }
-
-  async updateGoodOracle(oracle: Partial<GoodOracle>) {
-    const {id, name, goodOracleURI, status, approvedActivityIdArray} = oracle;
-
-    console.log(`Updating oracle ${id} with properties:`);
-    if (goodOracleURI) console.log('- goodOracleURI:', goodOracleURI);
-    if (status || status == 0) console.log('- status:', status);
-    if (approvedActivityIdArray)
-      console.log('- approvedActivityIdArray:', approvedActivityIdArray);
-
+  async updateLedger(crudOperation: string, data: InputModel) {
     let attempt: number = 0;
     const response = await ethers.utils.poll(
       async () => {
         attempt++;
         console.log('Transaction attempt:', attempt);
-        const txResponse = await this.contract.updateGoodOracle(
-          id,
-          name,
-          goodOracleURI,
-          status,
-          approvedActivityIdArray,
-        );
+        let txResponse: any;
+        if (crudOperation == 'post') {
+          Object.assign(data, {id: 0});
+        }
+        switch (true) {
+          case data instanceof GoodOracle:
+            console.log('oracleData: ', data);
+            if (crudOperation == 'post') {
+              txResponse = await this.contract.addGoodOracle(data);
+            } else {
+              const oracle = new GoodOracle(data);
+              txResponse = await this.contract.updateGoodOracle(
+                oracle.id,
+                oracle.name,
+                oracle.goodOracleURI,
+                oracle.status,
+                oracle.approvedActivityIdArray,
+              );
+            }
+            break;
+
+          case data instanceof GoodCategory:
+            console.log('Incoming category data:', data);
+            txResponse = await this.contract.addOrUpdateGoodCategory(
+              data.id,
+              data.name,
+              data.status,
+            );
+            break;
+
+          case data instanceof GoodType:
+            console.log('Incoming Good Type data:', data);
+            txResponse = await this.contract.addOrUpdateGoodType(
+              data.id,
+              data.name,
+              data.status,
+            );
+            break;
+
+          case data instanceof GoodActivity:
+            console.log('Incoming Good Activity data:', data);
+            txResponse = await this.contract.addOrUpdateGoodActivity(data);
+            break;
+        }
 
         const receipt = await txResponse.wait();
         const events = receipt.events;
 
         if (events) console.log('Events:', events);
-        return events[0].args.slice(0, 5);
+        return events[0].args;
       },
       {retryLimit: 5, interval: 5000},
     );
-    console.log('Response:', response);
-    return response;
-  }
-
-  async addGoodCategory(goodCategory: Partial<GoodCategory>) {
-    const goodCategoryData = Object.assign(goodCategory, {
-      id: 0,
-    });
-
-    let attempt: number = 0;
-    const response = await ethers.utils.poll(
-      async () => {
-        attempt++;
-        console.log('Transaction attempt:', attempt);
-        // function doesn't exist on smart contract yet
-        const txResponse = await this.contract.addGoodCategory(
-          goodCategoryData,
-        );
-
-        const receipt = await txResponse.wait();
-        const events = receipt.events;
-
-        if (events) console.log('Events:', events);
-        return events[0].args.slice(0, 3);
-      },
-      {retryLimit: 5, interval: 5000},
-    );
-    console.log('Response:', response);
-    return response;
-  }
-
-  async updateGoodCategory(goodCategory: Partial<GoodCategory>) {
-    const {id, name, status} = goodCategory;
-
-    let attempt: number = 0;
-    const response = await ethers.utils.poll(
-      async () => {
-        attempt++;
-        console.log('Transaction attempt:', attempt);
-        // function doesn't exist on smart contract yet
-        const txResponse = await this.contract.updateGoodCategory(
-          id,
-          name,
-          status,
-        );
-
-        const receipt = await txResponse.wait();
-        const events = receipt.events;
-
-        if (events) console.log('Events:', events);
-        return events[0].args.slice(0, 3);
-      },
-      {retryLimit: 5, interval: 5000},
-    );
-    console.log('Response:', response);
-    return response;
-  }
-
-  async addGoodType(goodType: Partial<GoodType>) {
-    const goodTypeData = Object.assign(goodType, {
-      id: 0,
-    });
-
-    let attempt: number = 0;
-    const response = await ethers.utils.poll(
-      async () => {
-        attempt++;
-        console.log('Transaction attempt:', attempt);
-        // function doesn't exist on smart contract yet
-        const txResponse = await this.contract.addGoodType(goodTypeData);
-
-        const receipt = await txResponse.wait();
-        const events = receipt.events;
-
-        if (events) console.log('Events:', events);
-        return events[0].args.slice(0, 3);
-      },
-      {retryLimit: 5, interval: 5000},
-    );
-    console.log('Response:', response);
-    return response;
-  }
-
-  async updateGoodType(goodType: Partial<GoodType>) {
-    const {id, name, status} = goodType;
-
-    let attempt: number = 0;
-    const response = await ethers.utils.poll(
-      async () => {
-        attempt++;
-        console.log('Transaction attempt:', attempt);
-        // function doesn't exist on smart contract yet
-        const txResponse = await this.contract.updateGoodType(id, name, status);
-
-        const receipt = await txResponse.wait();
-        const events = receipt.events;
-
-        if (events) console.log('Events:', events);
-        return events[0].args.slice(0, 3);
-      },
-      {retryLimit: 5, interval: 5000},
-    );
-    console.log('Response:', response);
     return response;
   }
 }

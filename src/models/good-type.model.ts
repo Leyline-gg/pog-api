@@ -15,7 +15,7 @@ export class GoodType extends Entity {
       type: 'number',
     },
   })
-  id: number = Date.now();
+  id: number = 0;
 
   /**
    * type name

@@ -1,13 +1,11 @@
-import {
-  Client, expect, toJSON
-} from '@loopback/testlab';
+import {Client, expect, toJSON} from '@loopback/testlab';
 import {PogApiApplication} from '../../../application';
 import {GoodActivity} from '../../../models';
 import {GoodActivityRepository} from '../../../repositories';
 import {
   delay,
   givenGoodActivity,
-  givenRunningApplicationWithCustomConfiguration
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
 describe('PogApiApplication - Activity', () => {
@@ -57,7 +55,7 @@ describe('PogApiApplication - Activity', () => {
     it('replaces the Good Oracle by ID', async () => {
       const updatedGoodActivity = givenGoodActivity({
         name: 'DO SOMETHING AWESOME',
-        deleted: false,
+        status: 1,
       });
       await client
         .put(`/activity/${persistedGoodActivity.id}`)
@@ -78,7 +76,7 @@ describe('PogApiApplication - Activity', () => {
     it('updates the Good Oracle by ID ', async () => {
       const updatedGoodActivity = givenGoodActivity({
         name: 'DO SOMETHING AWESOME',
-        deleted: true,
+        status: 2,
       });
       await client
         .patch(`/activity/${persistedGoodActivity.id}`)
@@ -86,29 +84,28 @@ describe('PogApiApplication - Activity', () => {
         .expect(204);
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);
       expect(result.name).to.be.equal(updatedGoodActivity.name);
-      expect(result.deleted).to.be.equal(updatedGoodActivity.deleted);
+      expect(result.status).to.be.equal(updatedGoodActivity.status);
     });
 
     it('returns 204 when updating a Good Oracle that does not exist', () => {
       return client
         .patch('/activity/99999')
-        .send(givenGoodActivity({deleted: true}))
+        .send(givenGoodActivity({status: 2}))
         .expect(204);
     });
-
   });
 
   it('queries Good Oracle with a filter', async () => {
-    await givenGoodActivityInstance({name: 'wake up', deleted: true});
+    await givenGoodActivityInstance({name: 'wake up', status: 2});
     await delay(1000);
     const goodActivityInProgress = await givenGoodActivityInstance({
       name: 'go to sleep',
-      deleted: false,
+      status: 1,
     });
 
     await client
       .get('/activity')
-      .query({filter: {where: {deleted: false}}})
+      .query({filter: {where: {status: 1}}})
       .expect(200, [toJSON(goodActivityInProgress)]);
   });
 
@@ -128,7 +125,9 @@ describe('PogApiApplication - Activity', () => {
     goodActivityRepo = await app.getRepository(GoodActivityRepository);
   }
 
-  async function givenGoodActivityInstance(goodActivity?: Partial<GoodActivity>) {
+  async function givenGoodActivityInstance(
+    goodActivity?: Partial<GoodActivity>,
+  ) {
     return goodActivityRepo.create(givenGoodActivity(goodActivity));
   }
 });

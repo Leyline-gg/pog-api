@@ -22,7 +22,7 @@ export class GoodActivity extends Entity {
       type: 'number',
     },
   })
-  id: number = Date.now();
+  id: number = 0;
 
   /**
    * Activity name
@@ -39,13 +39,13 @@ export class GoodActivity extends Entity {
    * If true, cannot write to ledger with this type
    */
   @property({
+    default: 0,
     jsonSchema: {
-      type: 'boolean',
-      default: false,
-      description: 'If true, cannot write to ledger with this type',
+      type: 'number',
+      description: 'status of good activity',
     },
   })
-  deleted?: boolean = false;
+  status?: number = 0;
 
   /**
    *
@@ -61,11 +61,10 @@ export class GoodActivity extends Entity {
    *
    */
   @property({
-    jsonSchema: {
-      type: 'integer',
-    },
+    type: 'array',
+    itemType: 'number',
   })
-  goodTypeId?: number;
+  goodTypeIdArray?: number[];
 
   /**
    * Good points per unit

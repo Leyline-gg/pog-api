@@ -8,6 +8,7 @@ import {
   patch,
   requestBody,
 } from '@loopback/rest';
+import {ethers} from 'ethers';
 import {GoodOracle} from '../models';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
@@ -113,18 +114,21 @@ export class OracleController {
     })
     oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
+    if (!oracle.approvedActivityIdArray) oracle['approvedActivityIdArray'] = [];
     const tempOracle = new GoodOracle(oracle);
-    const oracleData = await this.proofOfGoodSmartContractService.addGoodOracle(
+    const oracleData = await this.proofOfGoodSmartContractService.updateLedger(
+      'post',
       tempOracle,
     );
+
     const [id, name, goodOracleURI, status, approvedActivityIdArray] =
       oracleData;
 
     return await this.goodOracleRepository.create({
-      id: id.toString(),
+      id: id,
       name,
       goodOracleURI,
-      status: status.toString(),
+      status: status,
       approvedActivityIdArray,
     } as GoodOracle);
   }
@@ -315,12 +319,39 @@ export class OracleController {
     oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
     delete oracle?.id;
+    // fetch current doc for good oracle
+    const fetchedGoodOracle = await this.goodOracleRepository.findById(id);
+    // create temp objects and merge current values into incoming inputs IF input fields are excluded
+    const tempOracle: any = {...oracle};
+    const fetchedData: any = {...fetchedGoodOracle};
 
-    const oracleData = Object.assign(oracle, {id});
-    await this.proofOfGoodSmartContractService.updateGoodOracle(oracleData);
+    Object.keys(fetchedGoodOracle).forEach(key => {
+      if (!tempOracle[key]) {
+        tempOracle[key] = fetchedData[key];
+      }
+    });
+    // initialize GoodType to pass into updateLedger method
+    // then destructure returned event arguments
+    const oracleData = new GoodOracle(tempOracle);
 
+    const [goodOracleId, name, goodOracleURI, status, approvedActivityIdArray] =
+      await this.proofOfGoodSmartContractService.updateLedger(
+        'patch',
+        oracleData,
+      );
+    // convert activityIds from BigNumber to number
+    const activitiesToNumbers = approvedActivityIdArray.map(
+      (activityId: ethers.BigNumber) => activityId.toNumber(),
+    );
+    // persist event arguments to firestore doc
     return this.goodOracleRepository
-      .updateById(id, oracleData)
+      .updateById(id, {
+        id: goodOracleId.toNumber(),
+        name,
+        goodOracleURI,
+        status,
+        approvedActivityIdArray: activitiesToNumbers,
+      })
       .catch((err: Error) => {
         if (err.message === 'Document not found')
           throw new HttpErrors.NotFound('Oracle Not Found');

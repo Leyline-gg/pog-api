@@ -98,6 +98,7 @@ export class GoodTypeController {
             'Create a Good Type': {
               value: {
                 name: 'Quality Education',
+                status: 0,
               },
             },
           },
@@ -107,18 +108,20 @@ export class GoodTypeController {
     goodType: Partial<GoodType>,
   ): Promise<GoodType> {
     const tempGoodType = new GoodType(goodType);
-    const categoryData = await this.proofOfGoodSmartContractService.addGoodType(
-      tempGoodType,
-    );
+    const categoryData =
+      await this.proofOfGoodSmartContractService.updateLedger(
+        'post',
+        tempGoodType,
+      );
     const [id, name, status] = categoryData;
     return this.goodTypeRepository.create({
-      id: id.toString(),
+      id: id,
       name,
-      status: status.toString(),
+      status: status,
     } as GoodType);
   }
 
-  @patch('/good-types', {
+  @patch('/good-types/{id}', {
     summary: 'Update a Good Type',
     operationId: 'patch-good-type',
     responses: {
@@ -155,6 +158,7 @@ export class GoodTypeController {
             'Change Category Details': {
               value: {
                 name: 'Animal Welfare',
+                status: 0,
               },
             },
           },
@@ -201,6 +205,7 @@ export class GoodTypeController {
             'Change Good Type Details': {
               value: {
                 name: 'Quality Education',
+                status: 0,
               },
             },
           },
@@ -211,23 +216,35 @@ export class GoodTypeController {
     goodType: Partial<GoodType>,
   ): Promise<unknown> {
     delete goodType?.id;
-
+    // fetch current doc for good type
     const fetchedGoodType = await this.goodTypeRepository.findById(id);
+    // create temp objects and merge current values into incoming inputs IF input fields are excluded
+    const tempGoodType: any = {...goodType};
+    const fetchedData: any = {...fetchedGoodType};
 
-    const goodTypeData = new GoodType(
-      Object.assign(fetchedGoodType, {
-        id,
-        goodType,
-      }),
-    );
-
-    await this.proofOfGoodSmartContractService.updateGoodType(goodTypeData);
-
+    Object.keys(fetchedGoodType).forEach(key => {
+      if (!tempGoodType[key]) {
+        tempGoodType[key] = fetchedData[key];
+      }
+    });
+    // initialize GoodType to pass into updateLedger method
+    // then destructure returned event arguments
+    const updatedGoodType = new GoodType(tempGoodType);
+    const [goodTypeId, name, status] =
+      await this.proofOfGoodSmartContractService.updateLedger(
+        'patch',
+        updatedGoodType,
+      );
+    // persist event arguments to firestore doc
     return this.goodTypeRepository
-      .updateById(id, goodTypeData)
+      .updateById(id, {
+        id: goodTypeId,
+        name,
+        status,
+      })
       .catch((err: Error) => {
         if (err.message === 'Document not found')
-          throw new HttpErrors.NotFound('Oracle Not Found');
+          throw new HttpErrors.NotFound('Good Type Not Found');
       });
   }
 

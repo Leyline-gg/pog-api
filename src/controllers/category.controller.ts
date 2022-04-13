@@ -104,6 +104,7 @@ export class CategoryController {
             'Create a Category': {
               value: {
                 name: 'Mental Health',
+                status: 0,
               },
             },
           },
@@ -115,15 +116,16 @@ export class CategoryController {
   ): Promise<unknown> {
     const tempGoodCategory = new GoodCategory(category);
     const categoryData =
-      await this.proofOfGoodSmartContractService.addGoodCategory(
+      await this.proofOfGoodSmartContractService.updateLedger(
+        'post',
         tempGoodCategory,
       );
     const [id, name, status] = categoryData;
 
     return await this.goodCategoryRepository.create({
-      id: id.toString(),
+      id: id,
       name,
-      status: status.toString(),
+      status: status,
     } as GoodCategory);
   }
 
@@ -164,6 +166,7 @@ export class CategoryController {
             'Change Category Details': {
               value: {
                 name: 'Animal Welfare',
+                status: 0,
               },
             },
           },
@@ -210,6 +213,7 @@ export class CategoryController {
             'Change Category Details': {
               value: {
                 name: 'Animal Welfare',
+                status: 0,
               },
             },
           },
@@ -220,22 +224,33 @@ export class CategoryController {
     category: Partial<GoodCategory>,
   ): Promise<unknown> {
     delete category?.id;
-
+    // fetch current doc for good category
     const fetchedGoodCategory = await this.goodCategoryRepository.findById(id);
+    // create temp objects and merge current values into incoming inputs IF input fields are missing
+    const tempCategory: any = {...category};
+    const fetchedData: any = {...fetchedGoodCategory};
 
-    const goodCategoryData = new GoodCategory(
-      Object.assign(fetchedGoodCategory, {
-        id,
-        category,
-      }),
-    );
+    Object.keys(fetchedGoodCategory).forEach(key => {
+      if (!tempCategory[key]) {
+        tempCategory[key] = fetchedData[key];
+      }
+    });
+    // initialize GoodCategory and pass into updateLedger method
+    // then destructure returned event arguments
+    const goodCategory = new GoodCategory(tempCategory);
 
-    await this.proofOfGoodSmartContractService.updateGoodCategory(
-      goodCategoryData,
-    );
-
+    const [goodCategoryId, name, status] =
+      await this.proofOfGoodSmartContractService.updateLedger(
+        'patch',
+        goodCategory,
+      );
+    // persist event arguments to firestore doc
     return this.goodCategoryRepository
-      .updateById(id, goodCategoryData)
+      .updateById(id, {
+        id: goodCategoryId,
+        name,
+        status,
+      })
       .catch((err: Error) => {
         if (err.message === 'Document not found')
           throw new HttpErrors.NotFound('Oracle Not Found');

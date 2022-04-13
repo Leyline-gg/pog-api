@@ -12,7 +12,6 @@ export class GoodOracle extends Entity {
       Object.assign(this, data);
     }
   }
-
   /**
    *
    */
@@ -22,7 +21,7 @@ export class GoodOracle extends Entity {
       type: 'number',
     },
   })
-  id: number = Date.now();
+  id: number = 0;
 
   /**
    * Oracle name
@@ -33,7 +32,7 @@ export class GoodOracle extends Entity {
       description: 'Oracle name',
     },
   })
-  name?: string = '';
+  name?: string;
 
   /**
    * reference to metadata on IPFS
@@ -44,7 +43,7 @@ export class GoodOracle extends Entity {
       description: 'reference to metadata on IPFS',
     },
   })
-  goodOracleURI?: string = '';
+  goodOracleURI?: string;
 
   @property({
     default: 0,
@@ -59,7 +58,7 @@ export class GoodOracle extends Entity {
     type: 'array',
     itemType: 'number',
   })
-  approvedActivityIdArray?: number[] = [];
+  approvedActivityIdArray?: number[];
 }
 
 export interface GoodOracleRelations {
