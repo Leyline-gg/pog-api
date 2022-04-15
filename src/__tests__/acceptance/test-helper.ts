@@ -1,9 +1,16 @@
 import {
-  Client, createRestAppClient,
-  givenHttpServerConfig
+  Client,
+  createRestAppClient,
+  givenHttpServerConfig,
 } from '@loopback/testlab';
 import {PogApiApplication} from '../..';
-import {GoodActivity, GoodCategory, GoodEntry, GoodOracle} from '../../models/index';
+import {
+  GoodActivity,
+  GoodCategory,
+  GoodEntry,
+  GoodOracle,
+  GoodType,
+} from '../../models/index';
 
 export async function givenRunningApplication(): Promise<AppWithClient> {
   const restConfig = givenHttpServerConfig({
@@ -58,7 +65,6 @@ export interface AppWithClient {
 
 export const delay = (ms: number) => new Promise(_ => setTimeout(_, ms));
 
-
 /*
  ==============================================================================
  HELPER FUNCTIONS
@@ -85,13 +91,26 @@ export function givenGoodCategory(goodCategory?: Partial<GoodCategory>) {
   const data = Object.assign(
     {
       name: 'Awesome Category',
-      deleted: false,
+      status: 0,
     },
     goodCategory,
   );
   return new GoodCategory(data);
 }
-
+/**
+ * Generate a complete Good Category object for use with tests.
+ * @param goodCategory A partial (or complete) GoodCategory object.
+ */
+export function givenGoodType(goodType?: Partial<GoodType>) {
+  const data = Object.assign(
+    {
+      name: 'Awesome Type',
+      status: 0,
+    },
+    goodType,
+  );
+  return new GoodType(data);
+}
 /**
  * Generate a complete Good Oracle object for use with tests.
  * @param goodOracle A partial (or complete) GoodOracle object.
@@ -100,7 +119,7 @@ export function givenGoodOracle(goodOracle?: Partial<GoodOracle>) {
   const data = Object.assign(
     {
       name: 'Awesome Oracle',
-      deleted: false,
+      status: 0,
     },
     goodOracle,
   );
@@ -115,11 +134,11 @@ export function givenGoodActivity(goodActivity?: Partial<GoodActivity>) {
   const data = Object.assign(
     {
       name: 'Awesome Activity',
-      deleted: false,
+      status: 0,
       goodCategoryId: 1234,
-      goodTypeId: 2345,
+      goodTypeIdArray: [1, 2, 3, 4],
       valuePerUnit: 100,
-      unitDescription: "Per Test"
+      unitDescription: 'Per Test',
     },
     goodActivity,
   );

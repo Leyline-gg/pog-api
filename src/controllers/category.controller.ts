@@ -226,6 +226,7 @@ export class CategoryController {
     delete category?.id;
     // fetch current doc for good category
     const fetchedGoodCategory = await this.goodCategoryRepository.findById(id);
+    console.log('fetchedGoodCategory', fetchedGoodCategory);
     // create temp objects and merge current values into incoming inputs IF input fields are missing
     const tempCategory: any = {...category};
     const fetchedData: any = {...fetchedGoodCategory};
@@ -253,7 +254,7 @@ export class CategoryController {
       })
       .catch((err: Error) => {
         if (err.message === 'Document not found')
-          throw new HttpErrors.NotFound('Oracle Not Found');
+          throw new HttpErrors.NotFound('Category Not Found');
       });
   }
 

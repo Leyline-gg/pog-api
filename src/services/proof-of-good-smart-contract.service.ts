@@ -17,11 +17,10 @@ export class ProofOfGoodSmartContractService {
   contract: ethers.Contract;
 
   constructor(/* Add @inject to inject parameters */) {
-    this.secret =
-      '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-    this.address = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+    this.secret = `${process.env.SIGNER_SECRET}`;
+    this.address = `${process.env.POG_LEDGER_CONTRACT_ADDRESS}`;
     this.provider = new ethers.providers.JsonRpcProvider(
-      'http://localhost:8545',
+      `${process.env.RPC_PROVIDER}`,
     );
 
     this.signer = new ethers.Wallet(this.secret, this.provider);
@@ -44,7 +43,7 @@ export class ProofOfGoodSmartContractService {
         }
         switch (true) {
           case data instanceof GoodOracle:
-            console.log('oracleData: ', data);
+            console.log('Incoming Oracle data: ', crudOperation, data);
             if (crudOperation == 'post') {
               txResponse = await this.contract.addGoodOracle(data);
             } else {
@@ -60,7 +59,7 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodCategory:
-            console.log('Incoming category data:', data);
+            console.log('Incoming category data:', crudOperation, data);
             txResponse = await this.contract.addOrUpdateGoodCategory(
               data.id,
               data.name,
@@ -69,7 +68,7 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodType:
-            console.log('Incoming Good Type data:', data);
+            console.log('Incoming Good Type data:', crudOperation, data);
             txResponse = await this.contract.addOrUpdateGoodType(
               data.id,
               data.name,
@@ -78,7 +77,7 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodActivity:
-            console.log('Incoming Good Activity data:', data);
+            console.log('Incoming Good Activity data:', crudOperation, data);
             txResponse = await this.contract.addOrUpdateGoodActivity(data);
             break;
         }
@@ -86,7 +85,7 @@ export class ProofOfGoodSmartContractService {
         const receipt = await txResponse.wait();
         const events = receipt.events;
 
-        if (events) console.log('Events:', events);
+        if (events) console.log('Events Args:', events[0].args);
         return events[0].args;
       },
       {retryLimit: 5, interval: 5000},

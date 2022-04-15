@@ -29,9 +29,15 @@ describe('PogApiApplication - Category', () => {
       .post('/category')
       .send(goodCategory)
       .expect(200);
-    expect(response.body).to.containDeep(goodCategory);
+
+    expect(response.body.id).not.to.equal(goodCategory.id);
+    expect(response.body.name).to.equal(goodCategory.name);
+    expect(response.body.status).to.equal(goodCategory.status);
+
     const result = await goodCategoryRepo.findById(response.body.id);
-    expect(result).to.containDeep(goodCategory);
+    expect(response.body.id).to.equal(result.id);
+    expect(result.status).to.equal(goodCategory.status);
+    expect(result.name).to.equal(goodCategory.name);
   });
 
   context('when dealing with a single persisted Good Category', () => {
@@ -66,11 +72,11 @@ describe('PogApiApplication - Category', () => {
       expect(result).to.containEql(updatedGoodCategoryBody);
     });
 
-    it('returns 204 when replacing a Good Category that does not exist', () => {
+    it('returns 404 when replacing a Good Category that does not exist', async () => {
       return client
         .put('/category/99999')
         .send(givenGoodCategory())
-        .expect(204);
+        .expect(404);
     });
 
     it('updates the Good Category by ID ', async () => {
@@ -78,20 +84,22 @@ describe('PogApiApplication - Category', () => {
         name: 'DO SOMETHING AWESOME',
         status: 1,
       });
+      console.log('persistedGoodCategory', persistedGoodCategory);
       await client
         .patch(`/category/${persistedGoodCategory.id}`)
         .send(updatedGoodCategory)
         .expect(204);
       const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
       expect(result.name).to.be.equal(updatedGoodCategory.name);
       expect(result.status).to.be.equal(updatedGoodCategory.status);
     });
 
-    it('returns 204 when updating a Good Category that does not exist', () => {
+    it('returns 404 when updating a Good Category that does not exist', () => {
       return client
         .patch('/category/99999')
         .send(givenGoodCategory({status: 1}))
-        .expect(204);
+        .expect(404);
     });
   });
 

@@ -22,7 +22,7 @@ export class GoodCategory extends Entity {
       type: 'number',
     },
   })
-  id: number = 0;
+  id?: number = 0;
 
   /**
    * Category name

@@ -22,7 +22,7 @@ export class GoodActivity extends Entity {
       type: 'number',
     },
   })
-  id: number = 0;
+  id?: number = 0;
 
   /**
    * Activity name

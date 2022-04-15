@@ -15,7 +15,7 @@ export class GoodType extends Entity {
       type: 'number',
     },
   })
-  id: number = 0;
+  id?: number = 0;
 
   /**
    * type name

@@ -1,3 +1,4 @@
+require('./activity.controller.acceptance');
 import {Client, expect, toJSON} from '@loopback/testlab';
 import {PogApiApplication} from '../../../application';
 import {GoodOracle} from '../../../models';
