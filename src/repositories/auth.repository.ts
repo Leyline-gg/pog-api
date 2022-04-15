@@ -13,4 +13,16 @@ export class AuthRepository extends DefaultCrudRepository<
   ) {
     super(OracleApiKey, dataSource);
   }
+
+  findLatest(oracleId: number): Promise<OracleApiKey | null> {
+    return this.findOne({
+      where: {
+        oracleId,
+      },
+      order: {
+        id: 'DESC',
+        //figure out how to get the highest integer ID
+      },
+    });
+  }
 }

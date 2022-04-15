@@ -1,9 +1,13 @@
 import {/* inject, */ BindingScope, injectable} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {performance} from 'perf_hooks';
+import {AuthRepository} from '../repositories';
 
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
-  constructor(/* Add @inject to inject parameters */) {}
+  constructor(
+    @repository(AuthRepository) public apiRepository: AuthRepository,
+  ) {}
 
   /*
    * Adapted from https://stackoverflow.com/a/8809472/8396479
@@ -22,5 +26,9 @@ export class AuthService {
       }
       return (c == 'x' ? r : (r & 0x7) | 0x8).toString(16);
     });
+  }
+
+  invalidateApiKey(oracleId: number) {
+    return this.apiRepository.updateById(oracleId, {expired: true});
   }
 }
