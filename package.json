@@ -57,10 +57,10 @@
     "@loopback/rest": "^11.1.2",
     "@loopback/rest-explorer": "^4.1.2",
     "@loopback/service-proxy": "^4.1.2",
+    "@google-cloud/firestore": "^5.0.2",
     "dotenv": "^16.0.0",
     "ethers": "^5.6.2",
     "loopback-connector": "^5.0.1",
-    "loopback-connector-firestore": "^1.0.7",
     "loopback-connector-openapi": "^6.2.0",
     "tslib": "^2.0.0"
   },
