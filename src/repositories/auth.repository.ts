@@ -19,10 +19,7 @@ export class AuthRepository extends DefaultCrudRepository<
       where: {
         oracleId,
       },
-      order: {
-        id: 'DESC',
-        //figure out how to get the highest integer ID
-      },
+      order: [ 'id DESC'],
     });
   }
 }
