@@ -27,6 +27,7 @@ describe('PogApiApplication - Oracle', () => {
   it('creates a Good Oracle', async function () {
     const goodOracle = givenGoodOracle();
     const response = await client.post('/oracle').send(goodOracle).expect(200);
+    delete goodOracle.id;
     expect(response.body).to.containDeep(goodOracle);
     const result = await goodOracleRepo.findById(response.body.id);
     expect(result).to.containDeep(goodOracle);
@@ -36,7 +37,7 @@ describe('PogApiApplication - Oracle', () => {
     let persistedGoodOracle: GoodOracle;
 
     beforeEach(async () => {
-      persistedGoodOracle = await givenGoodOracleInstance();
+      persistedGoodOracle = await givenGoodOracleInstance(givenGoodOracle());
     });
 
     it('gets a Good Oracle by ID', () => {
@@ -52,7 +53,7 @@ describe('PogApiApplication - Oracle', () => {
 
     it('replaces the Good Oracle by ID', async () => {
       const updatedGoodOracle = givenGoodOracle({
-        name: 'DO SOMETHING AWESOME',
+        name: Math.random().toString(16).substring(2, 10),
         status: 1,
       });
       await client
@@ -64,13 +65,13 @@ describe('PogApiApplication - Oracle', () => {
       expect(result).to.containEql(updatedGoodOracleBody);
     });
 
-    it('returns 204 when replacing a Good Oracle that does not exist', () => {
-      return client.put('/oracle/99999').send(givenGoodOracle()).expect(204);
+    it('returns 404 when replacing a Good Oracle that does not exist', () => {
+      return client.put('/oracle/99999').send(givenGoodOracle()).expect(404);
     });
 
     it('updates the Good Oracle by ID ', async () => {
       const updatedGoodOracle = givenGoodOracle({
-        name: 'DO SOMETHING AWESOME',
+        name: Math.random().toString(16).substring(2, 10),
         status: 0,
       });
       await client
@@ -82,21 +83,28 @@ describe('PogApiApplication - Oracle', () => {
       expect(result.status).to.be.equal(updatedGoodOracle.status);
     });
 
-    it('returns 204 when updating a Good Oracle that does not exist', () => {
+    it('returns 404 when updating a Good Oracle that does not exist', () => {
       return client
         .patch('/oracle/99999')
         .send(givenGoodOracle({status: 0}))
-        .expect(204);
+        .expect(404);
     });
   });
 
   it('queries Good Oracle with a filter', async () => {
-    await givenGoodOracleInstance({name: 'wake up', status: 0});
+    await givenGoodOracleInstance(
+      givenGoodOracle({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 0,
+      }),
+    );
     await delay(1000);
-    const goodOracleInProgress = await givenGoodOracleInstance({
-      name: 'go to sleep',
-      status: 1,
-    });
+    const goodOracleInProgress = await givenGoodOracleInstance(
+      givenGoodOracle({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+      }),
+    );
 
     await client
       .get('/oracle')
@@ -121,6 +129,8 @@ describe('PogApiApplication - Oracle', () => {
   }
 
   async function givenGoodOracleInstance(goodOracle?: Partial<GoodOracle>) {
-    return goodOracleRepo.create(givenGoodOracle(goodOracle));
+    const response = await client.post(`/oracle`).send(goodOracle).expect(200);
+
+    return response.body;
   }
 });

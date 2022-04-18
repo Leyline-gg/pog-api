@@ -139,7 +139,7 @@ export class ActivityController {
       status,
     ] = categoryData;
 
-    return await this.goodActivityRepository.create({
+    const response = await this.goodActivityRepository.create({
       id: id,
       goodTypeIdArray,
       goodCategoryId,
@@ -148,6 +148,8 @@ export class ActivityController {
       unitDescription,
       status,
     } as GoodActivity);
+
+    return response;
   }
 
   /**
@@ -255,8 +257,8 @@ export class ActivityController {
     // fetch current doc for good type
     const fetchedGoodActivity = await this.goodActivityRepository.findById(id);
     // create temp objects and merge current values into incoming inputs IF input fields are excluded
-    const tempGoodActivity: any = {...activity};
-    const fetchedData: any = {...fetchedGoodActivity};
+    const tempGoodActivity: Record<string, unknown> = {...activity};
+    const fetchedData: Record<string, unknown> = {...fetchedGoodActivity};
 
     Object.keys(fetchedData).forEach(key => {
       if (!tempGoodActivity[key]) {

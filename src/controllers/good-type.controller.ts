@@ -219,8 +219,8 @@ export class GoodTypeController {
     // fetch current doc for good type
     const fetchedGoodType = await this.goodTypeRepository.findById(id);
     // create temp objects and merge current values into incoming inputs IF input fields are excluded
-    const tempGoodType: any = {...goodType};
-    const fetchedData: any = {...fetchedGoodType};
+    const tempGoodType: Record<string, unknown> = {...goodType};
+    const fetchedData: Record<string, unknown> = {...fetchedGoodType};
 
     Object.keys(fetchedGoodType).forEach(key => {
       if (!tempGoodType[key]) {

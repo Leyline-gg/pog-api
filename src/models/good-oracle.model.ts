@@ -52,7 +52,7 @@ export class GoodOracle extends Entity {
       description: 'status of oracle',
     },
   })
-  status?: number = 0;
+  status?: number;
 
   @property({
     type: 'array',

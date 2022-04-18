@@ -118,8 +118,11 @@ export function givenGoodType(goodType?: Partial<GoodType>) {
 export function givenGoodOracle(goodOracle?: Partial<GoodOracle>) {
   const data = Object.assign(
     {
-      name: 'Awesome Oracle',
+      name: Math.random().toString(16).substring(2, 10),
       status: 0,
+      id: 0,
+      approvedActivityIdArray: [],
+      goodOracleURI: 'awesome.io',
     },
     goodOracle,
   );

@@ -32,29 +32,23 @@ export class ProofOfGoodSmartContractService {
   }
 
   async updateLedger(crudOperation: string, data: InputModel) {
-    let attempt: number = 0;
+    let attempt = 0;
     const response = await ethers.utils.poll(
       async () => {
         attempt++;
         console.log('Transaction attempt:', attempt);
-        let txResponse: any;
-        if (crudOperation == 'post') {
+        let txResponse;
+        if (crudOperation === 'post') {
           Object.assign(data, {id: 0});
         }
         switch (true) {
           case data instanceof GoodOracle:
             console.log('Incoming Oracle data: ', crudOperation, data);
-            if (crudOperation == 'post') {
-              txResponse = await this.contract.addGoodOracle(data);
+            if (crudOperation === 'post') {
+              txResponse = await this.contract.addOrUpdateGoodOracle(data);
             } else {
               const oracle = new GoodOracle(data);
-              txResponse = await this.contract.updateGoodOracle(
-                oracle.id,
-                oracle.name,
-                oracle.goodOracleURI,
-                oracle.status,
-                oracle.approvedActivityIdArray,
-              );
+              txResponse = await this.contract.addOrUpdateGoodOracle(oracle);
             }
             break;
 
@@ -85,7 +79,7 @@ export class ProofOfGoodSmartContractService {
         const receipt = await txResponse.wait();
         const events = receipt.events;
 
-        if (events) console.log('Events Args:', events[0].args);
+        // if (events) console.log('Events Args:', events[0].args);
         return events[0].args;
       },
       {retryLimit: 5, interval: 5000},

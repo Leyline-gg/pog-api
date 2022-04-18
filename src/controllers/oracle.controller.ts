@@ -124,13 +124,15 @@ export class OracleController {
     const [id, name, goodOracleURI, status, approvedActivityIdArray] =
       oracleData;
 
-    return await this.goodOracleRepository.create({
+    const response = await this.goodOracleRepository.create({
       id: id,
       name,
       goodOracleURI,
       status: status,
       approvedActivityIdArray,
     } as GoodOracle);
+
+    return response;
   }
 
   /**
@@ -322,8 +324,8 @@ export class OracleController {
     // fetch current doc for good oracle
     const fetchedGoodOracle = await this.goodOracleRepository.findById(id);
     // create temp objects and merge current values into incoming inputs IF input fields are excluded
-    const tempOracle: any = {...oracle};
-    const fetchedData: any = {...fetchedGoodOracle};
+    const tempOracle: Record<string, unknown> = {...oracle};
+    const fetchedData: Record<string, unknown> = {...fetchedGoodOracle};
 
     Object.keys(fetchedGoodOracle).forEach(key => {
       if (!tempOracle[key]) {
@@ -344,7 +346,7 @@ export class OracleController {
       (activityId: ethers.BigNumber) => activityId.toNumber(),
     );
     // persist event arguments to firestore doc
-    return this.goodOracleRepository
+    const response = this.goodOracleRepository
       .updateById(id, {
         id: goodOracleId.toNumber(),
         name,
@@ -356,6 +358,8 @@ export class OracleController {
         if (err.message === 'Document not found')
           throw new HttpErrors.NotFound('Oracle Not Found');
       });
+
+    return response;
   }
 
   /**

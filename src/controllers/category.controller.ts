@@ -122,11 +122,13 @@ export class CategoryController {
       );
     const [id, name, status] = categoryData;
 
-    return await this.goodCategoryRepository.create({
+    const response = await this.goodCategoryRepository.create({
       id: id,
       name,
       status: status,
     } as GoodCategory);
+
+    return response;
   }
 
   @patch('/category/{id}', {
@@ -228,8 +230,8 @@ export class CategoryController {
     const fetchedGoodCategory = await this.goodCategoryRepository.findById(id);
     console.log('fetchedGoodCategory', fetchedGoodCategory);
     // create temp objects and merge current values into incoming inputs IF input fields are missing
-    const tempCategory: any = {...category};
-    const fetchedData: any = {...fetchedGoodCategory};
+    const tempCategory: Record<string, unknown> = {...category};
+    const fetchedData: Record<string, unknown> = {...fetchedGoodCategory};
 
     Object.keys(fetchedGoodCategory).forEach(key => {
       if (!tempCategory[key]) {
