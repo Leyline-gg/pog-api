@@ -1,11 +1,12 @@
-require('./goodtype.controller.acceptance');
 import {Client, expect, toJSON} from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodActivity, GoodCategory, GoodType} from '../../../models';
 import {GoodActivityRepository} from '../../../repositories';
 import {
   delay,
   givenGoodActivity,
+  givenProofOfGoodLedger,
   givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
@@ -118,6 +119,152 @@ describe('PogApiApplication - Activity', () => {
       .get('/activity')
       .query({filter: {where: {status: 1}}})
       .expect(200, [toJSON(goodActivityInProgress)]);
+  });
+
+  context('When executing Good Activity transactions on the ledger', () => {
+    let persistedGoodTypeId: number;
+    let persistedGoodCategoryId: number;
+    let persistedGoodActivity: GoodActivity;
+    let contract: ethers.Contract;
+
+    before('initialize contract', async () => {
+      contract = givenProofOfGoodLedger();
+    });
+
+    beforeEach(async () => {
+      const activeTypeAndCategory = await givenActiveCategoryAndTypeInstances();
+      persistedGoodTypeId = activeTypeAndCategory.activeGoodType.id;
+      persistedGoodCategoryId = activeTypeAndCategory.activeGoodCategory.id;
+      persistedGoodActivity = await givenGoodActivityInstance(
+        givenGoodActivity(),
+      );
+    });
+
+    it('can add a new Good Activity', async () => {
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        goodCategoryId: goodActivityArgs.goodCategoryId,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+    });
+
+    it('can update a Good Activity', async () => {
+      const updatedGoodActivity = await givenGoodActivityInstance({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+        unitDescription: 'some description of the good activity',
+        valuePerUnit: 500,
+        goodTypeIdArray: [persistedGoodTypeId],
+        goodCategoryId: persistedGoodCategoryId,
+      });
+
+      await client
+        .put(`/activity/${persistedGoodActivity.id}`)
+        .send(updatedGoodActivity)
+        .expect(204);
+
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        goodCategoryId: goodActivityArgs.goodCategoryId,
+        valuePerUnit: goodActivityArgs.valuePerUnit,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+
+      delete goodActivityOnLedger.id;
+      delete updatedGoodActivity.id;
+
+      expect(goodActivityOnLedger).to.containDeep(updatedGoodActivity);
+    });
+
+    it('can update only the name of the Activity', async () => {
+      const updatedGoodActivity = new GoodActivity({
+        name: Math.random().toString(16).substring(2, 10),
+      });
+
+      delete updatedGoodActivity.goodTypeIdArray;
+
+      await client
+        .put(`/activity/${persistedGoodActivity.id}`)
+        .send(updatedGoodActivity)
+        .expect(204);
+
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        valuePerUnit: goodActivityArgs.valuePerUnit,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+
+      delete goodActivityOnLedger.id;
+      delete updatedGoodActivity.id;
+
+      expect(goodActivityOnLedger).to.containDeep(updatedGoodActivity);
+    });
+
+    it('can update only the good types of the Activity', async () => {
+      const updatedGoodActivity = new GoodActivity({
+        goodTypeIdArray: [persistedGoodTypeId],
+      });
+
+      await client
+        .put(`/activity/${persistedGoodActivity.id}`)
+        .send(updatedGoodActivity)
+        .expect(204);
+
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        valuePerUnit: goodActivityArgs.valuePerUnit,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+
+      delete goodActivityOnLedger.id;
+      delete updatedGoodActivity.id;
+
+      expect(goodActivityOnLedger).to.containDeep(updatedGoodActivity);
+    });
   });
 
   /*

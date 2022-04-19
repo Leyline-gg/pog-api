@@ -1,11 +1,12 @@
-require('./activity.controller.acceptance');
 import {Client, expect, toJSON} from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodOracle} from '../../../models';
 import {GoodOracleRepository} from '../../../repositories';
 import {
   delay,
   givenGoodOracle,
+  givenProofOfGoodLedger,
   givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
@@ -110,6 +111,229 @@ describe('PogApiApplication - Oracle', () => {
       .get('/oracle')
       .query({filter: {where: {status: 1}}})
       .expect(200, [toJSON(goodOracleInProgress)]);
+  });
+
+  context('When executing Good Oracle transactions on the ledger', () => {
+    let persistedGoodOracle: GoodOracle;
+    let contract: ethers.Contract;
+
+    before('initialize contract', async () => {
+      contract = givenProofOfGoodLedger();
+    });
+
+    beforeEach(async () => {
+      persistedGoodOracle = await givenGoodOracleInstance(givenGoodOracle());
+    });
+
+    it('can add a new Good Oracle', async () => {
+      const goodOracleArgs = await contract.getGoodOracle(
+        persistedGoodOracle.id,
+      );
+
+      const goodOracleOnLedger = new GoodOracle({
+        id: goodOracleArgs.id,
+        name: goodOracleArgs.name,
+        status: goodOracleArgs.status,
+        goodOracleURI: goodOracleArgs.goodOracleURI,
+        approvedActivityIdArray: goodOracleArgs.approvedActivityIdArray.map(
+          (id: ethers.BigNumber) => id.toNumber(),
+        ),
+      });
+
+      // expect(goodOracleOnLedger.name).to.equal(persistedGoodOracle.name);
+      // expect(goodOracleOnLedger.status).to.equal(persistedGoodOracle.status);
+      // expect(goodOracleOnLedger.goodOracleURI).to.equal(
+      //   persistedGoodOracle.goodOracleURI,
+      // );
+      // expect(goodOracleOnLedger.approvedActivityIdArray.length).to.equal(
+      //   persistedGoodOracle.approvedActivityIdArray?.length,
+      // );
+
+      // if (goodOracleOnLedger.approvedActivityIdArray.length) {
+      //   const diff = goodOracleOnLedger.approvedActivityIdArray.filter(
+      //     (activity: number) =>
+      //       !persistedGoodOracle.approvedActivityIdArray?.includes(activity),
+      //   );
+      //   expect(diff.length).to.equal(0);
+      // }
+
+      const result = await goodOracleRepo.findById(persistedGoodOracle.id);
+
+      expect(result).to.containDeep(goodOracleOnLedger);
+    });
+
+    it('can update a Good Oracle', async () => {
+      const updatedGoodOracle = new GoodOracle({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+        approvedActivityIdArray: [1, 2, 3],
+        goodOracleURI: 'loremipsum.gg',
+      });
+
+      await client
+        .put(`/oracle/${persistedGoodOracle.id}`)
+        .send(updatedGoodOracle)
+        .expect(204);
+
+      const goodOracleArgs = await contract.getGoodOracle(
+        persistedGoodOracle.id,
+      );
+
+      const goodOracleOnLedger = new GoodOracle({
+        id: goodOracleArgs.id,
+        name: goodOracleArgs.name,
+        status: goodOracleArgs.status,
+        goodOracleURI: goodOracleArgs.goodOracleURI,
+        approvedActivityIdArray: goodOracleArgs.approvedActivityIdArray.map(
+          (id: ethers.BigNumber) => id.toNumber(),
+        ),
+      });
+
+      const result = await goodOracleRepo.findById(persistedGoodOracle.id);
+
+      expect(result).to.containDeep(goodOracleOnLedger);
+
+      delete goodOracleOnLedger.id;
+      delete updatedGoodOracle.id;
+
+      expect(goodOracleOnLedger).to.containDeep(updatedGoodOracle);
+    });
+
+    it('can update only the name of the Oracle', async () => {
+      const updatedGoodOracle = givenGoodOracle({
+        name: Math.random().toString(16).substring(2, 10),
+      });
+
+      await client
+        .put(`/oracle/${persistedGoodOracle.id}`)
+        .send(updatedGoodOracle)
+        .expect(204);
+
+      const goodOracleArgs = await contract.getGoodOracle(
+        persistedGoodOracle.id,
+      );
+
+      const goodOracleOnLedger = new GoodOracle({
+        id: goodOracleArgs.id,
+        name: goodOracleArgs.name,
+        status: goodOracleArgs.status,
+        goodOracleURI: goodOracleArgs.goodOracleURI,
+        approvedActivityIdArray: goodOracleArgs.approvedActivityIdArray.map(
+          (id: ethers.BigNumber) => id.toNumber(),
+        ),
+      });
+
+      const result = await goodOracleRepo.findById(persistedGoodOracle.id);
+
+      expect(result).to.containDeep(goodOracleOnLedger);
+
+      delete goodOracleOnLedger.id;
+      delete updatedGoodOracle.id;
+
+      expect(goodOracleOnLedger).to.containDeep(updatedGoodOracle);
+    });
+
+    it('can update only the status of the Oracle', async () => {
+      const updatedGoodOracle = givenGoodOracle({
+        status: 2,
+      });
+
+      await client
+        .put(`/oracle/${persistedGoodOracle.id}`)
+        .send(updatedGoodOracle)
+        .expect(204);
+
+      const goodOracleArgs = await contract.getGoodOracle(
+        persistedGoodOracle.id,
+      );
+
+      const goodOracleOnLedger = new GoodOracle({
+        id: goodOracleArgs.id,
+        name: goodOracleArgs.name,
+        status: goodOracleArgs.status,
+        goodOracleURI: goodOracleArgs.goodOracleURI,
+        approvedActivityIdArray: goodOracleArgs.approvedActivityIdArray.map(
+          (id: ethers.BigNumber) => id.toNumber(),
+        ),
+      });
+
+      const result = await goodOracleRepo.findById(persistedGoodOracle.id);
+
+      expect(result).to.containDeep(goodOracleOnLedger);
+
+      delete goodOracleOnLedger.id;
+      delete updatedGoodOracle.id;
+
+      expect(goodOracleOnLedger).to.containDeep(updatedGoodOracle);
+    });
+
+    it('can update only the good oracle URI of the Oracle', async () => {
+      const updatedGoodOracle = givenGoodOracle({
+        goodOracleURI: 'urichange.io',
+      });
+
+      await client
+        .put(`/oracle/${persistedGoodOracle.id}`)
+        .send(updatedGoodOracle)
+        .expect(204);
+
+      const goodOracleArgs = await contract.getGoodOracle(
+        persistedGoodOracle.id,
+      );
+
+      const goodOracleOnLedger = new GoodOracle({
+        id: goodOracleArgs.id,
+        name: goodOracleArgs.name,
+        status: goodOracleArgs.status,
+        goodOracleURI: goodOracleArgs.goodOracleURI,
+        approvedActivityIdArray: goodOracleArgs.approvedActivityIdArray.map(
+          (id: ethers.BigNumber) => id.toNumber(),
+        ),
+      });
+
+      const result = await goodOracleRepo.findById(persistedGoodOracle.id);
+
+      expect(result).to.containDeep(goodOracleOnLedger);
+
+      delete goodOracleOnLedger.id;
+      delete updatedGoodOracle.id;
+
+      expect(goodOracleOnLedger).to.containDeep(updatedGoodOracle);
+    });
+
+    it('can update only the approved activities of the Oracle', async () => {
+      const updatedGoodOracle = givenGoodOracle({
+        approvedActivityIdArray: [5, 6, 7],
+      });
+
+      await client
+        .put(`/oracle/${persistedGoodOracle.id}`)
+        .send(updatedGoodOracle)
+        .expect(204);
+
+      const goodOracleArgs = await contract.getGoodOracle(
+        persistedGoodOracle.id,
+      );
+
+      const goodOracleOnLedger = new GoodOracle({
+        id: goodOracleArgs.id,
+        name: goodOracleArgs.name,
+        status: goodOracleArgs.status,
+        goodOracleURI: goodOracleArgs.goodOracleURI,
+        approvedActivityIdArray: goodOracleArgs.approvedActivityIdArray.map(
+          (id: ethers.BigNumber) => id.toNumber(),
+        ),
+      });
+
+      const result = await goodOracleRepo.findById(persistedGoodOracle.id);
+
+      expect(result).to.containDeep(goodOracleOnLedger);
+
+      delete goodOracleOnLedger.id;
+      delete updatedGoodOracle.id;
+
+      expect(goodOracleOnLedger).to.containDeep(updatedGoodOracle);
+    });
   });
 
   /*

@@ -3,7 +3,9 @@ import {
   createRestAppClient,
   givenHttpServerConfig,
 } from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../..';
+import ProofOfGoodLedger from '../../abi/ProofOfGoodLedger';
 import {
   GoodActivity,
   GoodCategory,
@@ -166,4 +168,21 @@ export function givenGoodEntry(goodEntry?: Partial<GoodEntry>) {
     goodEntry,
   );
   return new GoodEntry(data);
+}
+
+export function givenProofOfGoodLedger() {
+  const secret = `${process.env.SIGNER_SECRET}`;
+  const address = `${process.env.POG_LEDGER_CONTRACT_ADDRESS}`;
+  const provider = new ethers.providers.JsonRpcProvider(
+    `${process.env.RPC_PROVIDER}`,
+  );
+
+  const signer = new ethers.Wallet(secret, provider);
+  const contract = new ethers.Contract(
+    address,
+    ProofOfGoodLedger.abi,
+    provider,
+  ).connect(signer);
+
+  return contract;
 }

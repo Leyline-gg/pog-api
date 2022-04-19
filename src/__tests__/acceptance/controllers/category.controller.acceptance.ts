@@ -1,10 +1,12 @@
 import {Client, expect, toJSON} from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodCategory} from '../../../models';
 import {GoodCategoryRepository} from '../../../repositories';
 import {
   delay,
   givenGoodCategory,
+  givenProofOfGoodLedger,
   givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
@@ -117,6 +119,123 @@ describe('PogApiApplication - Category', () => {
       .expect(200, [toJSON(goodCategoryInProgress)]);
   });
 
+  context('When executing Good Category transactions on the ledger', () => {
+    let persistedGoodCategory: GoodCategory;
+    let contract: ethers.Contract;
+
+    before('initialize contract', async () => {
+      contract = givenProofOfGoodLedger();
+    });
+
+    beforeEach(async () => {
+      persistedGoodCategory = await givenGoodCategoryInstance(
+        givenGoodCategory(),
+      );
+    });
+
+    it('can add a new Good Category', async () => {
+      const goodCategoryOnLedger = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+      console.log('goodCategoryOnLedger:', goodCategoryOnLedger);
+      console.log('persistedGoodCategory:', persistedGoodCategory);
+      expect(goodCategoryOnLedger.name).to.equal(persistedGoodCategory.name);
+      expect(goodCategoryOnLedger.status).to.equal(
+        persistedGoodCategory.status,
+      );
+    });
+
+    it('can update a Good Category', async () => {
+      const updatedGoodCategory = new GoodCategory({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+      });
+
+      await client
+        .put(`/category/${persistedGoodCategory.id}`)
+        .send(updatedGoodCategory)
+        .expect(204);
+
+      const goodCategoryArgs = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+
+      const goodCategoryOnLedger = new GoodCategory({
+        id: goodCategoryArgs.id,
+        name: goodCategoryArgs.name,
+        status: goodCategoryArgs.status,
+      });
+
+      const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
+      expect(result).to.containDeep(goodCategoryOnLedger);
+
+      delete goodCategoryOnLedger.id;
+      delete updatedGoodCategory.id;
+
+      expect(goodCategoryOnLedger).to.containDeep(updatedGoodCategory);
+    });
+
+    it('can update only the name of the Category', async () => {
+      const updatedGoodCategory = givenGoodCategory({
+        name: Math.random().toString(16).substring(2, 10),
+      });
+
+      await client
+        .put(`/category/${persistedGoodCategory.id}`)
+        .send(updatedGoodCategory)
+        .expect(204);
+
+      const goodCategoryArgs = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+
+      const goodCategoryOnLedger = new GoodCategory({
+        id: goodCategoryArgs.id,
+        name: goodCategoryArgs.name,
+        status: goodCategoryArgs.status,
+      });
+
+      const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
+      expect(result).to.containDeep(goodCategoryOnLedger);
+
+      delete goodCategoryOnLedger.id;
+      delete updatedGoodCategory.id;
+
+      expect(goodCategoryOnLedger).to.containDeep(updatedGoodCategory);
+    });
+
+    it('can update only the status of the Category', async () => {
+      const updatedGoodCategory = givenGoodCategory({
+        status: 2,
+      });
+
+      await client
+        .put(`/category/${persistedGoodCategory.id}`)
+        .send(updatedGoodCategory)
+        .expect(204);
+
+      const goodCategoryArgs = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+
+      const goodCategoryOnLedger = new GoodCategory({
+        id: goodCategoryArgs.id,
+        name: goodCategoryArgs.name,
+        status: goodCategoryArgs.status,
+      });
+
+      const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
+      expect(result).to.containDeep(goodCategoryOnLedger);
+
+      delete goodCategoryOnLedger.id;
+      delete updatedGoodCategory.id;
+
+      expect(goodCategoryOnLedger).to.containDeep(updatedGoodCategory);
+    });
+  });
   /*
    ============================================================================
    TEST HELPERS
@@ -136,6 +255,11 @@ describe('PogApiApplication - Category', () => {
   async function givenGoodCategoryInstance(
     goodCategory?: Partial<GoodCategory>,
   ) {
-    return goodCategoryRepo.create(givenGoodCategory(goodCategory));
+    const response = await client
+      .post(`/category`)
+      .send(givenGoodCategory(goodCategory))
+      .expect(200);
+
+    return response.body;
   }
 });

@@ -1,11 +1,12 @@
-require('./category.controller.acceptance');
 import {Client, expect, toJSON} from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodType} from '../../../models';
 import {GoodTypeRepository} from '../../../repositories';
 import {
   delay,
   givenGoodType,
+  givenProofOfGoodLedger,
   givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
@@ -113,6 +114,111 @@ describe('PogApiApplication - Good Type', () => {
       .expect(200, [toJSON(goodTypeInProgress)]);
   });
 
+  context('When executing Good Type transactions on the ledger', () => {
+    let persistedGoodType: GoodType;
+    let contract: ethers.Contract;
+
+    before('initialize contract', async () => {
+      contract = givenProofOfGoodLedger();
+    });
+
+    beforeEach(async () => {
+      persistedGoodType = await givenGoodTypeInstance(givenGoodType());
+    });
+
+    it('can add a new Good Type', async () => {
+      const goodTypeOnLedger = await contract.goodTypes(persistedGoodType.id);
+      console.log('goodTypeOnLedger:', goodTypeOnLedger);
+      console.log('persistedGoodType:', persistedGoodType);
+      expect(goodTypeOnLedger.name).to.equal(persistedGoodType.name);
+      expect(goodTypeOnLedger.status).to.equal(persistedGoodType.status);
+    });
+
+    it('can update a Good Type', async () => {
+      const updatedGoodType = new GoodType({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+      });
+
+      await client
+        .put(`/good-types/${persistedGoodType.id}`)
+        .send(updatedGoodType)
+        .expect(204);
+
+      const goodTypeArgs = await contract.goodTypes(persistedGoodType.id);
+
+      const goodTypeOnLedger = new GoodType({
+        id: goodTypeArgs.id,
+        name: goodTypeArgs.name,
+        status: goodTypeArgs.status,
+      });
+
+      const result = await goodTypeRepo.findById(persistedGoodType.id);
+
+      expect(result).to.containDeep(goodTypeOnLedger);
+
+      delete goodTypeOnLedger.id;
+      delete updatedGoodType.id;
+
+      expect(goodTypeOnLedger).to.containDeep(updatedGoodType);
+    });
+
+    it('can update only the name of the Type', async () => {
+      const updatedGoodType = givenGoodType({
+        name: Math.random().toString(16).substring(2, 10),
+      });
+
+      await client
+        .put(`/good-types/${persistedGoodType.id}`)
+        .send(updatedGoodType)
+        .expect(204);
+
+      const goodTypeArgs = await contract.goodTypes(persistedGoodType.id);
+
+      const goodTypeOnLedger = new GoodType({
+        id: goodTypeArgs.id,
+        name: goodTypeArgs.name,
+        status: goodTypeArgs.status,
+      });
+
+      const result = await goodTypeRepo.findById(persistedGoodType.id);
+
+      expect(result).to.containDeep(goodTypeOnLedger);
+
+      delete goodTypeOnLedger.id;
+      delete updatedGoodType.id;
+
+      expect(goodTypeOnLedger).to.containDeep(updatedGoodType);
+    });
+
+    it('can update only the status of the Oracle', async () => {
+      const updatedGoodType = givenGoodType({
+        status: 2,
+      });
+
+      await client
+        .put(`/good-types/${persistedGoodType.id}`)
+        .send(updatedGoodType)
+        .expect(204);
+
+      const goodTypeArgs = await contract.goodTypes(persistedGoodType.id);
+
+      const goodTypeOnLedger = new GoodType({
+        id: goodTypeArgs.id,
+        name: goodTypeArgs.name,
+        status: goodTypeArgs.status,
+      });
+
+      const result = await goodTypeRepo.findById(persistedGoodType.id);
+
+      expect(result).to.containDeep(goodTypeOnLedger);
+
+      delete goodTypeOnLedger.id;
+      delete updatedGoodType.id;
+
+      expect(goodTypeOnLedger).to.containDeep(updatedGoodType);
+    });
+  });
   /*
    ============================================================================
    TEST HELPERS
@@ -130,6 +236,11 @@ describe('PogApiApplication - Good Type', () => {
   }
 
   async function givenGoodTypeInstance(goodType?: Partial<GoodType>) {
-    return goodTypeRepo.create(givenGoodType(goodType));
+    const response = await client
+      .post(`/good-types`)
+      .send(givenGoodType(goodType))
+      .expect(200);
+
+    return response.body;
   }
 });
