@@ -8,7 +8,7 @@ import {
   patch,
   post,
   put,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
 import {GoodType} from '../models';
 import {GoodTypeRepository} from '../repositories';
@@ -22,7 +22,7 @@ export class GoodTypeController {
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
   ) {}
 
-  @post('/good-types', {
+  @post('/types', {
     summary: 'Create a Good Type',
     operationId: 'post-good-type',
     responses: {
@@ -121,7 +121,7 @@ export class GoodTypeController {
     } as GoodType);
   }
 
-  @patch('/good-types/{id}', {
+  @patch('/types/{id}', {
     summary: 'Update a Good Type',
     operationId: 'patch-good-type',
     responses: {
@@ -248,7 +248,7 @@ export class GoodTypeController {
       });
   }
 
-  @put('/good-types/{id}', {
+  @put('/types/{id}', {
     summary: 'Change Good Type Details',
     operationId: 'put-good-type',
     responses: {
@@ -336,7 +336,7 @@ export class GoodTypeController {
     return this.patchGoodType(id, goodType);
   }
 
-  @get('/good-types/{id}', {
+  @get('/types/{id}', {
     summary: 'Get Good Type',
     operationId: 'get-good-type',
     responses: {
@@ -392,7 +392,7 @@ export class GoodTypeController {
     return this.goodTypeRepository.findById(id);
   }
 
-  @get('/good-types', {
+  @get('/types', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Categories',

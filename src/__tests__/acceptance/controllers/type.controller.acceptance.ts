@@ -7,7 +7,7 @@ import {
   delay,
   givenGoodType,
   givenProofOfGoodLedger,
-  givenRunningApplicationWithCustomConfiguration,
+  givenRunningApplicationWithCustomConfiguration
 } from '../test-helper';
 
 describe('PogApiApplication - Good Type', () => {
@@ -28,7 +28,7 @@ describe('PogApiApplication - Good Type', () => {
   it('creates a Good Type', async function () {
     const goodType = givenGoodType();
     const response = await client
-      .post('/good-types')
+      .post('/types')
       .send(goodType)
       .expect(200);
 
@@ -51,7 +51,7 @@ describe('PogApiApplication - Good Type', () => {
 
     it('gets a Good Type by ID', () => {
       return client
-        .get(`/good-types/${persistedGoodType.id}`)
+        .get(`/types/${persistedGoodType.id}`)
         .send()
         .expect(200, toJSON(persistedGoodType));
     });
@@ -66,7 +66,7 @@ describe('PogApiApplication - Good Type', () => {
         status: 0,
       });
       await client
-        .put(`/good-types/${persistedGoodType.id}`)
+        .put(`/types/${persistedGoodType.id}`)
         .send(updatedGoodType)
         .expect(204);
       const result = await goodTypeRepo.findById(persistedGoodType.id);
@@ -75,7 +75,7 @@ describe('PogApiApplication - Good Type', () => {
     });
 
     it('returns 404 when replacing a Good Type that does not exist', () => {
-      return client.put('/good-types/99999').send(givenGoodType()).expect(404);
+      return client.put('/types/99999').send(givenGoodType()).expect(404);
     });
 
     it('updates the Good Type by ID ', async () => {
@@ -84,7 +84,7 @@ describe('PogApiApplication - Good Type', () => {
         status: 1,
       });
       await client
-        .patch(`/good-types/${persistedGoodType.id}`)
+        .patch(`/types/${persistedGoodType.id}`)
         .send(updatedGoodType)
         .expect(204);
       const result = await goodTypeRepo.findById(persistedGoodType.id);
@@ -94,7 +94,7 @@ describe('PogApiApplication - Good Type', () => {
 
     it('returns 404 when updating a Good Type that does not exist', () => {
       return client
-        .patch('/good-types/99999')
+        .patch('/types/99999')
         .send(givenGoodType({status: 1}))
         .expect(404);
     });
@@ -109,7 +109,7 @@ describe('PogApiApplication - Good Type', () => {
     });
 
     await client
-      .get('/good-types')
+      .get('/types')
       .query({filter: {where: {status: 0}}})
       .expect(200, [toJSON(goodTypeInProgress)]);
   });
@@ -141,7 +141,7 @@ describe('PogApiApplication - Good Type', () => {
       });
 
       await client
-        .put(`/good-types/${persistedGoodType.id}`)
+        .put(`/types/${persistedGoodType.id}`)
         .send(updatedGoodType)
         .expect(204);
 
@@ -169,7 +169,7 @@ describe('PogApiApplication - Good Type', () => {
       });
 
       await client
-        .put(`/good-types/${persistedGoodType.id}`)
+        .put(`/types/${persistedGoodType.id}`)
         .send(updatedGoodType)
         .expect(204);
 
@@ -197,7 +197,7 @@ describe('PogApiApplication - Good Type', () => {
       });
 
       await client
-        .put(`/good-types/${persistedGoodType.id}`)
+        .put(`/types/${persistedGoodType.id}`)
         .send(updatedGoodType)
         .expect(204);
 
@@ -237,7 +237,7 @@ describe('PogApiApplication - Good Type', () => {
 
   async function givenGoodTypeInstance(goodType?: Partial<GoodType>) {
     const response = await client
-      .post(`/good-types`)
+      .post(`/types`)
       .send(givenGoodType(goodType))
       .expect(200);
 

@@ -15,7 +15,7 @@ export class GoodEntryController {
    * @param id The PoG ID of the entry
    * @returns A Proof of Good Entry
    */
-  @get('/entry/{id}', {
+  @get('/entries/{id}', {
     summary: 'Get Proof of Good Entry',
     operationId: 'get-entry',
     responses: {
@@ -67,7 +67,7 @@ export class GoodEntryController {
     return this.goodEntryRepository.findById(id);
   }
 
-  @get('/entry', {
+  @get('/entries', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Entries',
@@ -96,7 +96,7 @@ export class GoodEntryController {
    * @param entry The PoG ID of the entry
    * @returns A Proof of Good Entry
    */
-  @post('/entry', {
+  @post('/entries', {
     summary: 'Create a GoodEntry',
     operationId: 'post-pog-entry',
     responses: {

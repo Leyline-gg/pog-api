@@ -28,7 +28,7 @@ describe('PogApiApplication - Entry', () => {
   it('creates a Good Oracle', async function () {
     const goodEntry = givenGoodEntry();
     const response = await client
-      .post('/entry')
+      .post('/entries')
       .send(goodEntry)
       .expect(200);
     expect(response.body).to.containDeep(goodEntry);
@@ -52,7 +52,7 @@ describe('PogApiApplication - Entry', () => {
       userId: "1234567890"
     });
     const response = await client
-      .get('/entry')
+      .get('/entries')
       .query({filter: {where: {goodActivityId: 2}}})
       .expect(200);
     expect(response.body).to.have.lengthOf(2);
@@ -67,13 +67,13 @@ describe('PogApiApplication - Entry', () => {
 
     it('gets a Good Oracle by ID', () => {
       return client
-        .get(`/entry/${persistedGoodEntry.id}`)
+        .get(`/entries/${persistedGoodEntry.id}`)
         .send()
         .expect(200, toJSON(persistedGoodEntry));
     });
 
     it('returns 404 when getting a Good Oracle that does not exist', () => {
-      return client.get('/entry/99999').expect(404);
+      return client.get('/entries/99999').expect(404);
     });
 
   });
