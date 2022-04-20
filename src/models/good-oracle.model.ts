@@ -12,7 +12,6 @@ export class GoodOracle extends Entity {
       Object.assign(this, data);
     }
   }
-
   /**
    *
    */
@@ -22,7 +21,7 @@ export class GoodOracle extends Entity {
       type: 'number',
     },
   })
-  id: number = Date.now();
+  id?: number = 0;
 
   /**
    * Oracle name
@@ -46,17 +45,20 @@ export class GoodOracle extends Entity {
   })
   goodOracleURI?: string;
 
-  /**
-   * if true, cannot write to ledger with this oracle
-   */
   @property({
+    default: 0,
     jsonSchema: {
-      type: 'boolean',
-      default: false,
-      description: 'if true, cannot write to ledger with this oracle',
+      type: 'number',
+      description: 'status of oracle',
     },
   })
-  deleted?: boolean = false;
+  status?: number;
+
+  @property({
+    type: 'array',
+    itemType: 'number',
+  })
+  approvedActivityIdArray?: number[];
 }
 
 export interface GoodOracleRelations {

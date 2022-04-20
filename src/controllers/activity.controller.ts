@@ -1,3 +1,4 @@
+import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
   get,
@@ -8,16 +9,18 @@ import {
   patch,
   post,
   put,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
 import {GoodActivity} from '../models';
 import {GoodActivityRepository} from '../repositories';
-
+import {ProofOfGoodSmartContractService} from '../services';
 export class ActivityController {
   constructor(
     @repository(GoodActivityRepository)
     public goodActivityRepository: GoodActivityRepository,
-  ) { }
+    @service(ProofOfGoodSmartContractService)
+    private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
+  ) {}
 
   /**
    * Create a new Activity
@@ -67,15 +70,15 @@ export class ActivityController {
         'application/json': {
           schema: getModelSchemaRef(GoodActivity, {
             title: 'New Activity',
-            exclude: ['id']
+            exclude: ['id'],
           }),
           examples: {
             'Create an Activity': {
               value: {
                 name: 'Good Deed Post on Discord - Local Cleanup',
-                deleted: false,
+                status: 0,
                 goodCategoryId: 8,
-                goodTypeId: 6,
+                goodTypeIdArray: [],
                 valuePerUnit: 100,
                 unitDescription: 'per post',
               },
@@ -99,15 +102,15 @@ export class ActivityController {
         'application/json': {
           schema: getModelSchemaRef(GoodActivity, {
             title: 'New Activity',
-            exclude: ['id']
+            exclude: ['id'],
           }),
           examples: {
             'Create an Activity': {
               value: {
                 name: 'Good Deed Post on Discord - Local Cleanup',
-                deleted: false,
+                status: 0,
                 goodCategoryId: 8,
-                goodTypeId: 6,
+                goodTypeIdArray: [],
                 valuePerUnit: 100,
                 unitDescription: 'per post',
               },
@@ -117,17 +120,44 @@ export class ActivityController {
       },
       description: '',
     })
-    activity: Omit<GoodActivity, 'id'>,
+    activity: Partial<GoodActivity>,
   ): Promise<unknown> {
-    return this.goodActivityRepository.create(activity);
+    if (!activity.goodTypeIdArray) activity['goodTypeIdArray'] = [];
+    const goodActivity = new GoodActivity(activity);
+    const categoryData =
+      await this.proofOfGoodSmartContractService.updateLedger(
+        'post',
+        goodActivity,
+      );
+    const [
+      id,
+      goodTypeIdArray,
+      goodCategoryId,
+      name,
+      valuePerUnit,
+      unitDescription,
+      status,
+    ] = categoryData;
+
+    const response = await this.goodActivityRepository.create({
+      id: id,
+      goodTypeIdArray,
+      goodCategoryId,
+      name,
+      valuePerUnit,
+      unitDescription,
+      status,
+    } as GoodActivity);
+
+    return response;
   }
 
   /**
-* Update an Activity's details
-*
-* @param id The PoG ID of the Activity
-* @param oracle
-*/
+   * Update an Activity's details
+   *
+   * @param id The PoG ID of the Activity
+   * @param oracle
+   */
   @patch('/activity/{id}', {
     summary: 'Change Activity Details',
     operationId: 'put-activity',
@@ -210,10 +240,11 @@ export class ActivityController {
             'Change Activity Details': {
               value: {
                 name: 'Good Deed Post on Discord - Local Cleanup',
+                status: 0,
                 goodCategoryId: 8,
-                goodTypeId: 6,
+                goodTypeIdArray: [],
                 valuePerUnit: 100,
-                unitDescription: 'per image',
+                unitDescription: 'per post',
               },
             },
           },
@@ -223,10 +254,49 @@ export class ActivityController {
     activity: Partial<GoodActivity>,
   ): Promise<unknown> {
     delete activity?.id;
-    return this.goodActivityRepository.updateById(id, activity).catch((err: Error) => {
-      if (err.message === 'Document not found')
-        throw new HttpErrors.NotFound('Category Not Found');
+    // fetch current doc for good type
+    const fetchedGoodActivity = await this.goodActivityRepository.findById(id);
+    // create temp objects and merge current values into incoming inputs IF input fields are excluded
+    const tempGoodActivity: Record<string, unknown> = {...activity};
+    const fetchedData: Record<string, unknown> = {...fetchedGoodActivity};
+
+    Object.keys(fetchedData).forEach(key => {
+      if (!tempGoodActivity[key]) {
+        tempGoodActivity[key] = fetchedData[key];
+      }
     });
+
+    // initialize GoodType to pass into updateLedger method
+    // then destructure returned event arguments
+    const goodActivity = new GoodActivity(tempGoodActivity);
+
+    const [
+      goodActivityId,
+      goodTypeIdArray,
+      goodCategoryId,
+      name,
+      valuePerUnit,
+      unitDescription,
+      status,
+    ] = await this.proofOfGoodSmartContractService.updateLedger(
+      'patch',
+      goodActivity,
+    );
+    // persist event arguments to firestore doc
+    return this.goodActivityRepository
+      .updateById(id, {
+        id: goodActivityId,
+        goodTypeIdArray,
+        goodCategoryId,
+        name,
+        valuePerUnit,
+        unitDescription,
+        status,
+      })
+      .catch((err: Error) => {
+        if (err.message === 'Document not found')
+          throw new HttpErrors.NotFound('Oracle Not Found');
+      });
   }
 
   /**

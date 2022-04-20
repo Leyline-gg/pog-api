@@ -1,12 +1,12 @@
-import {
-  Client, expect, toJSON
-} from '@loopback/testlab';
+import {Client, expect, toJSON} from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
-import {GoodActivity} from '../../../models';
+import {GoodActivity, GoodCategory, GoodType} from '../../../models';
 import {GoodActivityRepository} from '../../../repositories';
 import {
   delay,
   givenGoodActivity,
+  givenProofOfGoodLedger,
   givenRunningApplicationWithCustomConfiguration
 } from '../test-helper';
 
@@ -25,39 +25,43 @@ describe('PogApiApplication - Activity', () => {
     await goodActivityRepo.deleteAll();
   });
 
-  it('creates a Good Oracle', async function () {
+  it('creates a Good Activity', async function () {
     const goodActivity = givenGoodActivity();
-    const response = await client
-      .post('/activity')
-      .send(goodActivity)
-      .expect(200);
-    expect(response.body).to.containDeep(goodActivity);
-    const result = await goodActivityRepo.findById(response.body.id);
+    const response = await givenGoodActivityInstance(goodActivity);
+
+    delete goodActivity.id;
+
+    expect(response).to.containDeep(goodActivity);
+    const result = await goodActivityRepo.findById(response.id);
     expect(result).to.containDeep(goodActivity);
   });
 
-  context('when dealing with a single persisted Good Category', () => {
+  context('when dealing with a single persisted Good Activity', () => {
     let persistedGoodActivity: GoodActivity;
+    let goodActivity: Partial<GoodActivity>;
 
     beforeEach(async () => {
-      persistedGoodActivity = await givenGoodActivityInstance();
+      goodActivity = givenGoodActivity();
+      persistedGoodActivity = await givenGoodActivityInstance(goodActivity);
     });
 
-    it('gets a Good Oracle by ID', () => {
+    it('gets a Good Activity by ID', () => {
       return client
         .get(`/activity/${persistedGoodActivity.id}`)
         .send()
         .expect(200, toJSON(persistedGoodActivity));
     });
 
-    it('returns 404 when getting a Good Oracle that does not exist', () => {
+    it('returns 404 when getting a Good Activity that does not exist', () => {
       return client.get('/activity/99999').expect(404);
     });
 
-    it('replaces the Good Oracle by ID', async () => {
+    it('replaces the Good Activity by ID', async () => {
       const updatedGoodActivity = givenGoodActivity({
         name: 'DO SOMETHING AWESOME',
-        deleted: false,
+        status: 1,
+        goodCategoryId: persistedGoodActivity.goodCategoryId,
+        goodTypeIdArray: persistedGoodActivity.goodTypeIdArray,
       });
       await client
         .put(`/activity/${persistedGoodActivity.id}`)
@@ -68,17 +72,19 @@ describe('PogApiApplication - Activity', () => {
       expect(result).to.containEql(updatedGoodActivityBody);
     });
 
-    it('returns 204 when replacing a Good Oracle that does not exist', () => {
+    it('returns 404 when replacing a Good Activity that does not exist', () => {
       return client
         .put('/activity/99999')
         .send(givenGoodActivity())
-        .expect(204);
+        .expect(404);
     });
 
-    it('updates the Good Oracle by ID ', async () => {
+    it('updates the Good Activity by ID ', async () => {
       const updatedGoodActivity = givenGoodActivity({
         name: 'DO SOMETHING AWESOME',
-        deleted: true,
+        status: 2,
+        goodCategoryId: persistedGoodActivity.goodCategoryId,
+        goodTypeIdArray: persistedGoodActivity.goodTypeIdArray,
       });
       await client
         .patch(`/activity/${persistedGoodActivity.id}`)
@@ -86,30 +92,179 @@ describe('PogApiApplication - Activity', () => {
         .expect(204);
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);
       expect(result.name).to.be.equal(updatedGoodActivity.name);
-      expect(result.deleted).to.be.equal(updatedGoodActivity.deleted);
+      expect(result.status).to.be.equal(updatedGoodActivity.status);
     });
 
-    it('returns 204 when updating a Good Oracle that does not exist', () => {
+    it('returns 404 when updating a Good Activity that does not exist', () => {
       return client
         .patch('/activity/99999')
-        .send(givenGoodActivity({deleted: true}))
-        .expect(204);
+        .send(givenGoodActivity({status: 2}))
+        .expect(404);
     });
-
   });
 
-  it('queries Good Oracle with a filter', async () => {
-    await givenGoodActivityInstance({name: 'wake up', deleted: true});
+  it('queries Good Activity with a filter', async () => {
+    await givenGoodActivityInstance(
+      givenGoodActivity({name: 'wake up', status: 2}),
+    );
     await delay(1000);
-    const goodActivityInProgress = await givenGoodActivityInstance({
-      name: 'go to sleep',
-      deleted: false,
-    });
+    const goodActivityInProgress = await givenGoodActivityInstance(
+      givenGoodActivity({
+        name: 'go to sleep',
+        status: 1,
+      }),
+    );
 
     await client
       .get('/activity')
-      .query({filter: {where: {deleted: false}}})
+      .query({filter: {where: {status: 1}}})
       .expect(200, [toJSON(goodActivityInProgress)]);
+  });
+
+  context('When executing Good Activity transactions on the ledger', () => {
+    let persistedGoodTypeId: number;
+    let persistedGoodCategoryId: number;
+    let persistedGoodActivity: GoodActivity;
+    let contract: ethers.Contract;
+
+    before('initialize contract', async () => {
+      contract = givenProofOfGoodLedger();
+    });
+
+    beforeEach(async () => {
+      const activeTypeAndCategory = await givenActiveCategoryAndTypeInstances();
+      persistedGoodTypeId = activeTypeAndCategory.activeGoodType.id;
+      persistedGoodCategoryId = activeTypeAndCategory.activeGoodCategory.id;
+      persistedGoodActivity = await givenGoodActivityInstance(
+        givenGoodActivity(),
+      );
+    });
+
+    it('can add a new Good Activity', async () => {
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        goodCategoryId: goodActivityArgs.goodCategoryId,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+    });
+
+    it('can update a Good Activity', async () => {
+      const updatedGoodActivity = await givenGoodActivityInstance({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+        unitDescription: 'some description of the good activity',
+        valuePerUnit: 500,
+        goodTypeIdArray: [persistedGoodTypeId],
+        goodCategoryId: persistedGoodCategoryId,
+      });
+
+      await client
+        .put(`/activity/${persistedGoodActivity.id}`)
+        .send(updatedGoodActivity)
+        .expect(204);
+
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        goodCategoryId: goodActivityArgs.goodCategoryId,
+        valuePerUnit: goodActivityArgs.valuePerUnit,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+
+      delete goodActivityOnLedger.id;
+      delete updatedGoodActivity.id;
+
+      expect(goodActivityOnLedger).to.containDeep(updatedGoodActivity);
+    });
+
+    it('can update only the name of the Activity', async () => {
+      const updatedGoodActivity = new GoodActivity({
+        name: Math.random().toString(16).substring(2, 10),
+      });
+
+      delete updatedGoodActivity.goodTypeIdArray;
+
+      await client
+        .put(`/activity/${persistedGoodActivity.id}`)
+        .send(updatedGoodActivity)
+        .expect(204);
+
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        valuePerUnit: goodActivityArgs.valuePerUnit,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+
+      delete goodActivityOnLedger.id;
+      delete updatedGoodActivity.id;
+
+      expect(goodActivityOnLedger).to.containDeep(updatedGoodActivity);
+    });
+
+    it('can update only the good types of the Activity', async () => {
+      const updatedGoodActivity = new GoodActivity({
+        goodTypeIdArray: [persistedGoodTypeId],
+      });
+
+      await client
+        .put(`/activity/${persistedGoodActivity.id}`)
+        .send(updatedGoodActivity)
+        .expect(204);
+
+      const goodActivityArgs = await contract.getGoodActivity(
+        persistedGoodActivity.id,
+      );
+
+      const goodActivityOnLedger = new GoodActivity({
+        id: goodActivityArgs.id.toNumber(),
+        name: goodActivityArgs.name,
+        status: goodActivityArgs.status,
+        unitDescription: goodActivityArgs.unitDescription,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
+        valuePerUnit: goodActivityArgs.valuePerUnit,
+      });
+
+      const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+
+      expect(result).to.containDeep(goodActivityOnLedger);
+
+      delete goodActivityOnLedger.id;
+      delete updatedGoodActivity.id;
+
+      expect(goodActivityOnLedger).to.containDeep(updatedGoodActivity);
+    });
   });
 
   /*
@@ -128,7 +283,59 @@ describe('PogApiApplication - Activity', () => {
     goodActivityRepo = await app.getRepository(GoodActivityRepository);
   }
 
-  async function givenGoodActivityInstance(goodActivity?: Partial<GoodActivity>) {
-    return goodActivityRepo.create(givenGoodActivity(goodActivity));
+  async function givenActiveCategoryAndTypeInstances(
+    goodCategory?: Partial<GoodCategory>,
+    goodType?: Partial<GoodType>,
+  ) {
+    const goodCategoryData = Object.assign(
+      {
+        name: 'Active Good Category',
+        status: 1,
+      },
+      goodCategory,
+    );
+
+    const goodTypeData = Object.assign(
+      {
+        name: 'Active Good Type',
+        status: 1,
+      },
+      goodType,
+    );
+
+    const goodCategoryInstance = await client
+      .post('/category')
+      .send(goodCategoryData)
+      .expect(200);
+
+    const goodTypeInstance = await client
+      .post('/type')
+      .send(goodTypeData)
+      .expect(200);
+
+    return {
+      activeGoodCategory: goodCategoryInstance.body,
+      activeGoodType: goodTypeInstance.body,
+    };
+  }
+
+  async function givenGoodActivityInstance(
+    goodActivity?: Partial<GoodActivity>,
+  ) {
+    const {activeGoodCategory, activeGoodType} =
+      await givenActiveCategoryAndTypeInstances();
+
+    Object.assign(
+      goodActivity,
+      {goodCategoryId: activeGoodCategory.id},
+      {goodTypeIdArray: [activeGoodType.id]},
+    );
+
+    const response = await client
+      .post(`/activity`)
+      .send(goodActivity)
+      .expect(200);
+
+    return response.body;
   }
 });
