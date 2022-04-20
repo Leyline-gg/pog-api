@@ -45,18 +45,18 @@ describe('PogApiApplication - Activity', () => {
       persistedGoodActivity = await givenGoodActivityInstance(goodActivity);
     });
 
-    it('gets a Good Oracle by ID', () => {
+    it('gets a Good Activity by ID', () => {
       return client
         .get(`/activity/${persistedGoodActivity.id}`)
         .send()
         .expect(200, toJSON(persistedGoodActivity));
     });
 
-    it('returns 404 when getting a Good Oracle that does not exist', () => {
+    it('returns 404 when getting a Good Activity that does not exist', () => {
       return client.get('/activity/99999').expect(404);
     });
 
-    it('replaces the Good Oracle by ID', async () => {
+    it('replaces the Good Activity by ID', async () => {
       const updatedGoodActivity = givenGoodActivity({
         name: 'DO SOMETHING AWESOME',
         status: 1,
@@ -79,7 +79,7 @@ describe('PogApiApplication - Activity', () => {
         .expect(404);
     });
 
-    it('updates the Good Oracle by ID ', async () => {
+    it('updates the Good Activity by ID ', async () => {
       const updatedGoodActivity = givenGoodActivity({
         name: 'DO SOMETHING AWESOME',
         status: 2,
@@ -95,7 +95,7 @@ describe('PogApiApplication - Activity', () => {
       expect(result.status).to.be.equal(updatedGoodActivity.status);
     });
 
-    it('returns 404 when updating a Good Oracle that does not exist', () => {
+    it('returns 404 when updating a Good Activity that does not exist', () => {
       return client
         .patch('/activity/99999')
         .send(givenGoodActivity({status: 2}))
