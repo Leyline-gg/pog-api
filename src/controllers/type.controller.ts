@@ -22,7 +22,7 @@ export class GoodTypeController {
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
   ) {}
 
-  @post('/types', {
+  @post('/type', {
     summary: 'Create a Good Type',
     operationId: 'post-good-type',
     responses: {
@@ -121,7 +121,7 @@ export class GoodTypeController {
     } as GoodType);
   }
 
-  @patch('/types/{id}', {
+  @patch('/type/{id}', {
     summary: 'Update a Good Type',
     operationId: 'patch-good-type',
     responses: {
@@ -248,7 +248,7 @@ export class GoodTypeController {
       });
   }
 
-  @put('/types/{id}', {
+  @put('/type/{id}', {
     summary: 'Change Good Type Details',
     operationId: 'put-good-type',
     responses: {
@@ -336,7 +336,7 @@ export class GoodTypeController {
     return this.patchGoodType(id, goodType);
   }
 
-  @get('/types/{id}', {
+  @get('/type/{id}', {
     summary: 'Get Good Type',
     operationId: 'get-good-type',
     responses: {
@@ -392,7 +392,7 @@ export class GoodTypeController {
     return this.goodTypeRepository.findById(id);
   }
 
-  @get('/types', {
+  @get('/type', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Categories',

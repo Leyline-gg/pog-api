@@ -7,7 +7,7 @@ import {
   delay,
   givenGoodActivity,
   givenProofOfGoodLedger,
-  givenRunningApplicationWithCustomConfiguration,
+  givenRunningApplicationWithCustomConfiguration
 } from '../test-helper';
 
 describe('PogApiApplication - Activity', () => {
@@ -309,7 +309,7 @@ describe('PogApiApplication - Activity', () => {
       .expect(200);
 
     const goodTypeInstance = await client
-      .post('/good-types')
+      .post('/type')
       .send(goodTypeData)
       .expect(200);
 
