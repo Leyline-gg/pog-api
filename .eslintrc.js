@@ -9,28 +9,28 @@ module.exports = {
         caughtErrorsIgnorePattern: '^_',
       },
     ],
-    "@typescript-eslint/naming-convention": [
-      "error",
+    '@typescript-eslint/naming-convention': [
+      'error',
       {
-        "selector": [
-          "classProperty",
-          "objectLiteralProperty",
-          "typeProperty",
-          "classMethod",
-          "objectLiteralMethod",
-          "typeMethod",
-          "accessor",
-          "enumMember"
+        'selector': [
+          'classProperty',
+          'objectLiteralProperty',
+          'typeProperty',
+          'classMethod',
+          'objectLiteralMethod',
+          'typeMethod',
+          'accessor',
+          'enumMember'
         ],
-        "format": null,
-        "modifiers": ["requiresQuotes"]
+        'format': null,
+        'modifiers': ['requiresQuotes']
       }
     ],
-    "@typescript-eslint/no-this-alias": [
-      "error",
+    '@typescript-eslint/no-this-alias': [
+      'error',
       {
-        "allowDestructuring": false, // Disallow `const { props, state } = this`; true by default
-        "allowedNames": ["self"] // Allow `const self = this`; `[]` by default
+        'allowDestructuring': false, // Disallow `const { props, state } = this`; true by default
+        'allowedNames': ['self'] // Allow `const self = this`; `[]` by default
       }
     ],
   },
