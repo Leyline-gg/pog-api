@@ -7,7 +7,7 @@ import {AuthService} from '../services';
 
 export class AuthController {
   constructor(
-    @repository(AuthRepository) public apiRepository: AuthRepository,
+    @repository(AuthRepository) public authRepository: AuthRepository,
     @service(AuthService) public authService: AuthService,
   ) {}
 
@@ -31,7 +31,15 @@ export class AuthController {
   ): Promise<OracleApiKey> {
     // return the generated document with all props instead of just the apiKey
     // continue leveraging dataSource in controller
-    oracleApiKey.apikey = this.authService.generateApiKey();
-    return this.apiRepository.create(oracleApiKey);
+    // generate new api key for oracle
+    oracleApiKey.apikey = this.authService.generateApiKey(); //refactor this method
+    // find latest api key for oracle (if exists) (null check)
+    const lastApiKey = await this.authRepository.findLatest(
+      oracleApiKey.oracleId,
+    );
+    // if exists, mark as expired
+    !!lastApiKey &&
+      (await this.authRepository.updateById(lastApiKey.id, {expired: true}));
+    return this.authRepository.create(oracleApiKey);
   }
 }

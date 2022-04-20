@@ -6,7 +6,7 @@ import {
   Firestore as Admin,
   Query,
   QueryDocumentSnapshot,
-  QuerySnapshot
+  QuerySnapshot,
 } from '@google-cloud/firestore';
 import {Connector} from 'loopback-connector';
 import {ICallback, IDataSource, IFilter} from './interfaces';
@@ -158,6 +158,7 @@ class BetterFirestoreConnector extends Connector {
     this.exists(model, where.id, null, (err, res: boolean) => {
       if (err) callback(err);
       if (res) {
+        if (Number(data?.id) !== Number(where.id)) delete data.id;
         self.db
           .collection(model)
           .doc(where.id)
@@ -409,12 +410,12 @@ class BetterFirestoreConnector extends Connector {
    */
   private findById = async (model: string, id: string) => {
     id = id.toString();
-      const documentSnapshot = await this.db.collection(model).doc(id).get();
-      if (!documentSnapshot.exists) return Promise.resolve([]);
+    const documentSnapshot = await this.db.collection(model).doc(id).get();
+    if (!documentSnapshot.exists) return Promise.resolve([]);
 
-      const result = {id: documentSnapshot.id, ...documentSnapshot.data()};
+    const result = {id: documentSnapshot.id, ...documentSnapshot.data()};
 
-      return Promise.resolve([result]);
+    return Promise.resolve([result]);
   };
 
   /**
@@ -422,14 +423,14 @@ class BetterFirestoreConnector extends Connector {
    * @param {String} model The model name
    */
   private findAllOfModel = async (model: string) => {
-      const collectionRef = this.db.collection(model);
-      const snapshots = await collectionRef.get();
+    const collectionRef = this.db.collection(model);
+    const snapshots = await collectionRef.get();
 
-      if (snapshots.empty || snapshots.size === 0) return Promise.resolve([]);
+    if (snapshots.empty || snapshots.size === 0) return Promise.resolve([]);
 
-      const result = this.completeDocumentResults(snapshots.docs);
+    const result = this.completeDocumentResults(snapshots.docs);
 
-      return Promise.resolve(result);
+    return Promise.resolve(result);
   };
 
   /**
@@ -456,7 +457,7 @@ class BetterFirestoreConnector extends Connector {
 
     if (where) {
       for (const key in where) {
-        if (Object.prototype.hasOwnProperty.call(where,'key')) {
+        if (Object.prototype.hasOwnProperty.call(where, 'key')) {
           const value = {[key]: where[key]};
           query = this.addFiltersToQuery(query, value);
         }
@@ -523,7 +524,7 @@ class BetterFirestoreConnector extends Connector {
     let resultQuery = query;
 
     for (const operation in value) {
-      if (!Object.prototype.hasOwnProperty.call(value,'operation')) {
+      if (!Object.prototype.hasOwnProperty.call(value, 'operation')) {
         continue;
       }
       const comparison = value[operation];

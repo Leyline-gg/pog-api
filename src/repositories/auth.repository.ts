@@ -19,7 +19,7 @@ export class AuthRepository extends DefaultCrudRepository<
       where: {
         oracleId,
       },
-      order: [ 'id DESC'],
+      order: ['id DESC'],
     });
   }
 }
