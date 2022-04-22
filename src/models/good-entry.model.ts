@@ -112,6 +112,15 @@ export class GoodEntry extends Entity {
   @property({
     jsonSchema: {
       type: 'string',
+      description:
+        'user email - optional if userId or wallet address is inputted',
+    },
+  })
+  email?: string;
+
+  @property({
+    jsonSchema: {
+      type: 'string',
       description: 'awaiting clarification',
     },
   })
