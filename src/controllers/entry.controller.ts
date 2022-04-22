@@ -1,13 +1,13 @@
 import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
-import {GoodEntry} from '../models';
+import {ErrorResponse, GoodEntry} from '../models';
 import {GoodEntryRepository} from '../repositories';
 
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
     public goodEntryRepository: GoodEntryRepository,
-  ) { }
+  ) {}
 
   /**
    * Retrieve a Proof of Good Entry
@@ -23,9 +23,7 @@ export class GoodEntryController {
         description: 'A Proof of Good Entry',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodEntry',
-            },
+            schema: getModelSchemaRef(GoodEntry),
             examples: {},
           },
         },
@@ -34,9 +32,7 @@ export class GoodEntryController {
         description: 'Entry Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -115,7 +111,7 @@ export class GoodEntryController {
         'application/json': {
           schema: getModelSchemaRef(GoodEntry, {
             title: 'New Entry',
-            exclude: ['id']
+            exclude: ['id'],
           }),
           examples: {
             'New Entry': {
@@ -148,7 +144,7 @@ export class GoodEntryController {
         'application/json': {
           schema: getModelSchemaRef(GoodEntry, {
             title: 'New Entry',
-            exclude: ['id']
+            exclude: ['id'],
           }),
           examples: {
             'New Entry': {

@@ -9,7 +9,7 @@ import {
   requestBody,
 } from '@loopback/rest';
 import {ethers} from 'ethers';
-import {GoodOracle} from '../models';
+import {ErrorResponse, GoodOracle} from '../models';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -38,9 +38,7 @@ export class OracleController {
         description: 'Missing Required Information',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -48,9 +46,7 @@ export class OracleController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -58,9 +54,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -149,9 +143,7 @@ export class OracleController {
         description: 'A Proof of Good Oracle',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodOracle',
-            },
+            schema: getModelSchemaRef(GoodOracle),
             examples: {},
           },
         },
@@ -160,9 +152,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -235,9 +225,7 @@ export class OracleController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -246,9 +234,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -379,9 +365,7 @@ export class OracleController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -390,9 +374,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },

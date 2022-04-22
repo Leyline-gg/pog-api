@@ -11,7 +11,7 @@ import {
   put,
   requestBody,
 } from '@loopback/rest';
-import {GoodActivity} from '../models';
+import {ErrorResponse, GoodActivity} from '../models';
 import {GoodActivityRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 export class ActivityController {
@@ -38,9 +38,7 @@ export class ActivityController {
         description: 'Missing Required Information',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -48,9 +46,7 @@ export class ActivityController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -58,9 +54,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -169,9 +163,7 @@ export class ActivityController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -180,9 +172,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -316,9 +306,7 @@ export class ActivityController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -327,9 +315,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -416,9 +402,7 @@ export class ActivityController {
         description: 'A Proof of Good Activity',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodActivity',
-            },
+            schema: getModelSchemaRef(GoodActivity),
             examples: {},
           },
         },
@@ -427,9 +411,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
