@@ -6,14 +6,24 @@ import {AuthRepository} from '../repositories';
 @injectable({scope: BindingScope.TRANSIENT})
 export class AuthService {
   constructor(
-    @repository(AuthRepository) public apiRepository: AuthRepository,
+    @repository(AuthRepository) public authRepository: AuthRepository,
   ) {}
 
   generateApiKey() {
     return uuidv1();
   }
 
-  invalidateApiKey(oracleId: number) {
-    return this.apiRepository.updateById(oracleId, {expired: true});
+  /**
+   * Invalidates the last api key for the given oracleId, if any.
+   * @param oracleId ID of oracle
+   * @returns Promise that resolves to null if no api key was found for the given oracleId
+   */
+  async invalidateLastApiKey(oracleId: number) {
+    // find latest api key for oracle (if exists) (null check)
+    const lastApiKey = await this.authRepository.findLatest(oracleId);
+    // if exists, mark as expired
+    return !!lastApiKey
+      ? await this.authRepository.updateById(lastApiKey.id, {expired: true})
+      : null;
   }
 }

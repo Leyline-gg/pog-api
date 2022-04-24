@@ -29,16 +29,13 @@ export class AuthController {
     })
     oracleApiKey: Omit<OracleApiKey, 'id'>,
   ): Promise<OracleApiKey> {
-    // return the generated document with all props instead of just the apiKey
     // generate new api key for oracle
     oracleApiKey.apikey = this.authService.generateApiKey(); //refactor this method
-    // find latest api key for oracle (if exists) (null check)
-    const lastApiKey = await this.authRepository.findLatest(
-      oracleApiKey.oracleId,
-    );
-    // if exists, mark as expired
-    !!lastApiKey &&
-      (await this.authRepository.updateById(lastApiKey.id, {expired: true}));
+
+    //invalidate previous oracle api key if exists
+    await this.authService.invalidateLastApiKey(oracleApiKey.oracleId); //refactor this method
+
+    // return the generated document with all props instead of just the apiKey
     return this.authRepository.create(oracleApiKey);
   }
 }
