@@ -1,16 +1,14 @@
-import {
-  Client, expect,
-  toJSON
-} from '@loopback/testlab';
+import {Client, expect, toJSON} from '@loopback/testlab';
+import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodCategory} from '../../../models';
 import {GoodCategoryRepository} from '../../../repositories';
 import {
   delay,
   givenGoodCategory,
-  givenRunningApplicationWithCustomConfiguration
+  givenProofOfGoodLedger,
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
-
 
 describe('PogApiApplication - Category', () => {
   let app: PogApiApplication;
@@ -33,9 +31,15 @@ describe('PogApiApplication - Category', () => {
       .post('/category')
       .send(goodCategory)
       .expect(200);
-    expect(response.body).to.containDeep(goodCategory);
+
+    expect(response.body.id).not.to.equal(goodCategory.id);
+    expect(response.body.name).to.equal(goodCategory.name);
+    expect(response.body.status).to.equal(goodCategory.status);
+
     const result = await goodCategoryRepo.findById(response.body.id);
-    expect(result).to.containDeep(goodCategory);
+    expect(response.body.id).to.equal(result.id);
+    expect(result.status).to.equal(goodCategory.status);
+    expect(result.name).to.equal(goodCategory.name);
   });
 
   context('when dealing with a single persisted Good Category', () => {
@@ -59,7 +63,7 @@ describe('PogApiApplication - Category', () => {
     it('replaces the Good Category by ID', async () => {
       const updatedGoodCategory = givenGoodCategory({
         name: 'DO SOMETHING AWESOME',
-        deleted: false,
+        status: 0,
       });
       await client
         .put(`/category/${persistedGoodCategory.id}`)
@@ -70,50 +74,168 @@ describe('PogApiApplication - Category', () => {
       expect(result).to.containEql(updatedGoodCategoryBody);
     });
 
-    it('returns 204 when replacing a Good Category that does not exist', () => {
+    it('returns 404 when replacing a Good Category that does not exist', async () => {
       return client
         .put('/category/99999')
         .send(givenGoodCategory())
-        .expect(204);
+        .expect(404);
     });
 
     it('updates the Good Category by ID ', async () => {
       const updatedGoodCategory = givenGoodCategory({
         name: 'DO SOMETHING AWESOME',
-        deleted: true,
+        status: 1,
       });
+      console.log('persistedGoodCategory', persistedGoodCategory);
       await client
         .patch(`/category/${persistedGoodCategory.id}`)
         .send(updatedGoodCategory)
         .expect(204);
       const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
       expect(result.name).to.be.equal(updatedGoodCategory.name);
-      expect(result.deleted).to.be.equal(updatedGoodCategory.deleted);
+      expect(result.status).to.be.equal(updatedGoodCategory.status);
     });
 
-    it('returns 204 when updating a Good Category that does not exist', () => {
+    it('returns 404 when updating a Good Category that does not exist', () => {
       return client
         .patch('/category/99999')
-        .send(givenGoodCategory({deleted: true}))
-        .expect(204);
+        .send(givenGoodCategory({status: 1}))
+        .expect(404);
     });
-
   });
 
   it('queries Good Categories with a filter', async () => {
-    await givenGoodCategoryInstance({name: 'wake up', deleted: true});
+    await givenGoodCategoryInstance({name: 'wake up', status: 1});
     await delay(1000);
     const goodCategoryInProgress = await givenGoodCategoryInstance({
       name: 'go to sleep',
-      deleted: false,
+      status: 0,
     });
 
     await client
       .get('/category')
-      .query({filter: {where: {deleted: false}}})
+      .query({filter: {where: {status: 0}}})
       .expect(200, [toJSON(goodCategoryInProgress)]);
   });
 
+  context('When executing Good Category transactions on the ledger', () => {
+    let persistedGoodCategory: GoodCategory;
+    let contract: ethers.Contract;
+
+    before('initialize contract', async () => {
+      contract = givenProofOfGoodLedger();
+    });
+
+    beforeEach(async () => {
+      persistedGoodCategory = await givenGoodCategoryInstance(
+        givenGoodCategory(),
+      );
+    });
+
+    it('can add a new Good Category', async () => {
+      const goodCategoryOnLedger = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+      console.log('goodCategoryOnLedger:', goodCategoryOnLedger);
+      console.log('persistedGoodCategory:', persistedGoodCategory);
+      expect(goodCategoryOnLedger.name).to.equal(persistedGoodCategory.name);
+      expect(goodCategoryOnLedger.status).to.equal(
+        persistedGoodCategory.status,
+      );
+    });
+
+    it('can update a Good Category', async () => {
+      const updatedGoodCategory = new GoodCategory({
+        name: Math.random().toString(16).substring(2, 10),
+        status: 1,
+      });
+
+      await client
+        .put(`/category/${persistedGoodCategory.id}`)
+        .send(updatedGoodCategory)
+        .expect(204);
+
+      const goodCategoryArgs = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+
+      const goodCategoryOnLedger = new GoodCategory({
+        id: goodCategoryArgs.id,
+        name: goodCategoryArgs.name,
+        status: goodCategoryArgs.status,
+      });
+
+      const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
+      expect(result).to.containDeep(goodCategoryOnLedger);
+
+      delete goodCategoryOnLedger.id;
+      delete updatedGoodCategory.id;
+
+      expect(goodCategoryOnLedger).to.containDeep(updatedGoodCategory);
+    });
+
+    it('can update only the name of the Category', async () => {
+      const updatedGoodCategory = givenGoodCategory({
+        name: Math.random().toString(16).substring(2, 10),
+      });
+
+      await client
+        .put(`/category/${persistedGoodCategory.id}`)
+        .send(updatedGoodCategory)
+        .expect(204);
+
+      const goodCategoryArgs = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+
+      const goodCategoryOnLedger = new GoodCategory({
+        id: goodCategoryArgs.id,
+        name: goodCategoryArgs.name,
+        status: goodCategoryArgs.status,
+      });
+
+      const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
+      expect(result).to.containDeep(goodCategoryOnLedger);
+
+      delete goodCategoryOnLedger.id;
+      delete updatedGoodCategory.id;
+
+      expect(goodCategoryOnLedger).to.containDeep(updatedGoodCategory);
+    });
+
+    it('can update only the status of the Category', async () => {
+      const updatedGoodCategory = givenGoodCategory({
+        status: 2,
+      });
+
+      await client
+        .put(`/category/${persistedGoodCategory.id}`)
+        .send(updatedGoodCategory)
+        .expect(204);
+
+      const goodCategoryArgs = await contract.goodCategories(
+        persistedGoodCategory.id,
+      );
+
+      const goodCategoryOnLedger = new GoodCategory({
+        id: goodCategoryArgs.id,
+        name: goodCategoryArgs.name,
+        status: goodCategoryArgs.status,
+      });
+
+      const result = await goodCategoryRepo.findById(persistedGoodCategory.id);
+
+      expect(result).to.containDeep(goodCategoryOnLedger);
+
+      delete goodCategoryOnLedger.id;
+      delete updatedGoodCategory.id;
+
+      expect(goodCategoryOnLedger).to.containDeep(updatedGoodCategory);
+    });
+  });
   /*
    ============================================================================
    TEST HELPERS
@@ -130,8 +252,14 @@ describe('PogApiApplication - Category', () => {
     goodCategoryRepo = await app.getRepository(GoodCategoryRepository);
   }
 
-  async function givenGoodCategoryInstance(goodCategory?: Partial<GoodCategory>) {
-    return goodCategoryRepo.create(givenGoodCategory(goodCategory));
-  }
+  async function givenGoodCategoryInstance(
+    goodCategory?: Partial<GoodCategory>,
+  ) {
+    const response = await client
+      .post(`/category`)
+      .send(givenGoodCategory(goodCategory))
+      .expect(200);
 
+    return response.body;
+  }
 });

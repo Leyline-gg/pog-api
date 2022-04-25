@@ -1,9 +1,19 @@
 import {
-  Client, createRestAppClient,
+  Client,
+  createRestAppClient,
   givenHttpServerConfig
 } from '@loopback/testlab';
+import {ethers} from 'ethers';
+import {setTimeout} from 'timers';
 import {PogApiApplication} from '../..';
-import {GoodActivity, GoodCategory, GoodEntry, GoodOracle} from '../../models/index';
+import ProofOfGoodLedger from '../../abi/ProofOfGoodLedger';
+import {
+  GoodActivity,
+  GoodCategory,
+  GoodEntry,
+  GoodOracle,
+  GoodType
+} from '../../models/index';
 
 export async function givenRunningApplication(): Promise<AppWithClient> {
   const restConfig = givenHttpServerConfig({
@@ -58,7 +68,6 @@ export interface AppWithClient {
 
 export const delay = (ms: number) => new Promise(_ => setTimeout(_, ms));
 
-
 /*
  ==============================================================================
  HELPER FUNCTIONS
@@ -85,13 +94,26 @@ export function givenGoodCategory(goodCategory?: Partial<GoodCategory>) {
   const data = Object.assign(
     {
       name: 'Awesome Category',
-      deleted: false,
+      status: 0,
     },
     goodCategory,
   );
   return new GoodCategory(data);
 }
-
+/**
+ * Generate a complete Good Category object for use with tests.
+ * @param goodCategory A partial (or complete) GoodCategory object.
+ */
+export function givenGoodType(goodType?: Partial<GoodType>) {
+  const data = Object.assign(
+    {
+      name: 'Awesome Type',
+      status: 0,
+    },
+    goodType,
+  );
+  return new GoodType(data);
+}
 /**
  * Generate a complete Good Oracle object for use with tests.
  * @param goodOracle A partial (or complete) GoodOracle object.
@@ -99,8 +121,11 @@ export function givenGoodCategory(goodCategory?: Partial<GoodCategory>) {
 export function givenGoodOracle(goodOracle?: Partial<GoodOracle>) {
   const data = Object.assign(
     {
-      name: 'Awesome Oracle',
-      deleted: false,
+      name: Math.random().toString(16).substring(2, 10),
+      status: 0,
+      id: 0,
+      approvedActivityIdArray: [],
+      goodOracleURI: 'awesome.io',
     },
     goodOracle,
   );
@@ -115,11 +140,11 @@ export function givenGoodActivity(goodActivity?: Partial<GoodActivity>) {
   const data = Object.assign(
     {
       name: 'Awesome Activity',
-      deleted: false,
+      status: 0,
       goodCategoryId: 1234,
-      goodTypeId: 2345,
+      goodTypeIdArray: [1, 2, 3, 4],
       valuePerUnit: 100,
-      unitDescription: "Per Test"
+      unitDescription: 'Per Test',
     },
     goodActivity,
   );
@@ -144,4 +169,21 @@ export function givenGoodEntry(goodEntry?: Partial<GoodEntry>) {
     goodEntry,
   );
   return new GoodEntry(data);
+}
+
+export function givenProofOfGoodLedger() {
+  const secret = `${process.env.SIGNER_SECRET}`;
+  const address = `${process.env.POG_LEDGER_CONTRACT_ADDRESS}`;
+  const provider = new ethers.providers.JsonRpcProvider(
+    `${process.env.RPC_PROVIDER}`,
+  );
+
+  const signer = new ethers.Wallet(secret, provider);
+  const contract = new ethers.Contract(
+    address,
+    ProofOfGoodLedger.abi,
+    provider,
+  ).connect(signer);
+
+  return contract;
 }

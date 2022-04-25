@@ -8,32 +8,26 @@ import {
   patch,
   post,
   put,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
-import {GoodCategory} from '../models';
-import {GoodCategoryRepository} from '../repositories';
+import {GoodType} from '../models';
+import {GoodTypeRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
-export class CategoryController {
+export class GoodTypeController {
   constructor(
-    @repository(GoodCategoryRepository)
-    public goodCategoryRepository: GoodCategoryRepository,
+    @repository(GoodTypeRepository)
+    public goodTypeRepository: GoodTypeRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
   ) {}
 
-  /**
-   * Create a new Category
-   *
-   * @param id The PoG ID of the category
-   * @param category
-   */
-  @post('/category', {
-    summary: 'Create a Category',
-    operationId: 'post-category',
+  @post('/type', {
+    summary: 'Create a Good Type',
+    operationId: 'post-good-type',
     responses: {
       '201': {
-        description: 'Category Created',
+        description: 'Good Type Created',
       },
       '400': {
         description: 'Missing Required Information',
@@ -69,14 +63,14 @@ export class CategoryController {
     requestBody: {
       content: {
         'application/json': {
-          schema: getModelSchemaRef(GoodCategory, {
+          schema: getModelSchemaRef(GoodType, {
             title: 'New Category',
             exclude: ['id'],
           }),
           examples: {
-            'Create a Category': {
+            'Create a Good Type': {
               value: {
-                name: 'Mental Health',
+                name: 'Quality Education',
               },
             },
           },
@@ -84,7 +78,7 @@ export class CategoryController {
       },
       description: '',
     },
-    description: 'Create a new Category',
+    description: 'Create a new Good Type',
     parameters: [],
     security: [
       {
@@ -92,51 +86,47 @@ export class CategoryController {
       },
     ],
   })
-  async postCategory(
+  async postGoodType(
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(GoodCategory, {
-            title: 'New Category',
+          schema: getModelSchemaRef(GoodType, {
+            title: 'New Good Type',
             exclude: ['id'],
           }),
           examples: {
-            'Create a Category': {
+            'Create a Good Type': {
               value: {
-                name: 'Mental Health',
+                name: 'Quality Education',
                 status: 0,
               },
             },
           },
         },
       },
-      description: '',
     })
-    category: Partial<GoodCategory>,
-  ): Promise<unknown> {
-    const tempGoodCategory = new GoodCategory(category);
+    goodType: Partial<GoodType>,
+  ): Promise<GoodType> {
+    const tempGoodType = new GoodType(goodType);
     const categoryData =
       await this.proofOfGoodSmartContractService.updateLedger(
         'post',
-        tempGoodCategory,
+        tempGoodType,
       );
     const [id, name, status] = categoryData;
-
-    const response = await this.goodCategoryRepository.create({
+    return this.goodTypeRepository.create({
       id: id,
       name,
       status: status,
-    } as GoodCategory);
-
-    return response;
+    } as GoodType);
   }
 
-  @patch('/category/{id}', {
-    summary: 'Change Category Details',
-    operationId: 'patch-category',
+  @patch('/type/{id}', {
+    summary: 'Update a Good Type',
+    operationId: 'patch-good-type',
     responses: {
       '200': {
-        description: 'Category Updated',
+        description: 'Good Type Updated',
       },
       '401': {
         description: 'Unauthorized',
@@ -150,7 +140,7 @@ export class CategoryController {
         headers: {},
       },
       '404': {
-        description: 'Category Not Found',
+        description: 'Good Type Not Found',
         content: {
           'application/json': {
             schema: {
@@ -163,7 +153,7 @@ export class CategoryController {
     requestBody: {
       content: {
         'application/json': {
-          schema: getModelSchemaRef(GoodCategory, {partial: true}),
+          schema: getModelSchemaRef(GoodType, {partial: true}),
           examples: {
             'Change Category Details': {
               value: {
@@ -176,7 +166,7 @@ export class CategoryController {
       },
       description: '',
     },
-    description: "Update a Category's details",
+    description: "Update a Good Type's details",
     security: [
       {
         Category_API_Key: [],
@@ -191,11 +181,11 @@ export class CategoryController {
         name: 'id',
         in: 'path',
         required: true,
-        description: 'The PoG ID of the category',
+        description: 'The PoG ID of the Good Type',
       },
     ],
   })
-  async patchCategory(
+  async patchGoodType(
     @param({
       schema: {
         type: 'integer',
@@ -204,17 +194,17 @@ export class CategoryController {
       name: 'id',
       in: 'path',
       required: true,
-      description: 'The PoG ID of the category',
+      description: 'The PoG ID of the Good Type',
     })
     id: number,
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(GoodCategory, {partial: true}),
+          schema: getModelSchemaRef(GoodType, {partial: true}),
           examples: {
-            'Change Category Details': {
+            'Change Good Type Details': {
               value: {
-                name: 'Animal Welfare',
+                name: 'Quality Education',
                 status: 0,
               },
             },
@@ -223,55 +213,47 @@ export class CategoryController {
       },
       description: '',
     })
-    category: Partial<GoodCategory>,
+    goodType: Partial<GoodType>,
   ): Promise<unknown> {
-    delete category?.id;
-    // fetch current doc for good category
-    const fetchedGoodCategory = await this.goodCategoryRepository.findById(id);
-    console.log('fetchedGoodCategory', fetchedGoodCategory);
-    // create temp objects and merge current values into incoming inputs IF input fields are missing
-    const tempCategory: Record<string, unknown> = {...category};
-    const fetchedData: Record<string, unknown> = {...fetchedGoodCategory};
+    delete goodType?.id;
+    // fetch current doc for good type
+    const fetchedGoodType = await this.goodTypeRepository.findById(id);
+    // create temp objects and merge current values into incoming inputs IF input fields are excluded
+    const tempGoodType: Record<string, unknown> = {...goodType};
+    const fetchedData: Record<string, unknown> = {...fetchedGoodType};
 
-    Object.keys(fetchedGoodCategory).forEach(key => {
-      if (!tempCategory[key]) {
-        tempCategory[key] = fetchedData[key];
+    Object.keys(fetchedGoodType).forEach(key => {
+      if (!tempGoodType[key]) {
+        tempGoodType[key] = fetchedData[key];
       }
     });
-    // initialize GoodCategory and pass into updateLedger method
+    // initialize GoodType to pass into updateLedger method
     // then destructure returned event arguments
-    const goodCategory = new GoodCategory(tempCategory);
-
-    const [goodCategoryId, name, status] =
+    const updatedGoodType = new GoodType(tempGoodType);
+    const [goodTypeId, name, status] =
       await this.proofOfGoodSmartContractService.updateLedger(
         'patch',
-        goodCategory,
+        updatedGoodType,
       );
     // persist event arguments to firestore doc
-    return this.goodCategoryRepository
+    return this.goodTypeRepository
       .updateById(id, {
-        id: goodCategoryId,
+        id: goodTypeId,
         name,
         status,
       })
       .catch((err: Error) => {
         if (err.message === 'Document not found')
-          throw new HttpErrors.NotFound('Category Not Found');
+          throw new HttpErrors.NotFound('Good Type Not Found');
       });
   }
 
-  /**
-   * Update a Category's details
-   *
-   * @param id The PoG ID of the category
-   * @param category
-   */
-  @put('/category/{id}', {
-    summary: 'Change Category Details',
-    operationId: 'put-category',
+  @put('/type/{id}', {
+    summary: 'Change Good Type Details',
+    operationId: 'put-good-type',
     responses: {
       '200': {
-        description: 'Category Updated',
+        description: 'Good Type Updated',
       },
       '401': {
         description: 'Unauthorized',
@@ -285,7 +267,7 @@ export class CategoryController {
         headers: {},
       },
       '404': {
-        description: 'Category Not Found',
+        description: 'Good Type Not Found',
         content: {
           'application/json': {
             schema: {
@@ -298,11 +280,11 @@ export class CategoryController {
     requestBody: {
       content: {
         'application/json': {
-          schema: getModelSchemaRef(GoodCategory, {partial: true}),
+          schema: getModelSchemaRef(GoodType, {partial: true}),
           examples: {
-            'Change Category Details': {
+            'Change Good Type Details': {
               value: {
-                name: 'Animal Welfare',
+                name: 'Quality Education',
               },
             },
           },
@@ -310,7 +292,7 @@ export class CategoryController {
       },
       description: '',
     },
-    description: "Update a Category's details",
+    description: "Update a Good Type's details",
     security: [
       {
         Category_API_Key: [],
@@ -325,11 +307,11 @@ export class CategoryController {
         name: 'id',
         in: 'path',
         required: true,
-        description: 'The PoG ID of the category',
+        description: 'The PoG ID of the Good Type',
       },
     ],
   })
-  async putCategory(
+  async putGoodType(
     @param({
       schema: {
         type: 'integer',
@@ -338,52 +320,39 @@ export class CategoryController {
       name: 'id',
       in: 'path',
       required: true,
-      description: 'The PoG ID of the category',
+      description: 'The PoG ID of the Good Type',
     })
     id: number,
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(GoodCategory, {partial: true}),
-          examples: {
-            'Change Category Details': {
-              value: {
-                name: 'Animal Welfare',
-              },
-            },
-          },
+          schema: getModelSchemaRef(GoodType, {partial: true}),
+          examples: {},
         },
       },
-      description: '',
     })
-    category: Partial<GoodCategory>,
+    goodType: Partial<GoodType>,
   ): Promise<unknown> {
-    return this.patchCategory(id, category);
+    return this.patchGoodType(id, goodType);
   }
 
-  /**
-   * Retrieve a Proof of Good Category
-   *
-   * @param id The PoG ID of the category
-   * @returns A Proof of Good Category
-   */
-  @get('/category/{id}', {
-    summary: 'Get Category',
-    operationId: 'get-category',
+  @get('/type/{id}', {
+    summary: 'Get Good Type',
+    operationId: 'get-good-type',
     responses: {
       '200': {
-        description: 'A Proof of Good Category',
+        description: 'A Proof of Good Type',
         content: {
           'application/json': {
             schema: {
-              $ref: '#/components/schemas/GoodCategory',
+              $ref: '#/components/schemas/GoodType',
             },
             examples: {},
           },
         },
       },
       '404': {
-        description: 'Category Not Found',
+        description: 'Good Type not found',
         content: {
           'application/json': {
             schema: {
@@ -393,7 +362,7 @@ export class CategoryController {
         },
       },
     },
-    description: 'Retrieve a Proof of Good Category',
+    description: 'Retrieve a Proof of Good Type',
     parameters: [
       {
         schema: {
@@ -403,11 +372,11 @@ export class CategoryController {
         name: 'id',
         in: 'path',
         required: true,
-        description: 'The PoG ID of the category',
+        description: 'The PoG ID of the Good Type',
       },
     ],
   })
-  async getCategory(
+  async getGoodType(
     @param({
       schema: {
         type: 'integer',
@@ -416,14 +385,14 @@ export class CategoryController {
       name: 'id',
       in: 'path',
       required: true,
-      description: 'The PoG ID of the category',
+      description: 'The PoG ID of the Good Type',
     })
     id: number,
-  ): Promise<GoodCategory> {
-    return this.goodCategoryRepository.findById(id);
+  ): Promise<GoodType> {
+    return this.goodTypeRepository.findById(id);
   }
 
-  @get('/category', {
+  @get('/type', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Categories',
@@ -431,16 +400,16 @@ export class CategoryController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(GoodCategory, {includeRelations: true}),
+              items: getModelSchemaRef(GoodType, {includeRelations: true}),
             },
           },
         },
       },
     },
   })
-  async getAllCategories(
-    @param.filter(GoodCategory) filter?: Filter<GoodCategory>,
-  ): Promise<GoodCategory[]> {
-    return this.goodCategoryRepository.find(filter);
+  async getAllGoodType(
+    @param.filter(GoodType) filter?: Filter<GoodType>,
+  ): Promise<GoodType[]> {
+    return this.goodTypeRepository.find(filter);
   }
 }
