@@ -1,3 +1,4 @@
+export * from './auth.repository';
 export * from './good-activity.repository';
 export * from './good-category.repository';
 export * from './good-entry.repository';

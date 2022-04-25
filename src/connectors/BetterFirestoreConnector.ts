@@ -158,6 +158,7 @@ class BetterFirestoreConnector extends Connector {
     this.exists(model, where.id, null, (err, res: boolean) => {
       if (err) callback(err);
       if (res) {
+        if (Number(data?.id) !== Number(where.id)) delete data.id;
         self.db
           .collection(model)
           .doc(where.id)
