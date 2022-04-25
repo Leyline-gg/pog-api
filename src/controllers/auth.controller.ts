@@ -30,10 +30,10 @@ export class AuthController {
     oracleApiKey: Omit<OracleApiKey, 'id'>,
   ): Promise<OracleApiKey> {
     // generate new api key for oracle
-    oracleApiKey.apikey = this.authService.generateApiKey(); //refactor this method
+    oracleApiKey.apikey = this.authService.generateApiKey();
 
-    //invalidate previous oracle api key if exists
-    await this.authService.invalidateLastApiKey(oracleApiKey.oracleId); //refactor this method
+    // invalidate previous oracle api key if exists
+    await this.authService.invalidateLastApiKey(oracleApiKey.oracleId);
 
     // return the generated document with all props instead of just the apiKey
     return this.authRepository.create(oracleApiKey);
