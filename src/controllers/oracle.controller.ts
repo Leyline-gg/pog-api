@@ -12,7 +12,7 @@ import {
 import {SecurityBindings, UserProfile} from '@loopback/security';
 import {ethers} from 'ethers';
 import {GoodOracle} from '../models';
-import {AUTH_STRATEGY_NAME} from '../passport-bearer-auth';
+import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
