@@ -21,7 +21,7 @@ export class GoodOracle extends Entity {
       type: 'number',
     },
   })
-  id?: number = 0;
+  id?: number = Date.now();
 
   /**
    * Oracle name

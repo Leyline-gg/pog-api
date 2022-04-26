@@ -1,5 +1,6 @@
+import {AuthenticationBindings} from '@loopback/authentication';
 import {BootMixin} from '@loopback/boot';
-import {ApplicationConfig} from '@loopback/core';
+import {ApplicationConfig, CoreTags} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
 import {RestApplication} from '@loopback/rest';
 import {
@@ -8,6 +9,7 @@ import {
 } from '@loopback/rest-explorer';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
+import {bearerAuthStrategy} from './passport-bearer-auth';
 import {MySequence} from './sequence';
 
 export {ApplicationConfig};
@@ -20,6 +22,14 @@ export class PogApiApplication extends BootMixin(
 
     // Set up the custom sequence
     this.sequence(MySequence);
+
+    // implement API authentication
+    this.bind('authentication.strategies.bearerAuthStrategy')
+      .to(bearerAuthStrategy)
+      .tag({
+        [CoreTags.EXTENSION_FOR]:
+          AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME,
+      });
 
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));
