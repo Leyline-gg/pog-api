@@ -11,6 +11,8 @@ import {
   Send,
   SequenceHandler,
 } from '@loopback/rest';
+import {GoodOracle} from './models';
+import AuthError from './providers/auth-error';
 
 const SequenceActions = RestBindings.SequenceActions;
 
@@ -41,7 +43,11 @@ export class MySequence implements SequenceHandler {
 
       const route = this.findRoute(request);
 
-      await this.authenticateRequest(request);
+      //@ts-expect-error
+      //the GoodOracle attempting to make the request
+      const oracle: GoodOracle = await this.authenticateRequest(request);
+      if (route.pathParams.id != oracle.id) throw new AuthError(403);
+
       const args = await this.parseParams(request, route);
       const result = await this.invoke(route, args);
       this.send(response, result);

@@ -9,13 +9,14 @@ import {
   patch,
   requestBody,
 } from '@loopback/rest';
-import {SecurityBindings, UserProfile} from '@loopback/security';
+import {SecurityBindings} from '@loopback/security';
 import {ethers} from 'ethers';
 import {GoodOracle} from '../models';
 import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
+@authenticate(AUTH_STRATEGY_NAME)
 export class OracleController {
   constructor(
     @repository(GoodOracleRepository)
@@ -23,7 +24,7 @@ export class OracleController {
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
     @inject(SecurityBindings.USER, {optional: true})
-    private oracle: UserProfile,
+    private oracle: GoodOracle,
   ) {}
 
   /**
@@ -186,7 +187,7 @@ export class OracleController {
       },
     ],
   })
-  @authenticate(AUTH_STRATEGY_NAME)
+  @authenticate.skip()
   async getOracle(
     @param({
       schema: {
@@ -200,8 +201,6 @@ export class OracleController {
     })
     id: number,
   ): Promise<GoodOracle> {
-    console.log('in getOracle/id');
-    console.log(this.oracle);
     return this.goodOracleRepository.findById(id);
   }
 
@@ -220,6 +219,7 @@ export class OracleController {
       },
     },
   })
+  @authenticate.skip()
   async getAllOracles(
     @param.filter(GoodOracle) filter?: Filter<GoodOracle>,
   ): Promise<GoodOracle[]> {

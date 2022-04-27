@@ -1,4 +1,5 @@
 import {Entity, model, property} from '@loopback/repository';
+import {securityId} from '@loopback/security';
 
 /**
  * The model class is generated from OpenAPI schema - GoodOracle
@@ -59,6 +60,11 @@ export class GoodOracle extends Entity {
     itemType: 'number',
   })
   approvedActivityIdArray?: number[];
+
+  @property({
+    hidden: true,
+  })
+  [securityId]: string = this.id?.toString() || '';
 }
 
 export interface GoodOracleRelations {
