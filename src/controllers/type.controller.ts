@@ -8,9 +8,9 @@ import {
   patch,
   post,
   put,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
-import {GoodType} from '../models';
+import {ErrorResponse, GoodType} from '../models';
 import {GoodTypeRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -33,9 +33,7 @@ export class GoodTypeController {
         description: 'Missing Required Information',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -43,9 +41,7 @@ export class GoodTypeController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -53,9 +49,7 @@ export class GoodTypeController {
         description: 'Category Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -132,9 +126,7 @@ export class GoodTypeController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -143,9 +135,7 @@ export class GoodTypeController {
         description: 'Good Type Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -259,9 +249,7 @@ export class GoodTypeController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -270,9 +258,7 @@ export class GoodTypeController {
         description: 'Good Type Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -344,9 +330,7 @@ export class GoodTypeController {
         description: 'A Proof of Good Type',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodType',
-            },
+            schema: getModelSchemaRef(GoodType),
             examples: {},
           },
         },
@@ -355,9 +339,7 @@ export class GoodTypeController {
         description: 'Good Type not found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
