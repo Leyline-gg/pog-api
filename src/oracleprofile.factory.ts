@@ -5,7 +5,6 @@ import {GoodOracle} from './models';
 export const OracleProfileFactory: UserProfileFactory<GoodOracle> = function (
   oracle: GoodOracle,
 ): UserProfile {
-  console.log('in OracleProfileFactory', oracle);
-  const userProfile = {[securityId]: oracle?.id?.toString() || ''};
+  const userProfile = {[securityId]: oracle?.id?.toString() || '', ...oracle};
   return userProfile;
 };

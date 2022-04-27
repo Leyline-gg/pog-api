@@ -28,11 +28,6 @@ export class PassportBearerAuthProvider<GoodOracle>
     return new Strategy(verifyFn);
   }
 
-  // Applies the `StrategyAdapter` to the configured bearer strategy instance.
-  // You'd better define your strategy name as a constant, like
-  // `const AUTH_STRATEGY_NAME = 'bearer'`
-  // You will need to decorate the APIs later with the same name
-  // Pass in the user profile factory
   convertToAuthStrategy(
     bearer: Strategy<VerifyFunction>,
   ): AuthenticationStrategy {
