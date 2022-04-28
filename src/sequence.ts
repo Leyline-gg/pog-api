@@ -41,21 +41,34 @@ export class MySequence implements SequenceHandler {
       const finished = await this.invokeMiddleware(context);
       if (finished) return;
 
+      const next = async () =>
+        this.send(
+          response,
+          await this.invoke(route, await this.parseParams(request, route)),
+        );
+
       const route = this.findRoute(request);
 
       //@ts-expect-error
       //the GoodOracle attempting to make the request
       const oracle: GoodOracle = await this.authenticateRequest(request);
+      console.log(oracle);
+      // oracle is undefined only when @authenticate.skip() is used
+      if (oracle === undefined) return next();
+
+      // extra auth checks
+      if (oracle.id == 0) return next(); // SYSTEM account
+      //only owners can POST requests
+      if (request.method === 'POST' && request.body?.id != oracle.id)
+        throw new AuthError(403);
+      //only owners can PUT requests
       if (route.pathParams.id != oracle.id) throw new AuthError(403);
 
-      const args = await this.parseParams(request, route);
-      const result = await this.invoke(route, args);
-      this.send(response, result);
+      return next();
     } catch (error) {
-      console.log(error.message);
-      if (!isNaN(error.message)) {
+      console.error(error.message);
+      if (!isNaN(error.message))
         Object.assign(error, {statusCode: error.message});
-      }
       this.reject(context, error);
     }
   }
