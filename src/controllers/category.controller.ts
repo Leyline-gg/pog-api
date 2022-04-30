@@ -10,7 +10,7 @@ import {
   put,
   requestBody,
 } from '@loopback/rest';
-import {GoodCategory} from '../models';
+import {ErrorResponse, GoodCategory} from '../models';
 import {GoodCategoryRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -39,9 +39,7 @@ export class CategoryController {
         description: 'Missing Required Information',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -49,9 +47,7 @@ export class CategoryController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -59,9 +55,7 @@ export class CategoryController {
         description: 'Category Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -142,9 +136,7 @@ export class CategoryController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -153,9 +145,7 @@ export class CategoryController {
         description: 'Category Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -277,9 +267,7 @@ export class CategoryController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -288,9 +276,7 @@ export class CategoryController {
         description: 'Category Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -375,9 +361,7 @@ export class CategoryController {
         description: 'A Proof of Good Category',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodCategory',
-            },
+            schema: getModelSchemaRef(GoodCategory),
             examples: {},
           },
         },
@@ -386,9 +370,7 @@ export class CategoryController {
         description: 'Category Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
