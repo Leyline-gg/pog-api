@@ -524,7 +524,7 @@ class BetterFirestoreConnector extends Connector {
     let resultQuery = query;
 
     for (const operation in value) {
-      if (!Object.prototype.hasOwnProperty.call(value, 'operation')) {
+      if (!Object.prototype.hasOwnProperty.call(value, operation)) {
         continue;
       }
       const comparison = value[operation];
