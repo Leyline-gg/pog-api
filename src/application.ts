@@ -12,10 +12,10 @@ import {
 } from '@loopback/rest-explorer';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
+import {AuthenticationSequence} from './authentication.sequence';
 import {OracleProfileFactory} from './models/oracleprofile.factory';
 import {PassportBearerAuthProvider} from './providers/passport-bearer-auth.provider';
 import {VerifyFunctionProvider} from './providers/verifyFn.provider';
-import {MySequence} from './sequence';
 
 export {ApplicationConfig};
 
@@ -26,7 +26,7 @@ export class PogApiApplication extends BootMixin(
     super(options);
 
     // Set up the custom sequence
-    this.sequence(MySequence);
+    this.sequence(AuthenticationSequence);
 
     // implement API authentication
     this.component(AuthenticationComponent);

@@ -7,16 +7,18 @@ import {
   ParseParams,
   Reject,
   RequestContext,
+  ResolvedRoute,
   RestBindings,
   Send,
   SequenceHandler,
 } from '@loopback/rest';
+import e from 'express';
 import {GoodOracle} from './models';
 import AuthError from './providers/auth-error';
 
 const SequenceActions = RestBindings.SequenceActions;
 
-export class MySequence implements SequenceHandler {
+export class AuthenticationSequence implements SequenceHandler {
   /**
    * Optional invoker for registered middleware in a chain.
    * To be injected via SequenceActions.INVOKE_MIDDLEWARE.
@@ -35,6 +37,28 @@ export class MySequence implements SequenceHandler {
     protected authenticateRequest: AuthenticateFn,
   ) {}
 
+  // extra auth checks per route
+  #routeAuthorization = {
+    oracle: ({
+      request,
+      route,
+      oracle,
+    }: {
+      request: e.Request;
+      route: ResolvedRoute;
+      oracle: GoodOracle;
+    }) => {
+      //only owners can POST requests
+      if (request.method === 'POST' && request.body?.id != oracle.id) {
+        throw new AuthError(403);
+      }
+      //only owners can PUT requests
+      if (route.pathParams.id != oracle.id) throw new AuthError(403);
+
+      return;
+    },
+  };
+
   async handle(context: RequestContext) {
     try {
       const {request, response} = context;
@@ -52,18 +76,20 @@ export class MySequence implements SequenceHandler {
       //@ts-expect-error
       //the GoodOracle attempting to make the request
       const oracle: GoodOracle = await this.authenticateRequest(request);
-      console.log(oracle);
       // oracle is undefined only when @authenticate.skip() is used
       if (oracle === undefined) return await next();
+      // SYSTEM account
+      if (oracle.id == 0) return await next();
 
-      // extra auth checks
-      if (oracle.id == 0) return await next(); // SYSTEM account
-      //only owners can POST requests
-      if (request.method === 'POST' && request.body?.id != oracle.id) {
-        throw new AuthError(403);
-      }
-      //only owners can PUT requests
-      if (route.pathParams.id != oracle.id) throw new AuthError(403);
+      //@ts-expect-error
+      //Perform additional authorization checks
+      const routeAuth = this.#routeAuthorization[route.path.split('/')[1]];
+      !!routeAuth &&
+        routeAuth({
+          request,
+          route,
+          oracle,
+        });
 
       return next();
     } catch (error) {
