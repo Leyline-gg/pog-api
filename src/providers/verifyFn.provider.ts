@@ -18,20 +18,19 @@ export class VerifyFunctionProvider implements Provider<VerifyFunction> {
     return async function (token: string, cb: Function) {
       console.log('in value! token:', token);
       try {
-        const f = {
+        const oracleApiKey = await self.authRepository.findOne({
           where: {
             apikey: token,
           },
-        };
-        console.log(f);
-        const oracleApiKey = await self.authRepository.findOne(f);
+        });
         console.log(oracleApiKey);
         if (
           !oracleApiKey ||
           oracleApiKey?.apikey !== token ||
           !!oracleApiKey?.expired
-        )
+        ) {
           throw new AuthError(401);
+        }
 
         const oracle = await self.goodOracleRepository.findById(
           oracleApiKey.oracleId,

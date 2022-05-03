@@ -12,8 +12,8 @@ import {
 } from '@loopback/rest-explorer';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
-import {OracleProfileFactory} from './oracleprofile.factory';
-import {PassportBearerAuthProvider} from './providers/passport-bearer-auth';
+import {OracleProfileFactory} from './models/oracleprofile.factory';
+import {PassportBearerAuthProvider} from './providers/passport-bearer-auth.provider';
 import {VerifyFunctionProvider} from './providers/verifyFn.provider';
 import {MySequence} from './sequence';
 

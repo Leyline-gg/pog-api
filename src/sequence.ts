@@ -54,13 +54,14 @@ export class MySequence implements SequenceHandler {
       const oracle: GoodOracle = await this.authenticateRequest(request);
       console.log(oracle);
       // oracle is undefined only when @authenticate.skip() is used
-      if (oracle === undefined) return next();
+      if (oracle === undefined) return await next();
 
       // extra auth checks
-      if (oracle.id == 0) return next(); // SYSTEM account
+      if (oracle.id == 0) return await next(); // SYSTEM account
       //only owners can POST requests
-      if (request.method === 'POST' && request.body?.id != oracle.id)
+      if (request.method === 'POST' && request.body?.id != oracle.id) {
         throw new AuthError(403);
+      }
       //only owners can PUT requests
       if (route.pathParams.id != oracle.id) throw new AuthError(403);
 

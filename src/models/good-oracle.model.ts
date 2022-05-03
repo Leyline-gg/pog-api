@@ -64,7 +64,7 @@ export class GoodOracle extends Entity {
   @property({
     hidden: true,
   })
-  [securityId]: string = this.id?.toString() || '';
+  [securityId]: string = this.id?.toString() ?? '';
 }
 
 export interface GoodOracleRelations {
