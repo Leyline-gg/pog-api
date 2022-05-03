@@ -21,6 +21,7 @@ export class VerifyFunctionProvider implements Provider<VerifyFunction> {
         const oracleApiKey = await self.authRepository.findOne({
           where: {
             apikey: token,
+            expired: false,
           },
         });
         console.log(oracleApiKey);
