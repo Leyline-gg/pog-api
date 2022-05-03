@@ -1,4 +1,5 @@
 import {authenticate} from '@loopback/authentication';
+import {authorize} from '@loopback/authorization';
 import {inject, service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
@@ -17,6 +18,7 @@ import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
 @authenticate(AUTH_STRATEGY_NAME)
+@authorize({resource: 'oracle'})
 export class OracleController {
   constructor(
     @repository(GoodOracleRepository)
@@ -178,6 +180,7 @@ export class OracleController {
     ],
   })
   @authenticate.skip()
+  @authorize.skip()
   async getOracle(
     @param({
       schema: {
@@ -210,6 +213,7 @@ export class OracleController {
     },
   })
   @authenticate.skip()
+  @authorize.skip()
   async getAllOracles(
     @param.filter(GoodOracle) filter?: Filter<GoodOracle>,
   ): Promise<GoodOracle[]> {

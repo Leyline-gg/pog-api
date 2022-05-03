@@ -2,6 +2,10 @@ import {
   AuthenticationBindings,
   AuthenticationComponent,
 } from '@loopback/authentication';
+import {
+  AuthorizationComponent,
+  AuthorizationTags,
+} from '@loopback/authorization';
 import {BootMixin} from '@loopback/boot';
 import {addExtension, ApplicationConfig} from '@loopback/core';
 import {RepositoryMixin} from '@loopback/repository';
@@ -14,6 +18,7 @@ import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {AuthenticationSequence} from './authentication.sequence';
 import {OracleProfileFactory} from './models/oracleprofile.factory';
+import {OracleAuthorizationProvider} from './providers/oracle-authorization.provider';
 import {PassportBearerAuthProvider} from './providers/passport-bearer-auth.provider';
 import {VerifyFunctionProvider} from './providers/verifyFn.provider';
 
@@ -43,6 +48,11 @@ export class PogApiApplication extends BootMixin(
           AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME,
       },
     );
+
+    this.component(AuthorizationComponent);
+    this.bind('authorizationProviders.oracle-authorization-provider')
+      .toProvider(OracleAuthorizationProvider)
+      .tag(AuthorizationTags.AUTHORIZER);
 
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));

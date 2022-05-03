@@ -37,7 +37,7 @@
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
     "rebuild": "npm run clean && npm run build",
     "dev": "nodemon",
-    "codegen":"mkdir /p sdk && npm run openapi-spec .\\sdk\\openapi.json && npx openapi -i .\\sdk\\openapi.json -o sdk -c node --name PogClient"
+    "codegen": "mkdir /p sdk && npm run openapi-spec .\\sdk\\openapi.json && npx openapi -i .\\sdk\\openapi.json -o sdk -c node --name PogClient"
   },
   "repository": {
     "type": "git",
@@ -55,6 +55,7 @@
     "@google-cloud/firestore": "^5.0.2",
     "@loopback/authentication": "^8.1.2",
     "@loopback/authentication-passport": "^4.1.2",
+    "@loopback/authorization": "^0.11.2",
     "@loopback/boot": "^4.1.2",
     "@loopback/core": "^3.1.2",
     "@loopback/repository": "^4.1.2",
