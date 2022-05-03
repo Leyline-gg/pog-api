@@ -1,16 +1,9 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
-import {
-  get,
-  getModelSchemaRef,
-  HttpErrors,
-  param,
-  post,
-  requestBody,
-} from '@loopback/rest';
+import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
 import {GoodEntry} from '../models';
 import {GoodEntryRepository, UserRepository} from '../repositories';
-import {ProofOfGoodSmartContractService} from '../services';
+import {PogProfileService, ProofOfGoodSmartContractService} from '../services';
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
@@ -18,6 +11,8 @@ export class GoodEntryController {
     @repository(UserRepository) public userRepository: UserRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
+    @service(PogProfileService)
+    private pogProfileService: PogProfileService,
   ) {}
 
   /**
@@ -180,44 +175,7 @@ export class GoodEntryController {
     })
     entry: Partial<GoodEntry>,
   ): Promise<unknown> {
-    // userId here refers to the profileId that will be stored in the user doc
-    if (!entry.userId && !entry.email && !entry.doGooder) {
-      // fail request
-      throw new HttpErrors.BadRequest();
-    }
-
-    switch (true) {
-      case !!entry.userId && !!entry.email && !!entry.doGooder:
-        break;
-      case !!entry.userId && !!entry.email && !entry.doGooder:
-        const userOnFirestore = await this.userRepository.find({
-          where: {profileId: entry.userId},
-        });
-        const userOnLedger =
-          await this.proofOfGoodSmartContractService.getProfileByUserId(
-            entry.userId,
-          );
-    }
-
-    if (entry.doGooder) {
-      // find userid
-      // if no user -> generate nanoId and format it
-      // if there is a user associated to email, then grab profileId and pass as userId
-      // hash email and add to entry params
-    } else if (entry.email) {
-      // find userid
-      // if no user -> generate nanoId and format it
-      // if there is a user associated to email, then grab profileId and pass as userId
-      // hash email and add to entry params
-    }
-
-    // if no wallet address, generate custodial address and add to user wallets
-    // do check with ledger to make sure email not associated to another wallet or userId
-
-    //check cases:
-    //dogooder no email
-    //email no dogooder
-    //both email and dogooder is set - make sure email and dogood address tied to the same user
+    console.log('Data received:', entry);
 
     const goodEntry = new GoodEntry(entry);
     const entryData = await this.proofOfGoodSmartContractService.updateLedger(
@@ -228,7 +186,7 @@ export class GoodEntryController {
     const response = await this.goodEntryRepository.create({
       id: entryData.id,
       doGooder: entryData.doGooder,
-      userId: entryData.userId,
+      userId: profileId,
       goodActivityId: entryData.goodActivityId,
       goodOracleId: entryData.goodOracleId,
       proofURL: entryData.proofURL,

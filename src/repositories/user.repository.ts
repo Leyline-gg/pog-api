@@ -1,6 +1,5 @@
 import {inject} from '@loopback/core';
 import {DefaultCrudRepository} from '@loopback/repository';
-import {nanoid} from 'nanoid';
 import {FirestoreDataSource} from '../datasources';
 import {User, UserRelations} from '../models';
 
@@ -55,27 +54,5 @@ export class UserRepository extends DefaultCrudRepository<
         .get();
 
     return userSnapshot.data();
-  }
-
-  async generateProfileIdForUser(id: string): Promise<boolean> {
-    try {
-      const userDocRef: FirebaseFirestore.DocumentReference =
-        super.dataSource.connector?.db.doc(`users/${id}`);
-
-      const userDocSnapshot = await userDocRef.get();
-      const userData = userDocSnapshot.data();
-      if (userData?.profileId) {
-        throw new Error('Already exists for user.');
-      }
-
-      await userDocRef.update({
-        profileId: nanoid(),
-      });
-      return true;
-    } catch (err) {
-      console.log(err);
-    } finally {
-      return false;
-    }
   }
 }
