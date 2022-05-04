@@ -56,7 +56,7 @@ export class OracleApiKey extends Entity {
       default: false,
     },
   })
-  expired: boolean = false;
+  expired = false;
 }
 
 export interface OracleApiKeyRelations {

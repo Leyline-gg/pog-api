@@ -3,11 +3,13 @@ import {authorize} from '@loopback/authorization';
 import {inject, service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  get,
   getModelSchemaRef,
   HttpErrors,
-  operation,
   param,
   patch,
+  post,
+  put,
   requestBody,
 } from '@loopback/rest';
 import {SecurityBindings} from '@loopback/security';
@@ -32,10 +34,9 @@ export class OracleController {
   /**
    * Create a new Oracle
    *
-   * @param id The PoG ID of the oracle
    * @param oracle
    */
-  @operation('post', '/oracle', {
+  @post('/oracle', {
     summary: 'Create an Oracle',
     operationId: 'post-oracle',
     responses: {
@@ -143,7 +144,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @returns A Proof of Good Oracle
    */
-  @operation('get', '/oracle/{id}', {
+  @get('/oracle/{id}', {
     summary: 'Get Oracle',
     operationId: 'get-oracle',
     responses: {
@@ -197,7 +198,7 @@ export class OracleController {
     return this.goodOracleRepository.findById(id);
   }
 
-  @operation('get', '/oracle', {
+  @get('/oracle', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Oracles',
@@ -366,7 +367,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @param oracle
    */
-  @operation('put', '/oracle/{id}', {
+  @put('/oracle/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'put-oracle',
     responses: {

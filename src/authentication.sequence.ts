@@ -49,7 +49,7 @@ export class AuthenticationSequence implements SequenceHandler {
 
       await this.authenticateRequest(request);
 
-      return next();
+      return await next();
     } catch (error) {
       console.error(error.message);
       if (!isNaN(error.message))

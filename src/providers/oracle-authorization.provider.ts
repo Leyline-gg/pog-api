@@ -5,8 +5,15 @@ import {
   Authorizer,
 } from '@loopback/authorization';
 import {Provider} from '@loopback/core';
-import e from 'express';
+import {RequestContext} from '@loopback/rest';
+import {Request} from 'express';
 import {GoodOracle} from '../models';
+
+interface AuthorizationCheckParams {
+  request: Request;
+  context: AuthorizationContext;
+  oracle: GoodOracle;
+}
 
 // Class level authorizer
 export class OracleAuthorizationProvider implements Provider<Authorizer> {
@@ -16,26 +23,28 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
     return this.authorize.bind(this);
   }
 
-  // prettier-ignore
-  #authorizationChecksByResource = {
+  #authorizationChecksByResource: {
+    [resource: string]: (
+      params: AuthorizationCheckParams,
+    ) => AuthorizationDecision;
+  } = {
     oracle: ({
       request,
       context,
       oracle,
-    }: {
-      request: e.Request;
-      context: AuthorizationContext;
-      oracle: GoodOracle;
-    }): AuthorizationDecision => {
-      //@ts-expect-error
-      return ({
-        'POST': () => {
-          if (request.body?.id != oracle.id) return AuthorizationDecision.DENY;
-        },
-        'PUT': () => {
-          if (context.invocationContext.args[0] != oracle.id) return AuthorizationDecision.DENY;
-        },
-      })[request.method]() ?? AuthorizationDecision.ALLOW;
+    }: AuthorizationCheckParams): AuthorizationDecision => {
+      const rules: {[method: string]: () => AuthorizationDecision | undefined} =
+        {
+          POST: () => {
+            if (request.body?.id !== oracle.id)
+              return AuthorizationDecision.DENY;
+          },
+          PUT: () => {
+            if (context.invocationContext.args[0] !== oracle.id)
+              return AuthorizationDecision.DENY;
+          },
+        };
+      return rules[request.method]() ?? AuthorizationDecision.ALLOW;
     },
   };
 
@@ -47,10 +56,7 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
 
     if (oracle === undefined) return AuthorizationDecision.ABSTAIN;
     // SYSTEM account
-    if (oracle.id == 0) return AuthorizationDecision.ALLOW;
-
-    //@ts-expect-error
-    const {request}: {request: e.Request} = context.invocationContext.parent;
+    if (oracle.id === 0) return AuthorizationDecision.ALLOW;
 
     const resource = metadata.resource;
     if (!resource) {
@@ -58,8 +64,11 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
         'Please provide an authorization resource in the @authorize annotation',
       );
     }
+
+    const {request}: {request: Request} = context.invocationContext
+      .parent as RequestContext;
+
     const authCheck =
-      //@ts-expect-error I don't feel like typing this
       this.#authorizationChecksByResource[resource] ??
       (() => AuthorizationDecision.ABSTAIN);
     return authCheck({request, context, oracle});

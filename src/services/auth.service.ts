@@ -21,9 +21,8 @@ export class AuthService {
   async invalidateLastApiKey(oracleId: number) {
     // find latest api key for oracle (if exists) (null check)
     const lastApiKey = await this.authRepository.findLatest(oracleId);
-    // if exists, mark as expired
-    return !!lastApiKey
-      ? await this.authRepository.updateById(lastApiKey.id, {expired: true})
-      : null;
+    if (lastApiKey) {
+      await this.authRepository.updateById(lastApiKey.id, {expired: true});
+    }
   }
 }
