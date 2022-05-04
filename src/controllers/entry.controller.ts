@@ -2,13 +2,12 @@ import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
 import {GoodEntry} from '../models';
-import {GoodEntryRepository, UserRepository} from '../repositories';
+import {GoodEntryRepository} from '../repositories';
 import {PogProfileService, ProofOfGoodSmartContractService} from '../services';
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
     public goodEntryRepository: GoodEntryRepository,
-    @repository(UserRepository) public userRepository: UserRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
     @service(PogProfileService)

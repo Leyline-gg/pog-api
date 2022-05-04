@@ -6,7 +6,7 @@ import {FirestoreDataSource} from '../datasources';
 export type PogProfile = {
   userId: string;
   walletAddresses?: string[];
-  email: string;
+  email?: string;
   doGooder?: string;
   isOnPogLedger?: boolean;
   created?: FirebaseFirestore.Timestamp;
@@ -228,8 +228,8 @@ export class PogProfileService {
             const mnemonic: any = process.env[`MNEMONIC_${mnemonicId}`];
             const newWallet = Wallet.fromMnemonic(mnemonic, derivativePath);
             transaction.update(walletGenerationDocRef, {
-              generatedCount: generatedCount + 1,
-              currentIndex: walletGenerationDoc?.data()?.currentIndex + 1,
+              generatedCount: FirebaseFirestore.FieldValue.increment(1),
+              currentIndex: FirebaseFirestore.FieldValue.increment(1),
             });
             return newWallet;
           } else {
@@ -280,7 +280,6 @@ export class PogProfileService {
       } else {
         console.log('Profile not found from email address:', email);
       }
-      // Object.assign(pogProfileParams, { emailHash })
     }
 
     // if doGooder address is provided, find userId (profileId) from the contract's walletUser mapping
