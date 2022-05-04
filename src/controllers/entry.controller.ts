@@ -176,8 +176,30 @@ export class GoodEntryController {
     entry: Partial<GoodEntry>,
   ): Promise<unknown> {
     console.log('Data received:', entry);
+    const pogProfileParams: any = {};
+
+    if (entry.userId) {
+      Object.assign(pogProfileParams, {userId: entry.userId});
+    }
+
+    if (entry.email) {
+      Object.assign(pogProfileParams, {email: entry.email});
+    }
+
+    if (entry.doGooder) {
+      Object.assign(pogProfileParams, {doGooder: entry.doGooder});
+    }
+
+    const pogProfile = await this.pogProfileService.findOrCreatePogProfile(
+      pogProfileParams,
+    );
 
     const goodEntry = new GoodEntry(entry);
+    Object.assign(goodEntry, {
+      userId: pogProfile?.userId,
+      doGooder: pogProfile?.doGooder,
+    });
+
     const entryData = await this.proofOfGoodSmartContractService.updateLedger(
       'post',
       goodEntry,
@@ -186,7 +208,7 @@ export class GoodEntryController {
     const response = await this.goodEntryRepository.create({
       id: entryData.id,
       doGooder: entryData.doGooder,
-      userId: profileId,
+      userId: pogProfile?.userId,
       goodActivityId: entryData.goodActivityId,
       goodOracleId: entryData.goodOracleId,
       proofURL: entryData.proofURL,

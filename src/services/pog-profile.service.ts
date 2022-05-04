@@ -6,9 +6,16 @@ import {FirestoreDataSource} from '../datasources';
 export type PogProfile = {
   userId: string;
   walletAddresses?: string[];
-  email?: string;
+  email: string;
+  doGooder?: string;
   isOnPogLedger?: boolean;
   created?: FirebaseFirestore.Timestamp;
+};
+
+export type PogProfileParams = {
+  userId: string;
+  email: string;
+  doGooder: string;
 };
 
 @injectable({scope: BindingScope.TRANSIENT})
@@ -238,17 +245,16 @@ export class PogProfileService {
     });
   }
 
-  async findOrCreatePogProfile(
-    userId: string,
-    email: string,
-    doGooder: string,
-  ) {
+  async findOrCreatePogProfile(data: PogProfileParams) {
     let emailHash;
     let pogProfileFromUserId;
     let pogProfileFromEmailHash;
     let pogProfileFromWalletAddress;
     let pogProfile;
     let profileId;
+    let walletAddress;
+
+    const {userId, email, doGooder} = data;
 
     if (!userId && !email && !doGooder) {
       // fail request
@@ -376,7 +382,7 @@ export class PogProfileService {
       profileId = utils.formatBytes32String(nanoid());
       console.log('Creating new profile with userId:', profileId);
 
-      const pogProfileParams: PogProfile = {
+      const pogProfileParams = {
         userId: profileId,
         isOnPogLedger: false,
         created: FirebaseFirestore.Timestamp.now(),
@@ -393,16 +399,19 @@ export class PogProfileService {
 
       // if wallet was provided and doesn't exist in firestore, add to user's profile
       if (doGooder) {
+        walletAddress = doGooder;
         if (!pogProfileFromWalletAddress) {
           await this.addWalletAddressToProfile(profileId, doGooder);
         }
       } else {
         // generate wallet and add to pog profile
         const newWallet = await this.generateWallet();
-        await this.addWalletAddressToProfile(profileId, newWallet.address);
+        walletAddress = newWallet.address;
+        await this.addWalletAddressToProfile(profileId, walletAddress);
       }
       // get newly created pog profile and return
       const createdPogProfile = await this.getPogProfileByUserId(profileId);
+      Object.assign(createdPogProfile, {doGooder: walletAddress});
       return createdPogProfile;
     }
   }
