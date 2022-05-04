@@ -4,7 +4,6 @@ import {
   get,
   getModelSchemaRef,
   HttpErrors,
-  operation,
   param,
   patch,
   post,
@@ -442,7 +441,7 @@ export class ActivityController {
     return this.goodActivityRepository.findById(id);
   }
 
-  @operation('get', '/activity', {
+  @get('/activity', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Activities',
