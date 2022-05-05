@@ -1,6 +1,6 @@
 import {Entity, model, property} from '@loopback/repository';
 
-@model({name: 'GoodType', settings: {strict: false}})
+@model({name: 'goodtype', settings: {strict: false}})
 export class GoodType extends Entity {
   constructor(data?: Partial<GoodType>) {
     super(data);

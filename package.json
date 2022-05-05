@@ -37,7 +37,7 @@
     "clean": "lb-clean dist *.tsbuildinfo .eslintcache",
     "rebuild": "npm run clean && npm run build",
     "dev": "nodemon",
-    "codegen": "mkdir /p sdk && npm run openapi-spec .\\sdk\\openapi.json && npx openapi -i .\\sdk\\openapi.json -o sdk -c node --name PogClient"
+    "codegen": "npm run openapi-spec .\\sdk\\openapi.json && npx openapi -i .\\sdk\\openapi.json -o sdk\\src -c node --name PogClient"
   },
   "repository": {
     "type": "git",
