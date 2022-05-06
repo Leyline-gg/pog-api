@@ -158,6 +158,7 @@ class BetterFirestoreConnector extends Connector {
     this.exists(model, where.id, null, (err, res: boolean) => {
       if (err) callback(err);
       if (res) {
+        if (Number(data?.id) !== Number(where.id)) delete data.id;
         self.db
           .collection(model)
           .doc(where.id)
@@ -456,7 +457,7 @@ class BetterFirestoreConnector extends Connector {
 
     if (where) {
       for (const key in where) {
-        if (Object.prototype.hasOwnProperty.call(where, 'key')) {
+        if (Object.prototype.hasOwnProperty.call(where, key)) {
           const value = {[key]: where[key]};
           query = this.addFiltersToQuery(query, value);
         }
@@ -485,7 +486,7 @@ class BetterFirestoreConnector extends Connector {
 
     if (fields) {
       for (const key in fields) {
-        if (Object.prototype.hasOwnProperty.call(fields, 'key')) {
+        if (Object.prototype.hasOwnProperty.call(fields, key)) {
           const field = fields[key];
           if (field) query = query.select(key);
         }
@@ -523,7 +524,7 @@ class BetterFirestoreConnector extends Connector {
     let resultQuery = query;
 
     for (const operation in value) {
-      if (!Object.prototype.hasOwnProperty.call(value, 'operation')) {
+      if (!Object.prototype.hasOwnProperty.call(value, operation)) {
         continue;
       }
       const comparison = value[operation];

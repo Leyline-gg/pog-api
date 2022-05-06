@@ -1,33 +1,42 @@
-import {service} from '@loopback/core';
+import {authenticate} from '@loopback/authentication';
+import {authorize} from '@loopback/authorization';
+import {inject, service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  get,
   getModelSchemaRef,
   HttpErrors,
-  operation,
   param,
   patch,
+  post,
+  put,
   requestBody,
 } from '@loopback/rest';
+import {SecurityBindings} from '@loopback/security';
 import {ethers} from 'ethers';
-import {GoodOracle} from '../models';
+import {ErrorResponse, GoodOracle} from '../models';
+import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth.provider';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
+@authenticate(AUTH_STRATEGY_NAME)
+@authorize({resource: 'oracle'})
 export class OracleController {
   constructor(
     @repository(GoodOracleRepository)
     public goodOracleRepository: GoodOracleRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
+    @inject(SecurityBindings.USER, {optional: true})
+    private oracle: GoodOracle,
   ) {}
 
   /**
    * Create a new Oracle
    *
-   * @param id The PoG ID of the oracle
    * @param oracle
    */
-  @operation('post', '/oracle', {
+  @post('/oracle', {
     summary: 'Create an Oracle',
     operationId: 'post-oracle',
     responses: {
@@ -38,9 +47,7 @@ export class OracleController {
         description: 'Missing Required Information',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -48,9 +55,7 @@ export class OracleController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -58,9 +63,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -141,7 +144,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @returns A Proof of Good Oracle
    */
-  @operation('get', '/oracle/{id}', {
+  @get('/oracle/{id}', {
     summary: 'Get Oracle',
     operationId: 'get-oracle',
     responses: {
@@ -149,9 +152,7 @@ export class OracleController {
         description: 'A Proof of Good Oracle',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodOracle',
-            },
+            schema: getModelSchemaRef(GoodOracle),
             examples: {},
           },
         },
@@ -160,9 +161,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -181,6 +180,8 @@ export class OracleController {
       },
     ],
   })
+  @authenticate.skip()
+  @authorize.skip()
   async getOracle(
     @param({
       schema: {
@@ -197,7 +198,7 @@ export class OracleController {
     return this.goodOracleRepository.findById(id);
   }
 
-  @operation('get', '/oracle', {
+  @get('/oracle', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Oracles',
@@ -212,6 +213,8 @@ export class OracleController {
       },
     },
   })
+  @authenticate.skip()
+  @authorize.skip()
   async getAllOracles(
     @param.filter(GoodOracle) filter?: Filter<GoodOracle>,
   ): Promise<GoodOracle[]> {
@@ -235,9 +238,7 @@ export class OracleController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -246,9 +247,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -368,7 +367,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @param oracle
    */
-  @operation('put', '/oracle/{id}', {
+  @put('/oracle/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'put-oracle',
     responses: {
@@ -379,9 +378,7 @@ export class OracleController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -390,9 +387,7 @@ export class OracleController {
         description: 'Oracle Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
