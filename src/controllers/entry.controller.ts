@@ -3,7 +3,11 @@ import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
 import {ErrorResponse, GoodEntry} from '../models';
 import {GoodEntryRepository} from '../repositories';
-import {PogProfileService, ProofOfGoodSmartContractService} from '../services';
+import {
+  PogProfileParams,
+  PogProfileService,
+  ProofOfGoodSmartContractService,
+} from '../services';
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
@@ -171,7 +175,11 @@ export class GoodEntryController {
     entry: Partial<GoodEntry>,
   ): Promise<unknown> {
     console.log('Data received:', entry);
-    const pogProfileParams: any = {};
+    const pogProfileParams: PogProfileParams = {
+      userId: '',
+      email: '',
+      doGooder: '',
+    };
 
     if (entry.userId) {
       Object.assign(pogProfileParams, {userId: entry.userId});
