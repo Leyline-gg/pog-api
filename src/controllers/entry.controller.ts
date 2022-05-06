@@ -1,7 +1,7 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
-import {GoodEntry} from '../models';
+import {ErrorResponse, GoodEntry} from '../models';
 import {GoodEntryRepository} from '../repositories';
 import {PogProfileService, ProofOfGoodSmartContractService} from '../services';
 export class GoodEntryController {
@@ -28,9 +28,7 @@ export class GoodEntryController {
         description: 'A Proof of Good Entry',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodEntry',
-            },
+            schema: getModelSchemaRef(GoodEntry),
             examples: {},
           },
         },
@@ -39,9 +37,7 @@ export class GoodEntryController {
         description: 'Entry Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
