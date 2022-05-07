@@ -176,22 +176,10 @@ export class GoodEntryController {
   ): Promise<unknown> {
     console.log('Data received:', entry);
     const pogProfileParams: PogProfileParams = {
-      userId: '',
-      email: '',
-      doGooder: '',
+      userId: entry?.userId ?? '',
+      email: entry?.email ?? '',
+      doGooder: entry?.doGooder ?? '',
     };
-
-    if (entry.userId) {
-      Object.assign(pogProfileParams, {userId: entry.userId});
-    }
-
-    if (entry.email) {
-      Object.assign(pogProfileParams, {email: entry.email});
-    }
-
-    if (entry.doGooder) {
-      Object.assign(pogProfileParams, {doGooder: entry.doGooder});
-    }
 
     const pogProfile = await this.pogProfileService.findOrCreatePogProfile(
       pogProfileParams,
