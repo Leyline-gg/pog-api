@@ -143,7 +143,7 @@ export class GoodEntryController {
     parameters: [],
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
   })

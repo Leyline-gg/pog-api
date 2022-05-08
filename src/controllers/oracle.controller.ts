@@ -93,7 +93,7 @@ export class OracleController {
     parameters: [],
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
   })
@@ -411,7 +411,7 @@ export class OracleController {
     description: "Update an Oracle's details",
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [

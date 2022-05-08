@@ -85,7 +85,7 @@ export class ActivityController {
     parameters: [],
     security: [
       {
-        Activity_API_Key: [],
+        pog_api_key: [],
       },
     ],
   })
@@ -197,7 +197,7 @@ export class ActivityController {
     description: "Update an Activity's details",
     security: [
       {
-        Activity_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [
@@ -340,7 +340,7 @@ export class ActivityController {
     description: "Update an Activity's details",
     security: [
       {
-        Activity_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [
