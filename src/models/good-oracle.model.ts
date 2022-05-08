@@ -55,11 +55,31 @@ export class GoodOracle extends Entity {
   })
   status?: number;
 
+  /**
+   * reference the wallet address of the oracle owner user
+   */
+  @property({
+    jsonSchema: {
+      type: 'string',
+      description: 'reference the wallet address of the oracle owner user',
+    },
+  })
+  goodOracleOwner?: string;
+
+  @property({
+    default: 0,
+    jsonSchema: {
+      type: 'number',
+      description: 'Type of Oracle (profit, non-profit, etc)',
+    },
+  })
+  organizationType?: number = 0;
+
   @property({
     type: 'array',
     itemType: 'number',
   })
-  approvedActivityIdArray?: number[];
+  approvedActivityIdArray?: number[] = [];
 
   @property({
     hidden: true,
