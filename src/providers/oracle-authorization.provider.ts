@@ -56,7 +56,7 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
 
     if (oracle === undefined) return AuthorizationDecision.ABSTAIN;
     // SYSTEM account
-    if (oracle.id === 0) return AuthorizationDecision.ALLOW;
+    if (oracle.id === 1) return AuthorizationDecision.ALLOW;
 
     const resource = metadata.resource;
     if (!resource) {

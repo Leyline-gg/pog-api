@@ -1,8 +1,8 @@
 import {Client, expect, toJSON} from '@loopback/testlab';
 import {ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
-import {GoodOracle} from '../../../models';
-import {GoodOracleRepository} from '../../../repositories';
+import {GoodOracle, OracleApiKey} from '../../../models';
+import {AuthRepository, GoodOracleRepository} from '../../../repositories';
 import {
   delay,
   givenGoodOracle,
@@ -10,10 +10,20 @@ import {
   givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
+const oracleAdmin = new GoodOracle({id: 1, name: 'SYSTEM'});
+const authInitia = new OracleApiKey({
+  apikey: '1234',
+  oracleId: 1,
+});
+const headers = {
+  Authorization: 'Bearer 1234',
+};
+
 describe('PogApiApplication - Oracle', () => {
   let app: PogApiApplication;
   let client: Client;
   let goodOracleRepo: GoodOracleRepository;
+  let authRepo: AuthRepository;
 
   before('setupApplication', async () => {
     ({app, client} = await givenRunningApplicationWithCustomConfiguration());
@@ -21,20 +31,28 @@ describe('PogApiApplication - Oracle', () => {
   after(() => app.stop());
 
   before(givenGoodOracleRepository);
+  before(givenAuthRepository);
   beforeEach(async () => {
     await goodOracleRepo.deleteAll();
+    await authRepo.deleteAll();
+    await goodOracleRepo.create(oracleAdmin);
+    await authRepo.create(authInitia);
   });
 
   it('creates a Good Oracle', async function () {
     const goodOracle = givenGoodOracle();
-    const response = await client.post('/oracle').send(goodOracle).expect(200);
+    const response = await client
+      .post('/oracle')
+      .set(headers)
+      .send(goodOracle)
+      .expect(200);
     delete goodOracle.id;
     expect(response.body).to.containDeep(goodOracle);
     const result = await goodOracleRepo.findById(response.body.id);
     expect(result).to.containDeep(goodOracle);
   });
 
-  context('when dealing with a single persisted Good Category', () => {
+  context('when dealing with a single persisted Good Oracle', () => {
     let persistedGoodOracle: GoodOracle;
 
     beforeEach(async () => {
@@ -59,6 +77,7 @@ describe('PogApiApplication - Oracle', () => {
       });
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
@@ -67,7 +86,11 @@ describe('PogApiApplication - Oracle', () => {
     });
 
     it('returns 404 when replacing a Good Oracle that does not exist', () => {
-      return client.put('/oracle/99999').send(givenGoodOracle()).expect(404);
+      return client
+        .put('/oracle/99999')
+        .set(headers)
+        .send(givenGoodOracle())
+        .expect(404);
     });
 
     it('updates the Good Oracle by ID ', async () => {
@@ -77,6 +100,7 @@ describe('PogApiApplication - Oracle', () => {
       });
       await client
         .patch(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
@@ -87,6 +111,7 @@ describe('PogApiApplication - Oracle', () => {
     it('returns 404 when updating a Good Oracle that does not exist', () => {
       return client
         .patch('/oracle/99999')
+        .set(headers)
         .send(givenGoodOracle({status: 0}))
         .expect(404);
     });
@@ -140,23 +165,6 @@ describe('PogApiApplication - Oracle', () => {
         ),
       });
 
-      // expect(goodOracleOnLedger.name).to.equal(persistedGoodOracle.name);
-      // expect(goodOracleOnLedger.status).to.equal(persistedGoodOracle.status);
-      // expect(goodOracleOnLedger.goodOracleURI).to.equal(
-      //   persistedGoodOracle.goodOracleURI,
-      // );
-      // expect(goodOracleOnLedger.approvedActivityIdArray.length).to.equal(
-      //   persistedGoodOracle.approvedActivityIdArray?.length,
-      // );
-
-      // if (goodOracleOnLedger.approvedActivityIdArray.length) {
-      //   const diff = goodOracleOnLedger.approvedActivityIdArray.filter(
-      //     (activity: number) =>
-      //       !persistedGoodOracle.approvedActivityIdArray?.includes(activity),
-      //   );
-      //   expect(diff.length).to.equal(0);
-      // }
-
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
 
       expect(result).to.containDeep(goodOracleOnLedger);
@@ -172,6 +180,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -206,6 +215,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -240,6 +250,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -274,6 +285,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -308,6 +320,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -352,8 +365,16 @@ describe('PogApiApplication - Oracle', () => {
     goodOracleRepo = await app.getRepository(GoodOracleRepository);
   }
 
+  async function givenAuthRepository() {
+    authRepo = await app.getRepository(AuthRepository);
+  }
+
   async function givenGoodOracleInstance(goodOracle?: Partial<GoodOracle>) {
-    const response = await client.post(`/oracle`).send(goodOracle).expect(200);
+    const response = await client
+      .post(`/oracle`)
+      .set(headers)
+      .send(goodOracle)
+      .expect(200);
 
     return response.body;
   }
