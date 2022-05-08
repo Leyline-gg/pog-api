@@ -1,12 +1,21 @@
+import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
 import {ErrorResponse, GoodEntry} from '../models';
 import {GoodEntryRepository} from '../repositories';
-
+import {
+  PogProfileParams,
+  PogProfileService,
+  ProofOfGoodSmartContractService,
+} from '../services';
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
     public goodEntryRepository: GoodEntryRepository,
+    @service(ProofOfGoodSmartContractService)
+    private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
+    @service(PogProfileService)
+    private pogProfileService: PogProfileService,
   ) {}
 
   /**
@@ -163,8 +172,43 @@ export class GoodEntryController {
       },
       description: '',
     })
-    entry: Omit<GoodEntry, 'id'>,
+    entry: Partial<GoodEntry>,
   ): Promise<unknown> {
-    return this.goodEntryRepository.create(entry);
+    console.log('Data received:', entry);
+    const pogProfileParams: PogProfileParams = {
+      userId: entry?.userId ?? '',
+      email: entry?.email ?? '',
+      doGooder: entry?.doGooder ?? '',
+    };
+
+    const pogProfile = await this.pogProfileService.findOrCreatePogProfile(
+      pogProfileParams,
+    );
+
+    const goodEntry = new GoodEntry(entry);
+    Object.assign(goodEntry, {
+      userId: pogProfile?.userId,
+      doGooder: pogProfile?.doGooder,
+    });
+
+    const entryData = await this.proofOfGoodSmartContractService.updateLedger(
+      'post',
+      goodEntry,
+    );
+
+    const response = await this.goodEntryRepository.create({
+      id: entryData.id,
+      doGooder: entryData.doGooder,
+      userId: pogProfile?.userId,
+      goodActivityId: entryData.goodActivityId,
+      goodOracleId: entryData.goodOracleId,
+      proofURL: entryData.proofURL,
+      value: entryData.value,
+      units: entryData.units,
+      timestamp: entryData.timestamp,
+      externalId: entryData.externalId,
+    });
+
+    return response;
   }
 }

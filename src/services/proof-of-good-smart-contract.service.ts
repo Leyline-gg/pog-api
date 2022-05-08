@@ -1,7 +1,13 @@
 import {/* inject, */ BindingScope, injectable} from '@loopback/core';
 import {ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
-import {GoodActivity, GoodCategory, GoodOracle, GoodType} from '../models';
+import {
+  GoodActivity,
+  GoodCategory,
+  GoodEntry,
+  GoodOracle,
+  GoodType,
+} from '../models';
 
 type InputModel =
   | Partial<GoodOracle>
@@ -41,9 +47,9 @@ export class ProofOfGoodSmartContractService {
         if (crudOperation === 'post') {
           Object.assign(data, {id: 0});
         }
+        console.log('Incoming data: ', crudOperation, data);
         switch (true) {
           case data instanceof GoodOracle:
-            console.log('Incoming Oracle data: ', crudOperation, data);
             if (crudOperation === 'post') {
               txResponse = await this.contract.addOrUpdateGoodOracle(data);
             } else {
@@ -53,7 +59,6 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodCategory:
-            console.log('Incoming category data:', crudOperation, data);
             txResponse = await this.contract.addOrUpdateGoodCategory(
               data.id,
               data.name,
@@ -62,7 +67,6 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodType:
-            console.log('Incoming Good Type data:', crudOperation, data);
             txResponse = await this.contract.addOrUpdateGoodType(
               data.id,
               data.name,
@@ -71,8 +75,11 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodActivity:
-            console.log('Incoming Good Activity data:', crudOperation, data);
             txResponse = await this.contract.addOrUpdateGoodActivity(data);
+            break;
+
+          case data instanceof GoodEntry:
+            txResponse = await this.contract.createProofOfGoodEntry(data);
             break;
         }
 
