@@ -68,7 +68,7 @@
     "ethers": "^5.6.2",
     "loopback-connector": "^5.0.1",
     "loopback-connector-openapi": "^6.2.0",
-    "nanoid": "^3.3.3",
+    "nanoid": "^3.3.4",
     "passport-http-bearer": "^1.0.1",
     "tslib": "^2.4.0",
     "uuid": "^8.3.2"
