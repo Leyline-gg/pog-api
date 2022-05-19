@@ -62,18 +62,18 @@ export class GoodOracle extends Entity {
   approvedActivityIdArray?: number[];
 
   @property({
-<<<<<<< HEAD
     jsonSchema: {
       type: 'number',
       description: 'Type of organization',
     },
   })
   organizationType?: number;
-=======
+
+  @property({
     hidden: true,
   })
-  [securityId]: string = this.id?.toString() ?? '';
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
+  [securityId]: string = this.id?.toString() ?? '',
+
 }
 
 export interface GoodOracleRelations {

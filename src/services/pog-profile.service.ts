@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import {Timestamp} from '@google-cloud/firestore';
-=======
-import {Firestore} from '@google-cloud/firestore';
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
+import {Firestore, Timestamp} from '@google-cloud/firestore';
 import {BindingScope, inject, injectable} from '@loopback/core';
 import {utils, Wallet} from 'ethers';
 import {nanoid} from 'nanoid';
@@ -232,36 +228,6 @@ export class PogProfileService {
   }
 
   async generateWallet(): Promise<Wallet | undefined> {
-<<<<<<< HEAD
-    const mnemonicId = process.env.MNEMONIC_ID;
-    const walletGenerationDocRef = await this.db.doc(
-      `walletgeneration/${mnemonicId}`,
-    );
-    return await this.db.runTransaction(async (transaction: any) => {
-      const walletGenerationDocSnapshot: FirebaseFirestore.DocumentSnapshot =
-        await transaction.get(walletGenerationDocRef);
-      try {
-        if (walletGenerationDocSnapshot.exists) {
-          const walletGenerationDoc = walletGenerationDocSnapshot?.data();
-          const generatedCount = walletGenerationDoc?.generatedCount;
-          const derivativePath = this.generateDerivativePath(generatedCount);
-          const mnemonic: any = process.env[`MNEMONIC_${mnemonicId}`];
-          const newWallet = Wallet.fromMnemonic(mnemonic, derivativePath);
-          transaction.update(walletGenerationDocRef, {
-            generatedCount: FirebaseFirestore.FieldValue.increment(1),
-            currentIndex: FirebaseFirestore.FieldValue.increment(1),
-          });
-          console.log('New wallet address created:', newWallet.address);
-          return newWallet;
-        } else {
-          return Promise.reject('The wallet generation doc does not exist');
-        }
-      } catch (error) {
-        console.log(error);
-        return undefined;
-      }
-    });
-=======
     const mnemonicId = process.env.MNEMONIC_ID ?? '';
     const walletGenerationDocRef = this.db.doc(
       `walletgeneration/${mnemonicId}`,
@@ -295,7 +261,6 @@ export class PogProfileService {
         }
       },
     );
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
   }
 
   async findOrCreatePogProfile(data: PogProfileParams) {
@@ -353,28 +318,6 @@ export class PogProfileService {
       }
     }
 
-<<<<<<< HEAD
-=======
-    // // if profiles were found from the email and doGooder wallets entered
-    // // - check that the userIds returned match
-    // // - throw an error if they don't
-    // if (pogProfileFromEmailHash && pogProfileFromUserId && pogProfile) {
-    //   if (pogProfileFromEmailHash.userId !== pogProfileFromUserId.userId) {
-    //     throw new Error('User ID found for email and wallet do not match');
-    //   } else {
-    //     console.log('User ID from email and wallet matches');
-    //     console.log('Setting Profile ID to', pogProfileFromEmailHash);
-    //     profileId = pogProfileFromEmailHash;
-    //   }
-    //   // if a userId was only returned from userByEmailHash, set it as profileId
-    // } else if (pogProfileFromEmailHash) {
-    //   profileId = pogProfileFromEmailHash;
-    //   // if a userId was only returned from walletUser, set it as profileId
-    // } else if (pogProfileFromUserId) {
-    //   profileId = pogProfileFromUserId;
-    // }
-
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
     switch (true) {
       // if userId was provided in request, and profiles were found from email and doGooder match
       // check if the userId from profiles returned matches the userId provided
@@ -425,16 +368,8 @@ export class PogProfileService {
 
     // if no userId was found, generate a new one
     if (pogProfile) {
-<<<<<<< HEAD
-      if (doGooder) {
-        if (!pogProfileFromWalletAddress) {
-          await this.addWalletAddressToProfile(pogProfile.userId, doGooder);
-        }
-        Object.assign(pogProfile, {doGooder});
-=======
       if (doGooder && !pogProfileFromWalletAddress) {
         await this.addWalletAddressToProfile(pogProfile.userId, doGooder);
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
       }
       return pogProfile;
     } else {
@@ -464,14 +399,7 @@ export class PogProfileService {
       } else {
         // generate wallet and add to pog profile
         const newWallet = await this.generateWallet();
-<<<<<<< HEAD
-        if (newWallet) {
-          walletAddress = newWallet.address.toLowerCase();
-          await this.addWalletAddressToProfile(profileId, walletAddress);
-        }
-=======
         walletAddress = newWallet!.address;
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
       }
       await this.addWalletAddressToProfile(profileId, walletAddress);
 
