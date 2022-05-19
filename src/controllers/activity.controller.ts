@@ -4,15 +4,18 @@ import {
   get,
   getModelSchemaRef,
   HttpErrors,
-  operation,
   param,
   patch,
   post,
   put,
   requestBody,
 } from '@loopback/rest';
+<<<<<<< HEAD
 import {BigNumber} from 'ethers';
 import {GoodActivity} from '../models';
+=======
+import {ErrorResponse, GoodActivity} from '../models';
+>>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
 import {GoodActivityRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 export class ActivityController {
@@ -39,9 +42,7 @@ export class ActivityController {
         description: 'Missing Required Information',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -49,9 +50,7 @@ export class ActivityController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -59,9 +58,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -170,9 +167,7 @@ export class ActivityController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -181,9 +176,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -324,9 +317,7 @@ export class ActivityController {
         description: 'Unauthorized',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
         headers: {},
@@ -335,9 +326,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -424,9 +413,7 @@ export class ActivityController {
         description: 'A Proof of Good Activity',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodActivity',
-            },
+            schema: getModelSchemaRef(GoodActivity),
             examples: {},
           },
         },
@@ -435,9 +422,7 @@ export class ActivityController {
         description: 'Activity Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -468,7 +453,7 @@ export class ActivityController {
     return this.goodActivityRepository.findById(id);
   }
 
-  @operation('get', '/activity', {
+  @get('/activity', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Activities',

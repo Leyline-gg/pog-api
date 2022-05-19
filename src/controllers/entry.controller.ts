@@ -1,10 +1,20 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
+<<<<<<< HEAD
 import {utils} from 'ethers';
 import {GoodEntry} from '../models';
 import {GoodActivityRepository, GoodEntryRepository} from '../repositories';
 import {PogProfileService, ProofOfGoodSmartContractService} from '../services';
+=======
+import {ErrorResponse, GoodEntry} from '../models';
+import {GoodEntryRepository} from '../repositories';
+import {
+  PogProfileParams,
+  PogProfileService,
+  ProofOfGoodSmartContractService,
+} from '../services';
+>>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
@@ -31,9 +41,7 @@ export class GoodEntryController {
         description: 'A Proof of Good Entry',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/GoodEntry',
-            },
+            schema: getModelSchemaRef(GoodEntry),
             examples: {},
           },
         },
@@ -42,9 +50,7 @@ export class GoodEntryController {
         description: 'Entry Not Found',
         content: {
           'application/json': {
-            schema: {
-              $ref: '#/components/schemas/ErrorResponse',
-            },
+            schema: getModelSchemaRef(ErrorResponse),
           },
         },
       },
@@ -178,6 +184,7 @@ export class GoodEntryController {
     entry: Partial<GoodEntry>,
   ): Promise<unknown> {
     console.log('Data received:', entry);
+<<<<<<< HEAD
     const pogProfileParams: any = {};
 
     const goodActivity = await this.goodActivityRepository.findById(
@@ -192,6 +199,13 @@ export class GoodEntryController {
       if (entry.email) {
         Object.assign(pogProfileParams, {email: entry.email});
       }
+=======
+    const pogProfileParams: PogProfileParams = {
+      userId: entry?.userId ?? '',
+      email: entry?.email ?? '',
+      doGooder: entry?.doGooder ?? '',
+    };
+>>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
 
       if (entry.doGooder) {
         Object.assign(pogProfileParams, {

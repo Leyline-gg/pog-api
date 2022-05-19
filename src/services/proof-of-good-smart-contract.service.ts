@@ -98,17 +98,4 @@ export class ProofOfGoodSmartContractService {
     );
     return response;
   }
-
-  async getProfileByUserId(userId: string) {
-    return await this.contract.profileByUserId(userId);
-  }
-
-  async getUserIdFromEmail(email: string) {
-    const emailHash = ethers.utils.id(email);
-    return await this.contract.userByEmailHash(emailHash);
-  }
-
-  async getUserIdFromAddress(doGooder: string) {
-    return await this.contract.profileByWallet(doGooder);
-  }
 }
