@@ -59,6 +59,14 @@ export class GoodOracle extends Entity {
     itemType: 'number',
   })
   approvedActivityIdArray?: number[];
+
+  @property({
+    jsonSchema: {
+      type: 'number',
+      description: 'Type of organization',
+    },
+  })
+  organizationType?: number;
 }
 
 export interface GoodOracleRelations {

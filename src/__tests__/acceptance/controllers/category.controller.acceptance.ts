@@ -161,7 +161,7 @@ describe('PogApiApplication - Category', () => {
       );
 
       const goodCategoryOnLedger = new GoodCategory({
-        id: goodCategoryArgs.id,
+        id: goodCategoryArgs.id.toNumber(),
         name: goodCategoryArgs.name,
         status: goodCategoryArgs.status,
       });
@@ -191,7 +191,7 @@ describe('PogApiApplication - Category', () => {
       );
 
       const goodCategoryOnLedger = new GoodCategory({
-        id: goodCategoryArgs.id,
+        id: goodCategoryArgs.id.toNumber(),
         name: goodCategoryArgs.name,
         status: goodCategoryArgs.status,
       });
@@ -221,7 +221,7 @@ describe('PogApiApplication - Category', () => {
       );
 
       const goodCategoryOnLedger = new GoodCategory({
-        id: goodCategoryArgs.id,
+        id: goodCategoryArgs.id.toNumber(),
         name: goodCategoryArgs.name,
         status: goodCategoryArgs.status,
       });

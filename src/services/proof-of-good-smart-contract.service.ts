@@ -86,7 +86,12 @@ export class ProofOfGoodSmartContractService {
         const receipt = await txResponse.wait();
         const events = receipt.events;
 
-        // if (events) console.log('Events Args:', events[0].args);
+        if (events) console.log('Events Args:', events);
+        if (data instanceof GoodEntry) {
+          return events.filter(
+            (event: ethers.Event) => event?.event == 'ProofOfGoodEntryCreated',
+          )[0].args;
+        }
         return events[0].args;
       },
       {retryLimit: 5, interval: 5000},

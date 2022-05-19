@@ -1,13 +1,11 @@
-import {
-  Client, expect, toJSON
-} from '@loopback/testlab';
+import {Client, expect, toJSON} from '@loopback/testlab';
 import {PogApiApplication} from '../../../application';
 import {GoodEntry} from '../../../models';
 import {GoodEntryRepository} from '../../../repositories';
 import {
   delay,
   givenGoodEntry,
-  givenRunningApplicationWithCustomConfiguration
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
 describe('PogApiApplication - Entry', () => {
@@ -25,31 +23,28 @@ describe('PogApiApplication - Entry', () => {
     await goodEntryRepo.deleteAll();
   });
 
-  it('creates a Good Oracle', async function () {
+  it('creates a Good Entry', async function () {
     const goodEntry = givenGoodEntry();
-    const response = await client
-      .post('/entry')
-      .send(goodEntry)
-      .expect(200);
+    const response = await client.post('/entry').send(goodEntry).expect(200);
     expect(response.body).to.containDeep(goodEntry);
     const result = await goodEntryRepo.findById(response.body.id);
     expect(result).to.containDeep(goodEntry);
   });
 
-  it('queries Good Oracle with a filter', async () => {
+  it('queries Good Entry with a filter', async () => {
     await givenGoodEntryInstance({
       goodActivityId: 1,
-      userId: "1234567890"
+      userId: '1234567890',
     });
     await delay(500);
     await givenGoodEntryInstance({
       goodActivityId: 2,
-      userId: "1234567890"
+      userId: '1234567890',
     });
     await delay(500);
     await givenGoodEntryInstance({
       goodActivityId: 2,
-      userId: "1234567890"
+      userId: '1234567890',
     });
     const response = await client
       .get('/entry')
@@ -65,7 +60,7 @@ describe('PogApiApplication - Entry', () => {
       persistedGoodEntry = await givenGoodEntryInstance();
     });
 
-    it('gets a Good Oracle by ID', () => {
+    it('gets a Good Entry by ID', () => {
       return client
         .get(`/entry/${persistedGoodEntry.id}`)
         .send()
@@ -75,7 +70,6 @@ describe('PogApiApplication - Entry', () => {
     it('returns 404 when getting a Good Oracle that does not exist', () => {
       return client.get('/entry/99999').expect(404);
     });
-
   });
 
   /*

@@ -11,6 +11,7 @@ import {
   put,
   requestBody,
 } from '@loopback/rest';
+import {BigNumber} from 'ethers';
 import {GoodActivity} from '../models';
 import {GoodActivityRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
@@ -282,17 +283,24 @@ export class ActivityController {
       'patch',
       goodActivity,
     );
+
+    const eventEmittedGoodActivity = new GoodActivity({
+      id: goodActivityId,
+      goodTypeIdArray: goodTypeIdArray.map((typeId: BigNumber) =>
+        typeId.toNumber(),
+      ),
+      goodCategoryId,
+      name,
+      valuePerUnit,
+      unitDescription,
+      status,
+    });
+
+    console.log('good activity event emitted:', eventEmittedGoodActivity);
+
     // persist event arguments to firestore doc
     return this.goodActivityRepository
-      .updateById(id, {
-        id: goodActivityId,
-        goodTypeIdArray,
-        goodCategoryId,
-        name,
-        valuePerUnit,
-        unitDescription,
-        status,
-      })
+      .updateById(id, eventEmittedGoodActivity)
       .catch((err: Error) => {
         if (err.message === 'Document not found')
           throw new HttpErrors.NotFound('Oracle Not Found');
