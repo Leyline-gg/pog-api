@@ -17,6 +17,7 @@ interface AuthorizationCheckParams {
 
 // Class level authorizer
 export class OracleAuthorizationProvider implements Provider<Authorizer> {
+  DEFAULT_AUTH_DECISION = AuthorizationDecision.ALLOW;
   constructor() {}
 
   value(): Authorizer {
@@ -44,7 +45,22 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
               return AuthorizationDecision.DENY;
           },
         };
-      return rules[request.method]() ?? AuthorizationDecision.ALLOW;
+      return rules[request.method]() ?? this.DEFAULT_AUTH_DECISION;
+    },
+    auth: ({
+      request,
+      oracle,
+    }: AuthorizationCheckParams): AuthorizationDecision => {
+      const rules: {[method: string]: () => AuthorizationDecision | undefined} =
+        {
+          POST: () => {
+            // only allow SYSTEM account
+            return oracle.id === 1
+              ? AuthorizationDecision.ALLOW
+              : AuthorizationDecision.DENY;
+          },
+        };
+      return rules[request.method]() ?? this.DEFAULT_AUTH_DECISION;
     },
   };
 
