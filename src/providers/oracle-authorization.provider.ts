@@ -7,6 +7,7 @@ import {
 import {Provider} from '@loopback/core';
 import {RequestContext} from '@loopback/rest';
 import {Request} from 'express';
+import {SYSTEM_ORACLE_ID} from '../constants';
 import {GoodOracle} from '../models';
 
 interface AuthorizationCheckParams {
@@ -55,7 +56,7 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
         {
           POST: () => {
             // only allow SYSTEM account
-            return oracle.id === 1
+            return oracle.id === SYSTEM_ORACLE_ID
               ? AuthorizationDecision.ALLOW
               : AuthorizationDecision.DENY;
           },
@@ -72,7 +73,7 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
 
     if (oracle === undefined) return AuthorizationDecision.ABSTAIN;
     // SYSTEM account
-    if (oracle.id === 1) return AuthorizationDecision.ALLOW;
+    if (oracle.id === SYSTEM_ORACLE_ID) return AuthorizationDecision.ALLOW;
 
     const resource = metadata.resource;
     if (!resource) {
