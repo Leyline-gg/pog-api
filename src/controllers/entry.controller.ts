@@ -7,7 +7,7 @@ import {GoodActivityRepository, GoodEntryRepository} from '../repositories';
 import {
   PogProfileParams,
   PogProfileService,
-  ProofOfGoodSmartContractService,
+  ProofOfGoodSmartContractService
 } from '../services';
 export class GoodEntryController {
   constructor(
@@ -19,7 +19,7 @@ export class GoodEntryController {
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
     @service(PogProfileService)
     private pogProfileService: PogProfileService,
-  ) {}
+  ) { }
 
   /**
    * Retrieve a Proof of Good Entry
@@ -231,18 +231,20 @@ export class GoodEntryController {
       console.log('entryData:', entryData);
       console.log('entryData tokenId', entryData.tokenId.toNumber());
 
-      const response = await this.goodEntryRepository.createGoodEntry({
+      const persistGoodEntryData = new GoodEntry({
         id: entryData.tokenId.toNumber(),
         doGooder: pogProfile?.doGooder,
         userId: pogProfile?.userId,
+        email: pogProfile?.email,
         goodActivityId: entryData.goodActivityId,
         goodOracleId: entryData.goodOracleId,
         value: entryData.units * goodActivity.valuePerUnit,
         units: entryData.units,
         timestamp: entryData.timestamp,
         externalId: entryData.externalId,
-        email: entry.email,
-      });
+      })
+
+      const response = await this.goodEntryRepository.createGoodEntry(persistGoodEntryData);
       console.log('response:', response);
       return response;
     }

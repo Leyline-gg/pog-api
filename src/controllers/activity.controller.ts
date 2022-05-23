@@ -8,14 +8,10 @@ import {
   patch,
   post,
   put,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
-<<<<<<< HEAD
 import {BigNumber} from 'ethers';
-import {GoodActivity} from '../models';
-=======
 import {ErrorResponse, GoodActivity} from '../models';
->>>>>>> def1bd474443b1197c2e9354ca521f27ea1d4a00
 import {GoodActivityRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 export class ActivityController {
@@ -24,7 +20,7 @@ export class ActivityController {
     public goodActivityRepository: GoodActivityRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) {}
+  ) { }
 
   /**
    * Create a new Activity

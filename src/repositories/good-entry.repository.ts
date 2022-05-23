@@ -37,8 +37,9 @@ export class GoodEntryRepository extends DefaultCrudRepository<
           const newNonce = previousNonce + 1;
           Object.assign(goodEntry, {nonce: newNonce});
           const response = await super.create(goodEntry);
+          console.log('incrementing tracker doc nonce')
           transaction.update(trackerDocRef, {
-            nonce: FirebaseFirestore.FieldValue.increment(1),
+            nonce: newNonce,
           });
           return response;
         } catch (error) {

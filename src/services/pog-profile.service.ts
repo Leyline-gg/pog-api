@@ -113,7 +113,7 @@ export class PogProfileService {
       const profileQuerySnapshot: FirebaseFirestore.QuerySnapshot =
         await this.db
           .collection('pogprofiles')
-          .where('email', '==', emailHash)
+          .where('emailHash', '==', emailHash)
           .get();
 
       if (profileQuerySnapshot.docs.length > 1) {
@@ -138,7 +138,7 @@ export class PogProfileService {
       }
     } catch (error) {
       console.log(error);
-      return undefined;
+      return error
     }
   }
 
@@ -215,7 +215,7 @@ export class PogProfileService {
   }
 
   generateDerivativePath(highestGeneratedCount: number) {
-    const baseDerivativePath = "m/44'/60'/";
+    const baseDerivativePath = "m/44'/60'";
     const newGeneratedCount = highestGeneratedCount + 1;
     const maxDerivativePathOffset = parseInt(
       process.env.MAX_DERIVATIVE_PATH_OFFSET as string,
@@ -240,14 +240,17 @@ export class PogProfileService {
           const walletGenerationDoc: FirebaseFirestore.DocumentSnapshot =
             await transaction.get(walletGenerationDocRef);
           if (walletGenerationDoc.exists) {
-            const generatedCount = walletGenerationDoc?.data()?.generatedCount;
+            console.log('walletGenerationDoc fetched:', walletGenerationDoc.data())
+            const generatedCount = walletGenerationDoc.data()?.generatedCount;
+            const currentIndex = walletGenerationDoc.data()?.currentIndex
             const derivativePath = this.generateDerivativePath(generatedCount);
+            console.log('generated derivation path for new wallet:', derivativePath)
             const mnemonic: string =
               process.env[`MNEMONIC_${mnemonicId}`] ?? '';
             const newWallet = Wallet.fromMnemonic(mnemonic, derivativePath);
             transaction.update(walletGenerationDocRef, {
-              generatedCount: FirebaseFirestore.FieldValue.increment(1),
-              currentIndex: FirebaseFirestore.FieldValue.increment(1),
+              generatedCount: generatedCount + 1,
+              currentIndex: currentIndex + 1,
             });
             console.log('New wallet address created:', newWallet.address);
             return newWallet;
