@@ -7,13 +7,14 @@ import {
   delay,
   givenGoodOracle,
   givenProofOfGoodLedger,
-  givenRunningApplicationWithCustomConfiguration,
+  givenRunningApplicationWithCustomConfiguration
 } from '../test-helper';
 
 const oracleAdmin = new GoodOracle({id: 1, name: 'SYSTEM'});
 const authInitia = new OracleApiKey({
   apikey: '1234',
   oracleId: 1,
+  expired: false
 });
 const headers = {
   Authorization: 'Bearer 1234',
