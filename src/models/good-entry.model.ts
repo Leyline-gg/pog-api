@@ -55,7 +55,7 @@ export class GoodEntry extends Entity {
       readOnly: true,
     },
   })
-  value?: number;
+  goodPoints?: number;
 
   /**
    * Number of units performed for the `GoodActivity`
@@ -86,12 +86,13 @@ export class GoodEntry extends Entity {
    * awaiting clarification
    */
   @property({
+    required: true,
     jsonSchema: {
       type: 'string',
       description: 'user email',
     },
   })
-  email?: string;
+  email: string;
 
   @property({
     jsonSchema: {
@@ -111,7 +112,7 @@ export class GoodEntry extends Entity {
       readOnly: true,
     },
   })
-  goodOracleId: number;
+  goodOracleId?: number;
 
   /**
    * awaiting clarification
@@ -147,6 +148,14 @@ export class GoodEntry extends Entity {
     },
   })
   nonce?: number;
+
+  @property({
+    jsonSchema: {
+      type: 'number',
+      description: 'Error reason for failed good entries',
+    },
+  })
+  error?: string;
 }
 
 export interface GoodEntryRelations {

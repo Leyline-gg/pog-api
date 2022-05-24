@@ -16,37 +16,15 @@ export class GoodEntryRepository extends DefaultCrudRepository<
     this.db = dataSource.connector?.db;
   }
 
-  async createGoodEntry(goodEntry: GoodEntry): Promise<GoodEntry | undefined> {
-    const trackerDocRef: FirebaseFirestore.DocumentReference =
-      await this.db.doc(`transaction_trackers/goodentries`);
-    return await this.db.runTransaction(
-      async (transaction: FirebaseFirestore.Transaction) => {
-        try {
-          const trackerDoc: FirebaseFirestore.DocumentSnapshot =
-            await transaction.get(trackerDocRef);
-          console.log('trackDoc exists:', trackerDoc.exists);
-          console.log('trackerDoc:', trackerDoc);
-          if (!trackerDoc.exists) {
-            transaction.set(trackerDocRef, {
-              transactionType: 'goodentry',
-              nonce: 0,
-            });
-          }
-          const trackerData = trackerDoc.data();
-          const previousNonce = trackerData?.nonce;
-          const newNonce = previousNonce + 1;
-          Object.assign(goodEntry, {nonce: newNonce});
-          const response = await super.create(goodEntry);
-          console.log('incrementing tracker doc nonce')
-          transaction.update(trackerDocRef, {
-            nonce: newNonce,
-          });
-          return response;
-        } catch (error) {
-          console.log(error);
-          return undefined;
-        }
-      },
-    );
+  async createFailedGoodEntry(
+    goodEntry: GoodEntry,
+  ): Promise<GoodEntry | undefined> {
+    const failedDocRef = await this.db.collection('failed_goodentries').add({
+      ...goodEntry,
+    });
+    const failedDocSnapshot = await failedDocRef.get();
+    const failedDocData = failedDocSnapshot.data();
+    console.log('Added entry to failed good entries:', failedDocData);
+    return failedDocData;
   }
 }

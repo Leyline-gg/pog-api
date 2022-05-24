@@ -140,23 +140,6 @@ describe('PogApiApplication - Oracle', () => {
         ),
       });
 
-      // expect(goodOracleOnLedger.name).to.equal(persistedGoodOracle.name);
-      // expect(goodOracleOnLedger.status).to.equal(persistedGoodOracle.status);
-      // expect(goodOracleOnLedger.goodOracleURI).to.equal(
-      //   persistedGoodOracle.goodOracleURI,
-      // );
-      // expect(goodOracleOnLedger.approvedActivityIdArray.length).to.equal(
-      //   persistedGoodOracle.approvedActivityIdArray?.length,
-      // );
-
-      // if (goodOracleOnLedger.approvedActivityIdArray.length) {
-      //   const diff = goodOracleOnLedger.approvedActivityIdArray.filter(
-      //     (activity: number) =>
-      //       !persistedGoodOracle.approvedActivityIdArray?.includes(activity),
-      //   );
-      //   expect(diff.length).to.equal(0);
-      // }
-
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
 
       expect(result).to.containDeep(goodOracleOnLedger);

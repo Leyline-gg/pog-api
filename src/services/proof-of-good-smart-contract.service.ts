@@ -37,6 +37,10 @@ export class ProofOfGoodSmartContractService {
     ).connect(this.signer);
   }
 
+  async getNonce() {
+    return await this.signer.getTransactionCount();
+  }
+
   async updateLedger(crudOperation: string, data: InputModel) {
     let attempt = 0;
     const response = await ethers.utils.poll(

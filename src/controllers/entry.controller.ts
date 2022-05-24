@@ -3,23 +3,29 @@ import {Filter, repository} from '@loopback/repository';
 import {get, getModelSchemaRef, param, post, requestBody} from '@loopback/rest';
 import {utils} from 'ethers';
 import {ErrorResponse, GoodEntry} from '../models';
-import {GoodActivityRepository, GoodEntryRepository} from '../repositories';
 import {
-  PogProfileParams,
-  PogProfileService,
-  ProofOfGoodSmartContractService
-} from '../services';
+  GoodActivityRepository,
+  GoodEntryRepository,
+  PogProfileRepository,
+} from '../repositories';
+import {ProofOfGoodSmartContractService} from '../services';
+
+export type PogProfileParams = {
+  userId: string;
+  email: string;
+  doGooder: string;
+};
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
     public goodEntryRepository: GoodEntryRepository,
     @repository(GoodActivityRepository)
     public goodActivityRepository: GoodActivityRepository,
+    @repository(PogProfileRepository)
+    public pogProfileRepository: PogProfileRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-    @service(PogProfileService)
-    private pogProfileService: PogProfileService,
-  ) { }
+  ) {}
 
   /**
    * Retrieve a Proof of Good Entry
@@ -163,8 +169,9 @@ export class GoodEntryController {
               value: {
                 doGooder: 'string',
                 email: 'string',
-                goodActivityId: 0,
-                units: 1,
+                goodActivityId: 'number',
+                goodOracleId: 'number',
+                units: 'number',
                 externalId: 'string',
                 imageURL: 'string',
                 mediaURL: 'string',
@@ -175,7 +182,7 @@ export class GoodEntryController {
       },
       description: '',
     })
-    entry: Partial<GoodEntry>,
+    entry: GoodEntry,
   ): Promise<unknown> {
     console.log('Data received:', entry);
 
@@ -185,68 +192,72 @@ export class GoodEntryController {
       doGooder: entry?.doGooder ?? '',
     };
 
-    const goodActivity = await this.goodActivityRepository.findById(
-      entry.goodActivityId,
+    if (entry.userId) {
+      Object.assign(pogProfileParams, {userId: entry.userId});
+    }
+
+    if (entry.email) {
+      Object.assign(pogProfileParams, {email: entry.email});
+    }
+
+    if (entry.doGooder) {
+      Object.assign(pogProfileParams, {
+        doGooder: entry.doGooder.toLowerCase(),
+      });
+    }
+
+    const pogProfile = await this.pogProfileRepository.findOrCreatePogProfile(
+      pogProfileParams,
     );
 
-    if (goodActivity && goodActivity.valuePerUnit) {
-      if (entry.userId) {
-        Object.assign(pogProfileParams, {userId: entry.userId});
-      }
+    console.log('pogProfile:', pogProfile);
 
-      if (entry.email) {
-        Object.assign(pogProfileParams, {email: entry.email});
-      }
+    const goodEntry = new GoodEntry(entry);
+    Object.assign(goodEntry, pogProfile);
+    if (entry.externalId) {
+      const encodedExternalId = utils.formatBytes32String(entry.externalId);
+      Object.assign(goodEntry, {
+        externalId: encodedExternalId,
+      });
+    }
 
-      if (entry.doGooder) {
-        Object.assign(pogProfileParams, {
-          doGooder: entry.doGooder.toLowerCase(),
-        });
-      }
-
-      const pogProfile = await this.pogProfileService.findOrCreatePogProfile(
-        pogProfileParams,
-      );
-
-      console.log('pogProfile:', pogProfile);
-
-      const goodEntry = new GoodEntry(entry);
-      Object.assign(goodEntry, pogProfile);
-      if (entry.externalId) {
-        const encodedExternalId = utils.formatBytes32String(entry.externalId);
-        Object.assign(goodEntry, {
-          externalId: encodedExternalId,
-        });
-        console.log('encoded externalId:', encodedExternalId);
-        console.log(
-          'decoded externalId:',
-          utils.parseBytes32String(encodedExternalId),
-        );
-      }
-
+    try {
       const entryData = await this.proofOfGoodSmartContractService.updateLedger(
         'post',
         goodEntry,
       );
-      console.log('entryData:', entryData);
-      console.log('entryData tokenId', entryData.tokenId.toNumber());
 
       const persistGoodEntryData = new GoodEntry({
         id: entryData.tokenId.toNumber(),
-        doGooder: pogProfile?.doGooder,
-        userId: pogProfile?.userId,
-        email: pogProfile?.email,
+        doGooder: entryData.doGooder.toLowerCase(),
+        userId: entryData.userId,
+        email: entry.email,
         goodActivityId: entryData.goodActivityId,
         goodOracleId: entryData.goodOracleId,
-        value: entryData.units * goodActivity.valuePerUnit,
+        goodPoints: entryData.goodPoints,
         units: entryData.units,
         timestamp: entryData.timestamp,
         externalId: entryData.externalId,
-      })
+      });
 
-      const response = await this.goodEntryRepository.createGoodEntry(persistGoodEntryData);
+      const response = await this.goodEntryRepository.create(
+        persistGoodEntryData,
+      );
       console.log('response:', response);
       return response;
+    } catch (err) {
+      console.log(err);
+      return await this.goodEntryRepository.createFailedGoodEntry({
+        doGooder: pogProfile?.doGooder,
+        userId: pogProfile?.userId,
+        email: pogProfile?.email,
+        goodActivityId: entry.goodActivityId,
+        goodOracleId: entry.goodOracleId,
+        units: entry.units,
+        timestamp: entry.timestamp,
+        externalId: entry.externalId,
+        error: err.message,
+      } as GoodEntry);
     }
   }
 }

@@ -40,6 +40,7 @@ class BetterFirestoreConnector extends Connector {
     });
 
     this.db = firestore;
+    this.db.settings({ignoreUndefinedProperties: true});
   }
 
   /**
