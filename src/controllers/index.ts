@@ -5,3 +5,4 @@ export * from './entry.controller';
 export * from './oracle.controller';
 export * from './ping.controller';
 export * from './type.controller';
+export * from './profile.controller';
