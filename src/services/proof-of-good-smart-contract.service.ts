@@ -1,4 +1,4 @@
-import {/* inject, */ BindingScope, injectable} from '@loopback/core';
+import { /* inject, */ BindingScope, injectable} from '@loopback/core';
 import {ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
 import {
@@ -6,7 +6,7 @@ import {
   GoodCategory,
   GoodEntry,
   GoodOracle,
-  GoodType,
+  GoodType
 } from '../models';
 
 type InputModel =
@@ -44,6 +44,7 @@ export class ProofOfGoodSmartContractService {
         attempt++;
         console.log('Transaction attempt:', attempt);
         let txResponse;
+        let eventName: string;
         if (crudOperation === 'post') {
           Object.assign(data, {id: 0});
         }
@@ -56,6 +57,7 @@ export class ProofOfGoodSmartContractService {
               const oracle = new GoodOracle(data);
               txResponse = await this.contract.addOrUpdateGoodOracle(oracle);
             }
+            eventName = 'GoodOracleUpdated';
             break;
 
           case data instanceof GoodCategory:
@@ -64,6 +66,7 @@ export class ProofOfGoodSmartContractService {
               data.name,
               data.status,
             );
+            eventName = 'GoodCategoryUpdated';
             break;
 
           case data instanceof GoodType:
@@ -72,27 +75,27 @@ export class ProofOfGoodSmartContractService {
               data.name,
               data.status,
             );
+            eventName = 'GoodTypeUpdated';
             break;
 
           case data instanceof GoodActivity:
             txResponse = await this.contract.addOrUpdateGoodActivity(data);
+            eventName = 'GoodActivityUpdated';
             break;
 
           case data instanceof GoodEntry:
             txResponse = await this.contract.createProofOfGoodEntry(data);
+            eventName = 'ProofOfGoodEntryCreated';
             break;
         }
 
         const receipt = await txResponse.wait();
         const events = receipt.events;
 
-        if (events) console.log('Events Args:', events);
-        if (data instanceof GoodEntry) {
-          return events.filter(
-            (event: ethers.Event) => event?.event === 'ProofOfGoodEntryCreated',
-          )[0].args;
-        }
-        return events[0].args;
+        if (events) {console.log('Events Args:', events);}
+        return events.find(
+          (event: ethers.Event) => event?.event === eventName,
+        ).args;
       },
       {retryLimit: 5, interval: 5000},
     );
