@@ -31,7 +31,7 @@ export class PogProfileRepository extends DefaultCrudRepository<
     const profileId = utils.formatBytes32String(nanoid());
     console.log('Creating new profile with userId:', profileId);
     Object.assign(pogProfile, {userId: profileId});
-    const pogProfileRef = this.db.collection('pogprofiles').doc(`${profileId}`);
+    const pogProfileRef = this.db.doc(`pogprofiles/${profileId}`);
 
     await pogProfileRef.set(pogProfile);
 
