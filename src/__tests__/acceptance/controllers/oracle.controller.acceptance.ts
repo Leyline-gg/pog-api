@@ -1,8 +1,8 @@
 import {Client, expect, toJSON} from '@loopback/testlab';
-import {ethers} from 'ethers';
+import {ethers, Wallet} from 'ethers';
 import {PogApiApplication} from '../../../application';
-import {GoodOracle} from '../../../models';
-import {GoodOracleRepository} from '../../../repositories';
+import {GoodOracle, OracleApiKey} from '../../../models';
+import {AuthRepository, GoodOracleRepository} from '../../../repositories';
 import {
   delay,
   givenGoodOracle,
@@ -10,10 +10,20 @@ import {
   givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
+const oracleAdmin = new GoodOracle({id: 1, name: 'SYSTEM'});
+const authInitia = new OracleApiKey({
+  apikey: '1234',
+  oracleId: 1,
+});
+const headers = {
+  Authorization: 'Bearer 1234',
+};
+
 describe('PogApiApplication - Oracle', () => {
   let app: PogApiApplication;
   let client: Client;
   let goodOracleRepo: GoodOracleRepository;
+  let authRepo: AuthRepository;
 
   before('setupApplication', async () => {
     ({app, client} = await givenRunningApplicationWithCustomConfiguration());
@@ -21,24 +31,37 @@ describe('PogApiApplication - Oracle', () => {
   after(() => app.stop());
 
   before(givenGoodOracleRepository);
+  before(givenAuthRepository);
   beforeEach(async () => {
     await goodOracleRepo.deleteAll();
+    await authRepo.deleteAll();
+    await goodOracleRepo.create(oracleAdmin);
+    await authRepo.create(authInitia);
   });
 
   it('creates a Good Oracle', async function () {
-    const goodOracle = givenGoodOracle();
-    const response = await client.post('/oracle').send(goodOracle).expect(200);
+    const goodOracle = givenGoodOracle({
+      wallet: Wallet.createRandom().address.toLowerCase(),
+    });
+    const response = await client
+      .post('/oracle')
+      .set(headers)
+      .send(goodOracle)
+      .expect(200);
     delete goodOracle.id;
     expect(response.body).to.containDeep(goodOracle);
     const result = await goodOracleRepo.findById(response.body.id);
     expect(result).to.containDeep(goodOracle);
   });
 
-  context('when dealing with a single persisted Good Category', () => {
+  context('when dealing with a single persisted Good Oracle', () => {
     let persistedGoodOracle: GoodOracle;
-
+    let oracleWallet: string;
     beforeEach(async () => {
-      persistedGoodOracle = await givenGoodOracleInstance(givenGoodOracle());
+      oracleWallet = Wallet.createRandom().address.toLowerCase();
+      persistedGoodOracle = await givenGoodOracleInstance(
+        givenGoodOracle({wallet: oracleWallet}),
+      );
     });
 
     it('gets a Good Oracle by ID', () => {
@@ -59,6 +82,7 @@ describe('PogApiApplication - Oracle', () => {
       });
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
@@ -67,7 +91,11 @@ describe('PogApiApplication - Oracle', () => {
     });
 
     it('returns 404 when replacing a Good Oracle that does not exist', () => {
-      return client.put('/oracle/99999').send(givenGoodOracle()).expect(404);
+      return client
+        .put('/oracle/99999')
+        .set(headers)
+        .send(givenGoodOracle())
+        .expect(404);
     });
 
     it('updates the Good Oracle by ID ', async () => {
@@ -77,6 +105,7 @@ describe('PogApiApplication - Oracle', () => {
       });
       await client
         .patch(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
       const result = await goodOracleRepo.findById(persistedGoodOracle.id);
@@ -87,6 +116,7 @@ describe('PogApiApplication - Oracle', () => {
     it('returns 404 when updating a Good Oracle that does not exist', () => {
       return client
         .patch('/oracle/99999')
+        .set(headers)
         .send(givenGoodOracle({status: 0}))
         .expect(404);
     });
@@ -97,6 +127,7 @@ describe('PogApiApplication - Oracle', () => {
       givenGoodOracle({
         name: Math.random().toString(16).substring(2, 10),
         status: 0,
+        wallet: Wallet.createRandom().address,
       }),
     );
     await delay(1000);
@@ -104,6 +135,7 @@ describe('PogApiApplication - Oracle', () => {
       givenGoodOracle({
         name: Math.random().toString(16).substring(2, 10),
         status: 1,
+        wallet: Wallet.createRandom().address,
       }),
     );
 
@@ -122,7 +154,9 @@ describe('PogApiApplication - Oracle', () => {
     });
 
     beforeEach(async () => {
-      persistedGoodOracle = await givenGoodOracleInstance(givenGoodOracle());
+      persistedGoodOracle = await givenGoodOracleInstance(
+        givenGoodOracle({wallet: Wallet.createRandom().address}),
+      );
     });
 
     it('can add a new Good Oracle', async () => {
@@ -131,7 +165,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -155,6 +189,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -163,7 +198,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -189,6 +224,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -197,7 +233,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -223,6 +259,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -231,7 +268,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -257,6 +294,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -265,7 +303,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -291,6 +329,7 @@ describe('PogApiApplication - Oracle', () => {
 
       await client
         .put(`/oracle/${persistedGoodOracle.id}`)
+        .set(headers)
         .send(updatedGoodOracle)
         .expect(204);
 
@@ -299,7 +338,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -335,8 +374,16 @@ describe('PogApiApplication - Oracle', () => {
     goodOracleRepo = await app.getRepository(GoodOracleRepository);
   }
 
+  async function givenAuthRepository() {
+    authRepo = await app.getRepository(AuthRepository);
+  }
+
   async function givenGoodOracleInstance(goodOracle?: Partial<GoodOracle>) {
-    const response = await client.post(`/oracle`).send(goodOracle).expect(200);
+    const response = await client
+      .post(`/oracle`)
+      .set(headers)
+      .send(goodOracle)
+      .expect(200);
 
     return response.body;
   }

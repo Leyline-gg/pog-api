@@ -8,7 +8,7 @@ export class GoodEntryRepository extends DefaultCrudRepository<
   typeof GoodEntry.prototype.id,
   GoodEntryRelations
 > {
-  db: any;
+  db: FirebaseFirestore.Firestore;
   constructor(
     @inject('datasources.firestore') dataSource: FirestoreDataSource,
   ) {
@@ -23,7 +23,7 @@ export class GoodEntryRepository extends DefaultCrudRepository<
       ...goodEntry,
     });
     const failedDocSnapshot = await failedDocRef.get();
-    const failedDocData = failedDocSnapshot.data();
+    const failedDocData = failedDocSnapshot.data() as GoodEntry;
     console.log('Added entry to failed good entries:', failedDocData);
     return failedDocData;
   }

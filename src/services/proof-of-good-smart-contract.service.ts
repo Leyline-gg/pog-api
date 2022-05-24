@@ -37,10 +37,6 @@ export class ProofOfGoodSmartContractService {
     ).connect(this.signer);
   }
 
-  async getNonce() {
-    return await this.signer.getTransactionCount();
-  }
-
   async updateLedger(crudOperation: string, data: InputModel) {
     let attempt = 0;
     const response = await ethers.utils.poll(
@@ -93,7 +89,7 @@ export class ProofOfGoodSmartContractService {
         if (events) console.log('Events Args:', events);
         if (data instanceof GoodEntry) {
           return events.filter(
-            (event: ethers.Event) => event?.event == 'ProofOfGoodEntryCreated',
+            (event: ethers.Event) => event?.event === 'ProofOfGoodEntryCreated',
           )[0].args;
         }
         return events[0].args;

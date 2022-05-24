@@ -80,6 +80,8 @@ export class OracleController {
               value: {
                 name: 'Leyline',
                 goodOracleURI: 'leyline.gg',
+                organizationType: 0,
+                goodOracleOwner: '0x1234567890123456789',
               },
             },
           },
@@ -91,7 +93,7 @@ export class OracleController {
     parameters: [],
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
   })
@@ -108,6 +110,8 @@ export class OracleController {
               value: {
                 name: 'Leyline',
                 goodOracleURI: 'leyline.gg',
+                organizationType: 0,
+                goodOracleOwner: '0x1234567890123456789',
               },
             },
           },
@@ -133,6 +137,7 @@ export class OracleController {
       goodOracleURI,
       status: status,
       approvedActivityIdArray,
+      wallet: oracle.wallet,
     } as GoodOracle);
 
     return response;
@@ -176,7 +181,7 @@ export class OracleController {
         name: 'id',
         in: 'path',
         required: true,
-        description: 'The PoG ID of the oracle',
+        description: 'The ID of the oracle',
       },
     ],
   })
@@ -191,7 +196,7 @@ export class OracleController {
       name: 'id',
       in: 'path',
       required: true,
-      description: 'The PoG ID of the oracle',
+      description: 'The ID of the oracle',
     })
     id: number,
   ): Promise<GoodOracle> {
@@ -224,7 +229,7 @@ export class OracleController {
   /**
    * Update an Oracle's details
    *
-   * @param id The PoG ID of the oracle
+   * @param id The ID of the oracle
    * @param oracle
    */
   @patch('/oracle/{id}', {
@@ -261,6 +266,8 @@ export class OracleController {
               value: {
                 name: 'Leyline',
                 goodOracleURI: 'Leyline.gg',
+                organizationType: 0,
+                goodOracleOwner: '0x1234567890123456789',
               },
             },
           },
@@ -271,7 +278,7 @@ export class OracleController {
     description: "Update a Oracle's details",
     security: [
       {
-        Category_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [
@@ -310,6 +317,8 @@ export class OracleController {
                 goodOracleURI: 'leyline.gg',
                 approvedActivityIdArray: [],
                 status: 0,
+                organizationType: 0,
+                goodOracleOwner: '0x1234567890123456789',
               },
             },
           },
@@ -403,7 +412,7 @@ export class OracleController {
     description: "Update an Oracle's details",
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [

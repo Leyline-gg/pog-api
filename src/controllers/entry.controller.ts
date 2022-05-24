@@ -6,7 +6,7 @@ import {ErrorResponse, GoodEntry} from '../models';
 import {
   GoodActivityRepository,
   GoodEntryRepository,
-  PogProfileRepository,
+  PogProfileRepository
 } from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -152,7 +152,7 @@ export class GoodEntryController {
     parameters: [],
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
   })
@@ -182,10 +182,9 @@ export class GoodEntryController {
       },
       description: '',
     })
-    entry: GoodEntry,
+    entry: Partial<GoodEntry>,
   ): Promise<unknown> {
     console.log('Data received:', entry);
-
     const pogProfileParams: PogProfileParams = {
       userId: entry?.userId ?? '',
       email: entry?.email ?? '',

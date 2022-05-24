@@ -7,6 +7,7 @@ import {
 import {Provider} from '@loopback/core';
 import {RequestContext} from '@loopback/rest';
 import {Request} from 'express';
+import {SYSTEM_ORACLE_ID} from '../constants';
 import {GoodOracle} from '../models';
 
 interface AuthorizationCheckParams {
@@ -17,6 +18,7 @@ interface AuthorizationCheckParams {
 
 // Class level authorizer
 export class OracleAuthorizationProvider implements Provider<Authorizer> {
+  DEFAULT_AUTH_DECISION = AuthorizationDecision.ALLOW;
   constructor() {}
 
   value(): Authorizer {
@@ -44,7 +46,22 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
               return AuthorizationDecision.DENY;
           },
         };
-      return rules[request.method]() ?? AuthorizationDecision.ALLOW;
+      return rules[request.method]() ?? this.DEFAULT_AUTH_DECISION;
+    },
+    auth: ({
+      request,
+      oracle,
+    }: AuthorizationCheckParams): AuthorizationDecision => {
+      const rules: {[method: string]: () => AuthorizationDecision | undefined} =
+        {
+          POST: () => {
+            // only allow SYSTEM account
+            return oracle.id === SYSTEM_ORACLE_ID
+              ? AuthorizationDecision.ALLOW
+              : AuthorizationDecision.DENY;
+          },
+        };
+      return rules[request.method]() ?? this.DEFAULT_AUTH_DECISION;
     },
   };
 
@@ -56,7 +73,7 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
 
     if (oracle === undefined) return AuthorizationDecision.ABSTAIN;
     // SYSTEM account
-    if (oracle.id === 0) return AuthorizationDecision.ALLOW;
+    if (oracle.id === SYSTEM_ORACLE_ID) return AuthorizationDecision.ALLOW;
 
     const resource = metadata.resource;
     if (!resource) {

@@ -76,7 +76,7 @@ export class GoodTypeController {
     parameters: [],
     security: [
       {
-        Oracle_API_Key: [],
+        pog_api_key: [],
       },
     ],
   })
@@ -159,7 +159,7 @@ export class GoodTypeController {
     description: "Update a Good Type's details",
     security: [
       {
-        Category_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [
@@ -281,7 +281,7 @@ export class GoodTypeController {
     description: "Update a Good Type's details",
     security: [
       {
-        Category_API_Key: [],
+        pog_api_key: [],
       },
     ],
     parameters: [
