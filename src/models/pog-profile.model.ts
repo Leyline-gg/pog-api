@@ -15,11 +15,6 @@ export class PogProfile extends Entity {
   userId?: string;
 
   @property({
-    type: 'boolean',
-  })
-  isOnPogLedger?: boolean = false;
-
-  @property({
     type: 'string',
   })
   emailHash?: string;

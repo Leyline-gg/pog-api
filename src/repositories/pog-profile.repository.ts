@@ -422,7 +422,6 @@ export class PogProfileRepository extends DefaultCrudRepository<
       );
 
       const pogProfileParams: Partial<PogProfile> = {
-        isOnPogLedger: false,
         created: Timestamp.now().toMillis(),
       };
 

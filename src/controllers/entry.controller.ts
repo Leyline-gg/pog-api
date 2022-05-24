@@ -6,7 +6,7 @@ import {ErrorResponse, GoodEntry} from '../models';
 import {
   GoodActivityRepository,
   GoodEntryRepository,
-  PogProfileRepository
+  PogProfileRepository,
 } from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 

@@ -9,7 +9,6 @@ export type PogProfile = {
   walletAddresses?: string[];
   email?: string;
   doGooder?: string;
-  isOnPogLedger?: boolean;
   created?: FirebaseFirestore.Timestamp;
 };
 
@@ -388,7 +387,6 @@ export class PogProfileService {
 
       const pogProfileParams = {
         userId: profileId,
-        isOnPogLedger: false,
         created: FirebaseFirestore.Timestamp.now(),
       };
 
