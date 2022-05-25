@@ -10,6 +10,7 @@ const config = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   privateKey: process.env.FIREBASE_PRIVATE_KEY,
+  settings: {ignoreUndefinedProperties: true}
 };
 
 // Observe application's life cycle to disconnect the datasource when
@@ -19,8 +20,7 @@ const config = {
 @lifeCycleObserver('datasource')
 export class FirestoreDataSource
   extends juggler.DataSource
-  implements LifeCycleObserver
-{
+  implements LifeCycleObserver {
   static dataSourceName = 'firestore';
   static readonly defaultConfig = config;
 

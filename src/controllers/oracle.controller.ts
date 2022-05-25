@@ -10,7 +10,7 @@ import {
   patch,
   post,
   put,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
 import {SecurityBindings} from '@loopback/security';
 import {ethers} from 'ethers';
@@ -29,7 +29,7 @@ export class OracleController {
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
     @inject(SecurityBindings.USER, {optional: true})
     private oracle: GoodOracle,
-  ) {}
+  ) { }
 
   /**
    * Create a new Oracle
