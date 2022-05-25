@@ -37,6 +37,28 @@ export class ProfileController {
       ),
     ];
 
+    if (!emailProfile && !walletProfile) {
+      // no profiles for wallet
+      console.log('!emailProfile && !walletProfile');
+    } else if (!emailProfile && !!walletProfile) {
+      // no profile for email, but wallet profile exists
+      console.log('!emailProfile && !!walletProfile');
+      await this.pogProfileRepository.addEmailToProfile(
+        walletProfile.userId!,
+        email,
+      );
+    } else if (!!emailProfile && !walletProfile) {
+      // no profile for wallet, but email profile exists
+      console.log('!!emailProfile && !walletProfile');
+      await this.pogProfileRepository.addWalletAddressToProfile(
+        emailProfile.userId!,
+        walletAddress,
+      );
+    } else if (emailProfile?.userId !== walletProfile?.userId) {
+      // profiles for wallet and email exist, but are not the same
+      console.log('emailProfile.id !== walletProfile.id');
+    }
+
     return body.email;
   }
 }

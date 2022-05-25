@@ -180,6 +180,19 @@ export class PogProfileRepository extends DefaultCrudRepository<
     return undefined;
   }
 
+  async addEmailToProfile(userId: string, email: string) {
+    const emailHash = this.hashEmail(email);
+    const emailQuerySnapshot = await this.db
+      .collection('pogprofiles')
+      .where('emailHash', '==', emailHash)
+      .get();
+    if (!!emailQuerySnapshot.docs.length) {
+      throw new Error('Email already exists in a profile.');
+    }
+
+    await this.db.doc(`pogprofiles/${userId}`).update({email, emailHash});
+  }
+
   async getPogProfileByWalletAddress(
     walletAddress: string,
   ): Promise<Partial<PogProfile> | undefined> {
