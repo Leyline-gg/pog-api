@@ -38,8 +38,12 @@ export class ProfileController {
     ];
 
     if (!emailProfile && !walletProfile) {
-      // no profiles for wallet
+      // no profiles for either email or wallet
       console.log('!emailProfile && !walletProfile');
+      await this.pogProfileRepository.createPogProfile({
+        email,
+        walletAddresses: [walletAddress],
+      });
     } else if (!emailProfile && !!walletProfile) {
       // no profile for email, but wallet profile exists
       console.log('!emailProfile && !!walletProfile');

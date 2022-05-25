@@ -33,6 +33,10 @@ export class PogProfileRepository extends DefaultCrudRepository<
     Object.assign(pogProfile, {userId: profileId});
     const pogProfileRef = this.db.doc(`pogprofiles/${profileId}`);
 
+    // if email was provided but not email hash, generate email hash
+    if (!!pogProfile.email && !pogProfile.emailHash)
+      Object.assign(pogProfile, {emailHash: this.hashEmail(pogProfile.email)});
+
     await pogProfileRef.set(pogProfile);
 
     // if wallet was provided and doesn't exist in firestore, add to user's profile
