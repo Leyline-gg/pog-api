@@ -1,11 +1,11 @@
-import {service} from '@loopback/core';
+import {repository} from '@loopback/repository';
 import {post, requestBody} from '@loopback/rest';
-import {PogProfileService} from '../services';
+import {PogProfileRepository} from '../repositories';
 
 export class ProfileController {
   constructor(
-    @service(PogProfileService)
-    private pogProfileService: PogProfileService,
+    @repository(PogProfileRepository)
+    private pogProfileRepository: PogProfileRepository,
   ) {}
 
   @post('/merge')
@@ -31,8 +31,10 @@ export class ProfileController {
   ): Promise<any> {
     const {email, walletAddress} = body;
     const [emailProfile, walletProfile] = [
-      await this.pogProfileService.getPogProfileByEmail(email),
-      await this.pogProfileService.getPogProfileByWalletAddress(walletAddress),
+      await this.pogProfileRepository.getPogProfileByEmail(email),
+      await this.pogProfileRepository.getPogProfileByWalletAddress(
+        walletAddress,
+      ),
     ];
 
     return body.email;

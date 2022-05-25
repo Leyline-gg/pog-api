@@ -1,12 +1,19 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
-import {get, getModelSchemaRef, HttpErrors, param, post, requestBody} from '@loopback/rest';
+import {
+  get,
+  getModelSchemaRef,
+  HttpErrors,
+  param,
+  post,
+  requestBody,
+} from '@loopback/rest';
 import {utils} from 'ethers';
 import {ErrorResponse, GoodEntry} from '../models';
 import {
   GoodActivityRepository,
   GoodEntryRepository,
-  PogProfileRepository
+  PogProfileRepository,
 } from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -25,7 +32,7 @@ export class GoodEntryController {
     public pogProfileRepository: PogProfileRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) { }
+  ) {}
 
   /**
    * Retrieve a Proof of Good Entry
@@ -207,7 +214,6 @@ export class GoodEntryController {
       });
     }
     const persistGoodEntryData = new GoodEntry({
-
       doGooder: goodEntry?.doGooder?.toLowerCase(),
       userId: goodEntry.userId,
       email: entry.email,
@@ -223,7 +229,7 @@ export class GoodEntryController {
         'post',
         goodEntry,
       );
-      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber(), });
+      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber()});
 
       const response = await this.goodEntryRepository.create(
         persistGoodEntryData,
