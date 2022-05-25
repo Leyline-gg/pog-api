@@ -1,5 +1,5 @@
 import {Client, expect, toJSON} from '@loopback/testlab';
-import {ethers} from 'ethers';
+import {BigNumber, ethers} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodActivity, GoodCategory, GoodType} from '../../../models';
 import {GoodActivityRepository} from '../../../repositories';
@@ -7,7 +7,7 @@ import {
   delay,
   givenGoodActivity,
   givenProofOfGoodLedger,
-  givenRunningApplicationWithCustomConfiguration
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
 describe('PogApiApplication - Activity', () => {
@@ -68,6 +68,8 @@ describe('PogApiApplication - Activity', () => {
         .send(updatedGoodActivity)
         .expect(204);
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);
+      // console.log('result:', result);
+      // console.log('updatedGoodActivity:', updatedGoodActivity);
       const {id: _, ...updatedGoodActivityBody} = updatedGoodActivity;
       expect(result).to.containEql(updatedGoodActivityBody);
     });
@@ -150,8 +152,11 @@ describe('PogApiApplication - Activity', () => {
         name: goodActivityArgs.name,
         status: goodActivityArgs.status,
         unitDescription: goodActivityArgs.unitDescription,
-        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
-        goodCategoryId: goodActivityArgs.goodCategoryId,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray.map(
+          (typeId: BigNumber) => typeId.toNumber(),
+        ),
+        goodCategoryId: goodActivityArgs.goodCategoryId.toNumber(),
+        valuePerUnit: goodActivityArgs.valuePerUnit.toNumber(),
       });
 
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);
@@ -183,9 +188,11 @@ describe('PogApiApplication - Activity', () => {
         name: goodActivityArgs.name,
         status: goodActivityArgs.status,
         unitDescription: goodActivityArgs.unitDescription,
-        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
-        goodCategoryId: goodActivityArgs.goodCategoryId,
-        valuePerUnit: goodActivityArgs.valuePerUnit,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray.map(
+          (typeId: BigNumber) => typeId.toNumber(),
+        ),
+        goodCategoryId: goodActivityArgs.goodCategoryId.toNumber(),
+        valuePerUnit: goodActivityArgs.valuePerUnit.toNumber(),
       });
 
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);
@@ -219,8 +226,11 @@ describe('PogApiApplication - Activity', () => {
         name: goodActivityArgs.name,
         status: goodActivityArgs.status,
         unitDescription: goodActivityArgs.unitDescription,
-        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
-        valuePerUnit: goodActivityArgs.valuePerUnit,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray.map(
+          (typeId: BigNumber) => typeId.toNumber(),
+        ),
+        goodCategoryId: goodActivityArgs.goodCategoryId.toNumber(),
+        valuePerUnit: goodActivityArgs.valuePerUnit.toNumber(),
       });
 
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);
@@ -252,8 +262,11 @@ describe('PogApiApplication - Activity', () => {
         name: goodActivityArgs.name,
         status: goodActivityArgs.status,
         unitDescription: goodActivityArgs.unitDescription,
-        goodTypeIdArray: goodActivityArgs.goodTypeIdArray,
-        valuePerUnit: goodActivityArgs.valuePerUnit,
+        goodTypeIdArray: goodActivityArgs.goodTypeIdArray.map(
+          (typeId: BigNumber) => typeId.toNumber(),
+        ),
+        goodCategoryId: goodActivityArgs.goodCategoryId.toNumber(),
+        valuePerUnit: goodActivityArgs.valuePerUnit.toNumber(),
       });
 
       const result = await goodActivityRepo.findById(persistedGoodActivity.id);

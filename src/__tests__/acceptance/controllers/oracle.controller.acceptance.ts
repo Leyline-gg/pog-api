@@ -1,5 +1,5 @@
 import {Client, expect, toJSON} from '@loopback/testlab';
-import {ethers} from 'ethers';
+import {ethers, Wallet} from 'ethers';
 import {PogApiApplication} from '../../../application';
 import {GoodOracle, OracleApiKey} from '../../../models';
 import {AuthRepository, GoodOracleRepository} from '../../../repositories';
@@ -7,13 +7,14 @@ import {
   delay,
   givenGoodOracle,
   givenProofOfGoodLedger,
-  givenRunningApplicationWithCustomConfiguration,
+  givenRunningApplicationWithCustomConfiguration
 } from '../test-helper';
 
 const oracleAdmin = new GoodOracle({id: 1, name: 'SYSTEM'});
 const authInitia = new OracleApiKey({
   apikey: '1234',
   oracleId: 1,
+  expired: false
 });
 const headers = {
   Authorization: 'Bearer 1234',
@@ -40,7 +41,9 @@ describe('PogApiApplication - Oracle', () => {
   });
 
   it('creates a Good Oracle', async function () {
-    const goodOracle = givenGoodOracle();
+    const goodOracle = givenGoodOracle({
+      wallet: Wallet.createRandom().address.toLowerCase(),
+    });
     const response = await client
       .post('/oracle')
       .set(headers)
@@ -54,9 +57,12 @@ describe('PogApiApplication - Oracle', () => {
 
   context('when dealing with a single persisted Good Oracle', () => {
     let persistedGoodOracle: GoodOracle;
-
+    let oracleWallet: string;
     beforeEach(async () => {
-      persistedGoodOracle = await givenGoodOracleInstance(givenGoodOracle());
+      oracleWallet = Wallet.createRandom().address.toLowerCase();
+      persistedGoodOracle = await givenGoodOracleInstance(
+        givenGoodOracle({wallet: oracleWallet}),
+      );
     });
 
     it('gets a Good Oracle by ID', () => {
@@ -122,6 +128,7 @@ describe('PogApiApplication - Oracle', () => {
       givenGoodOracle({
         name: Math.random().toString(16).substring(2, 10),
         status: 0,
+        wallet: Wallet.createRandom().address,
       }),
     );
     await delay(1000);
@@ -129,6 +136,7 @@ describe('PogApiApplication - Oracle', () => {
       givenGoodOracle({
         name: Math.random().toString(16).substring(2, 10),
         status: 1,
+        wallet: Wallet.createRandom().address,
       }),
     );
 
@@ -147,7 +155,9 @@ describe('PogApiApplication - Oracle', () => {
     });
 
     beforeEach(async () => {
-      persistedGoodOracle = await givenGoodOracleInstance(givenGoodOracle());
+      persistedGoodOracle = await givenGoodOracleInstance(
+        givenGoodOracle({wallet: Wallet.createRandom().address}),
+      );
     });
 
     it('can add a new Good Oracle', async () => {
@@ -156,7 +166,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -189,7 +199,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -224,7 +234,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -259,7 +269,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -294,7 +304,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,
@@ -329,7 +339,7 @@ describe('PogApiApplication - Oracle', () => {
       );
 
       const goodOracleOnLedger = new GoodOracle({
-        id: goodOracleArgs.id,
+        id: goodOracleArgs.id.toNumber(),
         name: goodOracleArgs.name,
         status: goodOracleArgs.status,
         goodOracleURI: goodOracleArgs.goodOracleURI,

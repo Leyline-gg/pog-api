@@ -6,7 +6,7 @@ import {
   Firestore as Admin,
   Query,
   QueryDocumentSnapshot,
-  QuerySnapshot,
+  QuerySnapshot
 } from '@google-cloud/firestore';
 import {Connector} from 'loopback-connector';
 import {ICallback, IDataSource, IFilter} from './interfaces';
@@ -29,7 +29,7 @@ class BetterFirestoreConnector extends Connector {
     super();
     this._models = {};
 
-    const {projectId, clientEmail, privateKey} = dataSourceProps;
+    const {projectId, clientEmail, privateKey, settings} = dataSourceProps;
 
     const firestore = new Admin({
       credentials: {
@@ -40,6 +40,7 @@ class BetterFirestoreConnector extends Connector {
     });
 
     this.db = firestore;
+    this.db.settings(settings);
   }
 
   /**

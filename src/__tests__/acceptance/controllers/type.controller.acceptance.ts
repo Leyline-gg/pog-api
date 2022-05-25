@@ -7,7 +7,7 @@ import {
   delay,
   givenGoodType,
   givenProofOfGoodLedger,
-  givenRunningApplicationWithCustomConfiguration
+  givenRunningApplicationWithCustomConfiguration,
 } from '../test-helper';
 
 describe('PogApiApplication - Good Type', () => {
@@ -27,10 +27,7 @@ describe('PogApiApplication - Good Type', () => {
 
   it('creates a Good Type', async function () {
     const goodType = givenGoodType();
-    const response = await client
-      .post('/type')
-      .send(goodType)
-      .expect(200);
+    const response = await client.post('/type').send(goodType).expect(200);
 
     expect(response.body.id).not.to.equal(goodType.id);
     expect(response.body.name).to.equal(goodType.name);
@@ -148,7 +145,7 @@ describe('PogApiApplication - Good Type', () => {
       const goodTypeArgs = await contract.goodTypes(persistedGoodType.id);
 
       const goodTypeOnLedger = new GoodType({
-        id: goodTypeArgs.id,
+        id: goodTypeArgs.id.toNumber(),
         name: goodTypeArgs.name,
         status: goodTypeArgs.status,
       });
@@ -157,7 +154,6 @@ describe('PogApiApplication - Good Type', () => {
 
       expect(result).to.containDeep(goodTypeOnLedger);
 
-      delete goodTypeOnLedger.id;
       delete updatedGoodType.id;
 
       expect(goodTypeOnLedger).to.containDeep(updatedGoodType);
@@ -176,7 +172,7 @@ describe('PogApiApplication - Good Type', () => {
       const goodTypeArgs = await contract.goodTypes(persistedGoodType.id);
 
       const goodTypeOnLedger = new GoodType({
-        id: goodTypeArgs.id,
+        id: goodTypeArgs.id.toNumber(),
         name: goodTypeArgs.name,
         status: goodTypeArgs.status,
       });
@@ -185,7 +181,6 @@ describe('PogApiApplication - Good Type', () => {
 
       expect(result).to.containDeep(goodTypeOnLedger);
 
-      delete goodTypeOnLedger.id;
       delete updatedGoodType.id;
 
       expect(goodTypeOnLedger).to.containDeep(updatedGoodType);
@@ -204,7 +199,7 @@ describe('PogApiApplication - Good Type', () => {
       const goodTypeArgs = await contract.goodTypes(persistedGoodType.id);
 
       const goodTypeOnLedger = new GoodType({
-        id: goodTypeArgs.id,
+        id: goodTypeArgs.id.toNumber(),
         name: goodTypeArgs.name,
         status: goodTypeArgs.status,
       });
@@ -213,7 +208,6 @@ describe('PogApiApplication - Good Type', () => {
 
       expect(result).to.containDeep(goodTypeOnLedger);
 
-      delete goodTypeOnLedger.id;
       delete updatedGoodType.id;
 
       expect(goodTypeOnLedger).to.containDeep(updatedGoodType);

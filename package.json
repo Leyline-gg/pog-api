@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": "12 || 14 || 16 || 17"
+    "node": ">=16"
   },
   "scripts": {
     "build": "lb-tsc",
@@ -69,6 +69,7 @@
     "loopback-connector": "^5.0.1",
     "loopback-connector-openapi": "^6.2.0",
     "nanoid": "^3.3.4",
+    "openapi-types": "^11.0.1",
     "passport-http-bearer": "^1.0.1",
     "tslib": "^2.4.0",
     "uuid": "^8.3.2"

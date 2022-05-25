@@ -1,7 +1,7 @@
 import {
   Client,
   createRestAppClient,
-  givenHttpServerConfig
+  givenHttpServerConfig,
 } from '@loopback/testlab';
 import {ethers} from 'ethers';
 import {setTimeout} from 'timers';
@@ -12,7 +12,7 @@ import {
   GoodCategory,
   GoodEntry,
   GoodOracle,
-  GoodType
+  GoodType,
 } from '../../models/index';
 
 export async function givenRunningApplication(): Promise<AppWithClient> {

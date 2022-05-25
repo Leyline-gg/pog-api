@@ -47,6 +47,14 @@ export class GoodOracle extends Entity {
   goodOracleURI?: string;
 
   @property({
+    jsonSchema: {
+      type: 'string',
+      description: 'wallet address associated to oracle',
+    },
+  })
+  wallet?: string;
+
+  @property({
     default: 0,
     jsonSchema: {
       type: 'number',
@@ -54,17 +62,6 @@ export class GoodOracle extends Entity {
     },
   })
   status?: number;
-
-  /**
-   * reference the wallet address of the oracle owner user
-   */
-  @property({
-    jsonSchema: {
-      type: 'string',
-      description: 'reference the wallet address of the oracle owner user',
-    },
-  })
-  goodOracleOwner?: string;
 
   @property({
     default: 0,

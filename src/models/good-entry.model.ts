@@ -19,30 +19,18 @@ export class GoodEntry extends Entity {
       description: 'ID',
     },
   })
-  id: number = Date.now();
-
-  /**
-   * token ID of the NFT after it has been minted
-   */
-  @property({
-    jsonSchema: {
-      type: 'string',
-      description: 'token ID of the NFT after it has been minted',
-    },
-  })
-  tokenId: string;
+  id?: number;
 
   /**
    * Wallet address of the user who did good
    */
   @property({
-    required: true,
     jsonSchema: {
       type: 'string',
       description: 'Wallet address of the user who did good',
     },
   })
-  doGooder: string;
+  doGooder?: string;
 
   /**
    * GoodActivity for this entry
@@ -67,7 +55,7 @@ export class GoodEntry extends Entity {
       readOnly: true,
     },
   })
-  value: number;
+  goodPoints?: number;
 
   /**
    * Number of units performed for the `GoodActivity`
@@ -83,40 +71,28 @@ export class GoodEntry extends Entity {
   units: number;
 
   /**
-   * Oracle-provided IFPS file
-   */
-  @property({
-    jsonSchema: {
-      type: 'string',
-      description: 'Oracle-provided IFPS file',
-    },
-  })
-  proofURL?: string;
-
-  /**
    * Unix timestamp (in ms) representing when the good deed was done
    */
   @property({
-    required: true,
     jsonSchema: {
       type: 'integer',
       description:
         'Unix timestamp (in ms) representing when the good deed was done',
     },
   })
-  timestamp: number;
+  timestamp?: number = 0;
 
   /**
    * awaiting clarification
    */
   @property({
+    required: true,
     jsonSchema: {
       type: 'string',
-      description:
-        'user email - optional if userId or wallet address is inputted',
+      description: 'user email',
     },
   })
-  email?: string;
+  email: string;
 
   @property({
     jsonSchema: {
@@ -136,7 +112,7 @@ export class GoodEntry extends Entity {
       readOnly: true,
     },
   })
-  goodOracleId: number;
+  goodOracleId?: number;
 
   /**
    * awaiting clarification
@@ -144,10 +120,42 @@ export class GoodEntry extends Entity {
   @property({
     jsonSchema: {
       type: 'string',
-      description: 'awaiting clarification',
+      description: 'External ID, optional from Oracle',
     },
   })
   externalId?: string;
+
+  @property({
+    jsonSchema: {
+      type: 'string',
+      description: 'Image URL',
+    },
+  })
+  imageURL?: string;
+
+  @property({
+    jsonSchema: {
+      type: 'string',
+      description: 'Media URL',
+    },
+  })
+  mediaURL?: string;
+
+  @property({
+    jsonSchema: {
+      type: 'number',
+      description: 'Transaction nonce',
+    },
+  })
+  nonce?: number;
+
+  @property({
+    jsonSchema: {
+      type: 'number',
+      description: 'Error reason for failed good entries',
+    },
+  })
+  error?: string;
 }
 
 export interface GoodEntryRelations {

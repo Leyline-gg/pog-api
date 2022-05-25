@@ -1,17 +1,10 @@
-import {Firestore} from '@google-cloud/firestore';
-import {BindingScope, inject, injectable} from '@loopback/core';
+import {FieldValue, Firestore, Timestamp} from '@google-cloud/firestore';
+import {inject} from '@loopback/core';
+import {DefaultCrudRepository} from '@loopback/repository';
 import {utils, Wallet} from 'ethers';
 import {nanoid} from 'nanoid';
 import {FirestoreDataSource} from '../datasources';
-
-export type PogProfile = {
-  userId: string;
-  walletAddresses?: string[];
-  email?: string;
-  doGooder?: string;
-  isOnPogLedger?: boolean;
-  created?: FirebaseFirestore.Timestamp;
-};
+import {PogProfile, PogProfileRelations} from '../models';
 
 export type PogProfileParams = {
   userId: string;
@@ -19,28 +12,82 @@ export type PogProfileParams = {
   doGooder: string;
 };
 
-@injectable({scope: BindingScope.TRANSIENT})
-export class PogProfileService {
+export class PogProfileRepository extends DefaultCrudRepository<
+  PogProfile,
+  typeof PogProfile.prototype.userId,
+  PogProfileRelations
+> {
   db: Firestore;
   constructor(
     @inject('datasources.firestore') dataSource: FirestoreDataSource,
   ) {
+    super(PogProfile, dataSource);
     this.db = dataSource.connector?.db;
   }
 
-  async createPogProfile(pogProfile: PogProfile): Promise<PogProfile | null> {
-    try {
-      await this.db
-        .collection('pogprofiles')
-        .doc(`${pogProfile.userId}`)
-        .set(pogProfile);
+  async createPogProfile(
+    pogProfile: Partial<PogProfile>,
+  ): Promise<Partial<PogProfile> | undefined> {
+    const profileId = utils.formatBytes32String(nanoid());
+    console.log('Creating new profile with userId:', profileId);
+    Object.assign(pogProfile, {userId: profileId});
+    const pogProfileRef = this.db.doc(`pogprofiles/${profileId}`);
 
-      console.log('Profile created in firestore for', pogProfile);
-      return pogProfile;
-    } catch (error) {
-      console.log(error);
-      return null;
+    await pogProfileRef.set(pogProfile);
+
+    // if wallet was provided and doesn't exist in firestore, add to user's profile
+    if (pogProfile.doGooder) {
+      await this.addWalletAddressToProfile(
+        profileId,
+        pogProfile.doGooder.toLowerCase(),
+      );
     }
+    // if user is found with matching email, add wallet addresses to pog profile
+    if (pogProfile.email) {
+      const pogUserSnapshotQuery = await this.db
+        .collection('users')
+        .where('email', '==', pogProfile.email)
+        .get();
+      if (pogUserSnapshotQuery.docs.length) {
+        const pogUserRef = pogUserSnapshotQuery.docs[0].ref;
+        console.log('Email found associated to user:', pogUserRef.id);
+        const userAddressesQuerySnapshot = await this.db
+          .collectionGroup('addresses')
+          .where('uid', '==', pogUserRef.id)
+          .get();
+        const userAddresses = userAddressesQuerySnapshot.docs.map(
+          (addressDocSnapshot: FirebaseFirestore.DocumentSnapshot) =>
+            addressDocSnapshot.data()?.address,
+        );
+        for (const address of userAddresses) {
+          await this.addWalletAddressToProfile(profileId, address);
+        }
+      } else if (!pogProfile.doGooder) {
+        // generate wallet and add to pog profile
+        const newWallet = await this.generateWallet();
+        const newWalletAddress = newWallet!.address;
+        await this.addWalletAddressToProfile(profileId, newWalletAddress);
+      }
+    }
+
+    const pogProfileSnapshot = await pogProfileRef.get();
+    const pogProfileData = pogProfileSnapshot.data();
+
+    const pogProfileAddressesSnapshot = await this.db
+      .collection(`pogprofiles/${profileId}/walletAddresses`)
+      .get();
+    console.log('Profile created in firestore for', pogProfileData);
+
+    // set doGooder to provided doGooder or the first wallet address in profile's walletAddresses subcollection
+    if (pogProfile.doGooder) {
+      Object.assign(pogProfileData, {doGooder: pogProfile.doGooder});
+    } else if (pogProfileAddressesSnapshot.docs.length) {
+      Object.assign(pogProfileData, {
+        doGooder: pogProfileAddressesSnapshot.docs[0].data().walletAddress,
+      });
+    }
+    console.log('pogProfileData:', pogProfileData);
+    return pogProfileData;
   }
 
   async updatePogProfile(
@@ -50,6 +97,14 @@ export class PogProfileService {
     try {
       console.log('Updating Pog Profile', pogProfileId);
       console.log('Updated properties:', data);
+
+      if (data.doGooder) {
+        await this.addWalletAddressToProfile(
+          pogProfileId,
+          data.doGooder.toLowerCase(),
+        );
+      }
+      delete data.doGooder;
       await this.db.collection('pogprofiles').doc(pogProfileId).update(data);
 
       const updatedPogProfileSnapshot: FirebaseFirestore.DocumentSnapshot =
@@ -65,7 +120,9 @@ export class PogProfileService {
     }
   }
 
-  async getPogProfileByUserId(userId: string): Promise<PogProfile | undefined> {
+  async getPogProfileByUserId(
+    userId: string,
+  ): Promise<Partial<PogProfile> | undefined> {
     try {
       const pogProfileSnapshot: FirebaseFirestore.DocumentSnapshot =
         await this.db.doc(`pogprofiles/${userId}`).get();
@@ -75,7 +132,7 @@ export class PogProfileService {
         const walletAddresses = await this.getWalletAddressesForProfile(
           pogProfileData.userId,
         );
-        const pogProfile: PogProfile = {
+        const pogProfile: Partial<PogProfile> = {
           userId: pogProfileData.userId,
           ...pogProfileData,
           walletAddresses,
@@ -96,21 +153,19 @@ export class PogProfileService {
 
   async getPogProfileByEmail(
     emailHash: string,
-  ): Promise<PogProfile | undefined> {
-    try {
-      const profileQuerySnapshot: FirebaseFirestore.QuerySnapshot =
-        await this.db
-          .collection('pogprofiles')
-          .where('email', '==', emailHash)
-          .get();
+  ): Promise<Partial<PogProfile> | undefined> {
+    const profileQuerySnapshot: FirebaseFirestore.QuerySnapshot = await this.db
+      .collection('pogprofiles')
+      .where('emailHash', '==', emailHash)
+      .get();
 
-      if (profileQuerySnapshot.docs.length > 1) {
-        throw new Error('Found multiple profiles with the same email.');
-      }
+    if (profileQuerySnapshot.docs.length > 1) {
+      throw new Error('Found multiple profiles with the same email.');
+    }
 
-      if (profileQuerySnapshot.docs.length) {
-        const pogProfileData =
-          profileQuerySnapshot.docs[0].data() as PogProfile;
+    if (profileQuerySnapshot.docs.length) {
+      const pogProfileData = profileQuerySnapshot.docs[0].data() as PogProfile;
+      if (pogProfileData.userId) {
         const walletAddresses = await this.getWalletAddressesForProfile(
           pogProfileData.userId,
         );
@@ -119,76 +174,68 @@ export class PogProfileService {
           ...pogProfileData,
           walletAddresses,
         };
-
         return pogProfile;
-      } else {
-        return undefined;
       }
-    } catch (error) {
-      console.log(error);
-      return undefined;
     }
+    return undefined;
   }
 
   async getPogProfileByWalletAddress(
     walletAddress: string,
-  ): Promise<PogProfile | undefined> {
-    try {
-      const addressSnapshot: FirebaseFirestore.QuerySnapshot = await this.db
-        .collectionGroup('walletAddresses')
-        .where('walletAddress', '==', walletAddress)
+  ): Promise<Partial<PogProfile> | undefined> {
+    const lowerCasedWalletAddress = walletAddress.toLowerCase();
+    const addressSnapshot: FirebaseFirestore.QuerySnapshot = await this.db
+      .collectionGroup('walletAddresses')
+      .where('walletAddress', '==', lowerCasedWalletAddress)
+      .get();
+
+    if (addressSnapshot.docs.length > 1) {
+      throw new Error(
+        `There are multiple profiles associated to the wallet address: ${lowerCasedWalletAddress}`,
+      );
+    }
+
+    if (addressSnapshot.docs.length) {
+      const pogProfileUserId = addressSnapshot.docs[0].data().userId;
+      const pogProfileQuerySnapshot = await this.db
+        .collection('pogprofiles')
+        .where('userId', '==', pogProfileUserId)
         .get();
 
-      if (addressSnapshot.docs.length > 1) {
+      if (pogProfileQuerySnapshot.docs.length > 1) {
         throw new Error(
-          `There are multiple profiles associated to the wallet address: ${walletAddress}`,
+          `There are multiple profiles associated to the same userId: ${pogProfileUserId}`,
         );
       }
 
-      if (addressSnapshot.docs.length) {
-        const pogProfileUserId = addressSnapshot.docs[0].data().userId;
-        const pogProfileQuerySnapshot = await this.db
-          .collection('pogprofiles')
-          .where('userId', '==', pogProfileUserId)
-          .get();
-
-        if (pogProfileQuerySnapshot.docs.length > 1) {
-          throw new Error(
-            `There are multiple profiles associated to the same userId: ${pogProfileUserId}`,
-          );
-        }
-
-        if (pogProfileQuerySnapshot.docs.length) {
-          const pogProfile =
-            pogProfileQuerySnapshot.docs[0].data() as PogProfile;
+      if (pogProfileQuerySnapshot.docs.length) {
+        const pogProfile = pogProfileQuerySnapshot.docs[0].data() as PogProfile;
+        if (pogProfile.userId) {
           const walletAddresses = await this.getWalletAddressesForProfile(
             pogProfile.userId,
           );
           return {...pogProfile, walletAddresses};
-        } else {
-          return undefined;
         }
       }
-    } catch (error) {
-      console.log(error);
       return undefined;
     }
   }
 
   async addWalletAddressToProfile(userId: string, walletAddress: string) {
+    const lowerCasedWalletAddress = walletAddress.toLowerCase();
     const walletQuerySnapshot = await this.db
       .collectionGroup('walletAddresses')
-      .where('walletAddress', '==', walletAddress)
+      .where('walletAddress', '==', lowerCasedWalletAddress)
       .get();
     if (walletQuerySnapshot.docs.length) {
       throw new Error('Wallet address already exists');
     }
     const newWalletRef = this.db.doc(
-      `pogprofiles/${userId}/walletAddresses/${walletAddress}`,
+      `pogprofiles/${userId}/walletAddresses/${lowerCasedWalletAddress}`,
     );
     await newWalletRef.set({
       userId,
-      walletAddress,
+      walletAddress: lowerCasedWalletAddress,
     });
   }
 
@@ -203,7 +250,7 @@ export class PogProfileService {
   }
 
   generateDerivativePath(highestGeneratedCount: number) {
-    const baseDerivativePath = "m/44'/60'/";
+    const baseDerivativePath = "m/44'/60'";
     const newGeneratedCount = highestGeneratedCount + 1;
     const maxDerivativePathOffset = parseInt(
       process.env.MAX_DERIVATIVE_PATH_OFFSET as string,
@@ -228,14 +275,22 @@ export class PogProfileService {
           const walletGenerationDoc: FirebaseFirestore.DocumentSnapshot =
             await transaction.get(walletGenerationDocRef);
           if (walletGenerationDoc.exists) {
-            const generatedCount = walletGenerationDoc?.data()?.generatedCount;
+            console.log(
+              'walletGenerationDoc fetched:',
+              walletGenerationDoc.data(),
+            );
+            const generatedCount = walletGenerationDoc.data()?.generatedCount;
             const derivativePath = this.generateDerivativePath(generatedCount);
+            console.log(
+              'generated derivation path for new wallet:',
+              derivativePath,
+            );
             const mnemonic: string =
               process.env[`MNEMONIC_${mnemonicId}`] ?? '';
             const newWallet = Wallet.fromMnemonic(mnemonic, derivativePath);
             transaction.update(walletGenerationDocRef, {
-              generatedCount: FirebaseFirestore.FieldValue.increment(1),
-              currentIndex: FirebaseFirestore.FieldValue.increment(1),
+              generatedCount: FieldValue.increment(1),
+              currentIndex: FieldValue.increment(1),
             });
             console.log('New wallet address created:', newWallet.address);
             return newWallet;
@@ -257,8 +312,6 @@ export class PogProfileService {
     let pogProfileFromEmailHash;
     let pogProfileFromWalletAddress;
     let pogProfile;
-    let profileId;
-    let walletAddress;
 
     const {userId, email, doGooder} = data;
 
@@ -305,25 +358,6 @@ export class PogProfileService {
         );
       }
     }
-
-    // // if profiles were found from the email and doGooder wallets entered
-    // // - check that the userIds returned match
-    // // - throw an error if they don't
-    // if (pogProfileFromEmailHash && pogProfileFromUserId && pogProfile) {
-    //   if (pogProfileFromEmailHash.userId !== pogProfileFromUserId.userId) {
-    //     throw new Error('User ID found for email and wallet do not match');
-    //   } else {
-    //     console.log('User ID from email and wallet matches');
-    //     console.log('Setting Profile ID to', pogProfileFromEmailHash);
-    //     profileId = pogProfileFromEmailHash;
-    //   }
-    //   // if a userId was only returned from userByEmailHash, set it as profileId
-    // } else if (pogProfileFromEmailHash) {
-    //   profileId = pogProfileFromEmailHash;
-    //   // if a userId was only returned from walletUser, set it as profileId
-    // } else if (pogProfileFromUserId) {
-    //   profileId = pogProfileFromUserId;
-    // }
 
     switch (true) {
       // if userId was provided in request, and profiles were found from email and doGooder match
@@ -373,46 +407,32 @@ export class PogProfileService {
         break;
     }
 
-    // if no userId was found, generate a new one
-    if (pogProfile) {
+    // if profile was found, return it along with doGooder wallet provided, or pull the first wallet associated to the profile
+    if (pogProfile?.userId) {
       if (doGooder && !pogProfileFromWalletAddress) {
         await this.addWalletAddressToProfile(pogProfile.userId, doGooder);
+        Object.assign(pogProfile, {doGooder});
+      } else if (pogProfile.walletAddresses?.length) {
+        Object.assign(pogProfile, {doGooder: pogProfile.walletAddresses[0]});
       }
       return pogProfile;
     } else {
       console.log(
         'No profile found matching data entered, generating new profile',
       );
-      profileId = utils.formatBytes32String(nanoid());
-      console.log('Creating new profile with userId:', profileId);
 
-      const pogProfileParams = {
-        userId: profileId,
-        isOnPogLedger: false,
-        created: FirebaseFirestore.Timestamp.now(),
+      const pogProfileParams: Partial<PogProfile> = {
+        created: Timestamp.now().toMillis(),
       };
 
       // if email is provided, use emailHash
       if (emailHash) {
-        Object.assign(pogProfileParams, {emailHash});
+        Object.assign(pogProfileParams, {emailHash, email});
       }
 
       // create the new pog profile doc in firestore
-      await this.db.doc(`pogprofiles/${profileId}`).set(pogProfileParams);
+      const createdPogProfile = await this.createPogProfile(pogProfileParams);
 
-      // if wallet was provided and doesn't exist in firestore, add to user's profile
-      if (doGooder) {
-        walletAddress = doGooder;
-      } else {
-        // generate wallet and add to pog profile
-        const newWallet = await this.generateWallet();
-        walletAddress = newWallet!.address;
-      }
-      await this.addWalletAddressToProfile(profileId, walletAddress);
-
-      // get newly created pog profile and return
-      const createdPogProfile = await this.getPogProfileByUserId(profileId);
-      Object.assign(createdPogProfile, {doGooder: walletAddress});
       return createdPogProfile;
     }
   }
