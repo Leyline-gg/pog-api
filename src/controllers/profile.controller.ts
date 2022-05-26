@@ -44,6 +44,7 @@ export class ProfileController {
         email,
         walletAddresses: [walletAddress],
       });
+      //ledger stuff here
     } else if (!emailProfile && !!walletProfile) {
       // no profile for email, but wallet profile exists
       console.log('!emailProfile && !!walletProfile');
@@ -51,6 +52,7 @@ export class ProfileController {
         walletProfile.userId!,
         email,
       );
+      //ledger stuff here
     } else if (!!emailProfile && !walletProfile) {
       // no profile for wallet, but email profile exists
       console.log('!!emailProfile && !walletProfile');
@@ -58,9 +60,16 @@ export class ProfileController {
         emailProfile.userId!,
         walletAddress,
       );
+      //ledger stuff here
     } else if (emailProfile?.userId !== walletProfile?.userId) {
       // profiles for wallet and email exist, but are not the same
       console.log('emailProfile.id !== walletProfile.id');
+      //merge profiles
+      await this.pogProfileRepository.addWalletAddressToProfile(
+        emailProfile!.userId!,
+        walletAddress,
+      );
+      //ledger stuff here
     }
 
     return body.email;
