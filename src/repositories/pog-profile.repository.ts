@@ -34,8 +34,9 @@ export class PogProfileRepository extends DefaultCrudRepository<
     const pogProfileRef = this.db.doc(`pogprofiles/${profileId}`);
 
     // if email was provided but not email hash, generate email hash
-    if (!!pogProfile.email && !pogProfile.emailHash)
+    if (!!pogProfile.email && !pogProfile.emailHash) {
       Object.assign(pogProfile, {emailHash: this.hashEmail(pogProfile.email)});
+    }
 
     await pogProfileRef.set(pogProfile);
 
