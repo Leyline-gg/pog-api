@@ -8,7 +8,7 @@ export class ProfileController {
     private pogProfileRepository: PogProfileRepository,
   ) {}
 
-  @post('/merge')
+  @post('/consolidate')
   async merge(
     @requestBody({
       content: {
@@ -30,12 +30,12 @@ export class ProfileController {
     body: any,
   ): Promise<any> {
     const {email, walletAddress} = body;
-    const [emailProfile, walletProfile] = [
+    const [emailProfile, walletProfile] = await Promise.all([
       await this.pogProfileRepository.getPogProfileByEmail(email),
       await this.pogProfileRepository.getPogProfileByWalletAddress(
         walletAddress,
       ),
-    ];
+    ]);
 
     if (!emailProfile && !walletProfile) {
       // no profiles for either email or wallet
