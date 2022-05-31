@@ -111,7 +111,7 @@ export class GoodEntryController {
     return this.goodEntryRepository.find(filter);
   }
 
-  @get('/entry/user/{doGooder}')
+  @get('/entry/user/{userId}')
   async getUserEntries(
     @param({
       schema: {
