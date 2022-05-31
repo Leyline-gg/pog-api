@@ -1,12 +1,19 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
-import {get, getModelSchemaRef, HttpErrors, param, post, requestBody} from '@loopback/rest';
+import {
+  get,
+  getModelSchemaRef,
+  HttpErrors,
+  param,
+  post,
+  requestBody,
+} from '@loopback/rest';
 import {utils} from 'ethers';
 import {ErrorResponse, GoodEntry} from '../models';
 import {
   GoodActivityRepository,
   GoodEntryRepository,
-  PogProfileRepository
+  PogProfileRepository,
 } from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -25,7 +32,7 @@ export class GoodEntryController {
     public pogProfileRepository: PogProfileRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) { }
+  ) {}
 
   /**
    * Retrieve a Proof of Good Entry
@@ -102,6 +109,28 @@ export class GoodEntryController {
     @param.filter(GoodEntry) filter?: Filter<GoodEntry>,
   ): Promise<GoodEntry[]> {
     return this.goodEntryRepository.find(filter);
+  }
+
+  @get('/entry/user/{doGooder}')
+  async getUserEntries(
+    @param({
+      schema: {
+        type: 'string',
+        example:
+          '0x57586e517a4f493955334c4d4b776d475f47765f6f0000000000000000000000',
+      },
+      name: 'userId',
+      in: 'path',
+      required: true,
+      description: 'The userId of the PoG user',
+    })
+    userId: string,
+  ): Promise<GoodEntry[]> {
+    return this.goodEntryRepository.find({
+      where: {
+        userId,
+      },
+    });
   }
 
   /**
@@ -200,7 +229,9 @@ export class GoodEntryController {
 
     const goodEntry = new GoodEntry(entry);
     Object.assign(goodEntry, pogProfile);
-    const encodedExternalId = utils.formatBytes32String(entry?.externalId ?? "");
+    const encodedExternalId = utils.formatBytes32String(
+      entry?.externalId ?? '',
+    );
     Object.assign(goodEntry, {
       externalId: encodedExternalId,
     });
@@ -215,7 +246,7 @@ export class GoodEntryController {
         'post',
         goodEntry,
       );
-      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber(), });
+      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber()});
 
       const response = await this.goodEntryRepository.create(
         persistGoodEntryData,
