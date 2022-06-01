@@ -8,6 +8,12 @@ import {
   GoodOracle,
   GoodType
 } from '../models';
+import createLock from "../utils/SimpleLock";
+
+// define nonce outside function to persist value
+let nonce = 0;
+// create lock
+const lock = createLock("send");
 
 type InputModel =
   | Partial<GoodOracle>
@@ -39,6 +45,15 @@ export class ProofOfGoodSmartContractService {
 
   async updateLedger(crudOperation: string, data: InputModel) {
     let attempt = 0;
+    // pause execution with lock
+    console.log("Acquiring lock ...")
+    await lock.acquire()
+    console.log("Lock ACQUIRED !!!")
+    // get current nonce perceived by blockchain
+    const _nonce = await this.signer.getTransactionCount();
+    console.log("transactionCount:", _nonce)
+    nonce = nonce > _nonce ? nonce : _nonce;
+    console.log(nonce);
     const response = await ethers.utils.poll(
       async () => {
         attempt++;
@@ -84,7 +99,7 @@ export class ProofOfGoodSmartContractService {
             break;
 
           case data instanceof GoodEntry:
-            txResponse = await this.contract.createProofOfGoodEntry(data);
+            txResponse = await this.contract.createProofOfGoodEntry(data, {nonce});
             eventName = 'ProofOfGoodEntryCreated';
             break;
         }
@@ -99,6 +114,11 @@ export class ProofOfGoodSmartContractService {
       },
       {retryLimit: 5, interval: 5000},
     );
+    // increase nonce
+    nonce+=1;
+    // release lock
+    lock.release();
+    console.log("Lock Released!!")
     return response;
   }
 }
