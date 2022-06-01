@@ -42,9 +42,9 @@ export class ProfileController {
       console.log('!emailProfile && !walletProfile');
       await this.pogProfileRepository.createPogProfile({
         email,
-        walletAddresses: [walletAddress],
+        doGooder: walletAddress,
       });
-      //ledger stuff here
+      // ledger updates handled in contract
     } else if (!emailProfile && !!walletProfile) {
       // no profile for email, but wallet profile exists
       console.log('!emailProfile && !!walletProfile');
@@ -52,7 +52,7 @@ export class ProfileController {
         walletProfile.userId!,
         email,
       );
-      //ledger stuff here
+      // ledger updates handled in contract
     } else if (!!emailProfile && !walletProfile) {
       // no profile for wallet, but email profile exists
       console.log('!!emailProfile && !walletProfile');
