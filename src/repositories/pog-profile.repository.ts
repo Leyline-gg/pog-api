@@ -85,9 +85,11 @@ export class PogProfileRepository extends DefaultCrudRepository<
 
     // set doGooder to provided doGooder or the first wallet address in profile's walletAddresses subcollection
     if (pogProfile.doGooder) {
-      Object.assign(pogProfileData, {doGooder: pogProfile.doGooder});
+      Object.assign(pogProfileData as PogProfile, {
+        doGooder: pogProfile.doGooder,
+      });
     } else if (pogProfileAddressesSnapshot.docs.length) {
-      Object.assign(pogProfileData, {
+      Object.assign(pogProfileData as PogProfile, {
         doGooder: pogProfileAddressesSnapshot.docs[0].data().walletAddress,
       });
     }

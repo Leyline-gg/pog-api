@@ -339,7 +339,7 @@ describe('PogApiApplication - Activity', () => {
       await givenActiveCategoryAndTypeInstances();
 
     Object.assign(
-      goodActivity,
+      goodActivity as GoodActivity,
       {goodCategoryId: activeGoodCategory.id},
       {goodTypeIdArray: [activeGoodType.id]},
     );

@@ -207,21 +207,14 @@ export class GoodEntryController {
 
     const goodEntry = new GoodEntry(entry);
     Object.assign(goodEntry, pogProfile);
-    if (entry.externalId) {
-      const encodedExternalId = utils.formatBytes32String(entry.externalId);
-      Object.assign(goodEntry, {
-        externalId: encodedExternalId,
-      });
-    }
+    const encodedExternalId = utils.formatBytes32String(entry?.externalId ?? "");
+    Object.assign(goodEntry, {
+      externalId: encodedExternalId,
+    });
     const persistGoodEntryData = new GoodEntry({
+      ...goodEntry,
       doGooder: goodEntry?.doGooder?.toLowerCase(),
-      userId: goodEntry.userId,
       email: entry.email,
-      goodActivityId: goodEntry.goodActivityId,
-      goodOracleId: goodEntry.goodOracleId,
-      goodPoints: goodEntry.goodPoints,
-      units: goodEntry.units,
-      timestamp: goodEntry.timestamp,
       externalId: entry?.externalId,
     });
     try {
