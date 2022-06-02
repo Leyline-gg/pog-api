@@ -12,6 +12,7 @@ import createLock from '../utils/SimpleLock';
 
 // define nonce outside function to persist value
 let nonce = 0;
+const GAS_LIMIT = 500000;
 // create lock
 const lock = createLock('send');
 
@@ -104,6 +105,7 @@ export class ProofOfGoodSmartContractService {
             case data instanceof GoodEntry:
               txResponse = await this.contract.createProofOfGoodEntry(data, {
                 nonce,
+                gasLimit: GAS_LIMIT,
               });
               eventName = 'ProofOfGoodEntryCreated';
               break;
