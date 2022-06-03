@@ -1,3 +1,4 @@
+import {NonceManager} from '@ethersproject/experimental';
 import {/* inject, */ BindingScope, injectable} from '@loopback/core';
 import {ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
@@ -13,7 +14,8 @@ type InputModel =
   | Partial<GoodOracle>
   | Partial<GoodCategory>
   | Partial<GoodType>
-  | Partial<GoodActivity>;
+  | Partial<GoodActivity>
+  | Partial<GoodEntry>;
 @injectable({scope: BindingScope.TRANSIENT})
 export class ProofOfGoodSmartContractService {
   secret: string;
@@ -34,23 +36,14 @@ export class ProofOfGoodSmartContractService {
       this.address,
       ProofOfGoodLedger.abi,
       this.provider,
-    ).connect(this.signer);
+    ).connect(new NonceManager(this.signer));
   }
 
   async updateLedger(crudOperation: string, data: InputModel) {
     let attempt = 0;
-    // pause execution with lock
-    console.log('Acquiring lock ...');
-    await lock.acquire();
-    console.log('Lock ACQUIRED !!!');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
     try {
-      // get current nonce perceived by blockchain
-      const _nonce = await this.signer.getTransactionCount();
-      console.log('transactionCount:', _nonce);
-      nonce = nonce > _nonce ? nonce : _nonce;
-      console.log(nonce);
       response = await ethers.utils.poll(
         async () => {
           attempt++;
@@ -74,18 +67,18 @@ export class ProofOfGoodSmartContractService {
 
             case data instanceof GoodCategory:
               txResponse = await this.contract.addOrUpdateGoodCategory(
-                data.id,
-                data.name,
-                data.status,
+                (data as GoodCategory).id,
+                (data as GoodCategory).name,
+                (data as GoodCategory).status,
               );
               eventName = 'GoodCategoryUpdated';
               break;
 
             case data instanceof GoodType:
               txResponse = await this.contract.addOrUpdateGoodType(
-                data.id,
-                data.name,
-                data.status,
+                (data as GoodType).id,
+                (data as GoodType).name,
+                (data as GoodType).status,
               );
               eventName = 'GoodTypeUpdated';
               break;
@@ -96,10 +89,7 @@ export class ProofOfGoodSmartContractService {
               break;
 
             case data instanceof GoodEntry:
-              txResponse = await this.contract.createProofOfGoodEntry(data, {
-                nonce,
-                gasLimit: GAS_LIMIT,
-              });
+              txResponse = await this.contract.createProofOfGoodEntry(data);
               eventName = 'ProofOfGoodEntryCreated';
               break;
           }

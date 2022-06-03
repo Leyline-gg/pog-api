@@ -219,10 +219,24 @@ export class GoodEntryController {
       email: entry.email,
       externalId: entry?.externalId,
     });
+
+    const params = new GoodEntry({
+      doGooder: goodEntry.doGooder,
+      emailHash: pogProfile?.emailHash,
+      userId: goodEntry.userId,
+      goodActivityId: goodEntry.goodActivityId,
+      goodOracleId: goodEntry.goodOracleId,
+      units: goodEntry.units,
+      timestamp: goodEntry.timestamp,
+      externalId: goodEntry.externalId,
+      imageURL: goodEntry.imageURL,
+      mediaURL: goodEntry.mediaURL,
+    });
+
     try {
       const entryData = await this.proofOfGoodSmartContractService.updateLedger(
         'post',
-        goodEntry,
+        params,
       );
       Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber()});
 
