@@ -277,13 +277,6 @@ export class PogProfileRepository extends DefaultCrudRepository<
     transferToPogProfile: Partial<PogProfile>,
     transferFromPogProfile: Partial<PogProfile>,
   ) {
-    const transferToProfileRef = await this.db.doc(
-      `pogprofiles/${transferToPogProfile.userId}`,
-    );
-    const transferFromProfileRef = await this.db.doc(
-      `pogprofiles/${transferFromPogProfile?.userId}`,
-    );
-
     if (
       transferToPogProfile?.userId &&
       transferFromPogProfile?.walletAddresses?.length
