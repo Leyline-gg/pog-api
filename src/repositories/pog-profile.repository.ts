@@ -282,10 +282,6 @@ export class PogProfileRepository extends DefaultCrudRepository<
       transferFromPogProfile?.walletAddresses?.length
     ) {
       for (const wallet of transferFromPogProfile?.walletAddresses) {
-        await this.addWalletAddressToProfile(
-          transferToPogProfile.userId,
-          wallet,
-        );
         // add wallet to the transferToPogProfile
         await this.addWalletAddressToProfile(
           transferToPogProfile.userId,
@@ -326,10 +322,40 @@ export class PogProfileRepository extends DefaultCrudRepository<
         const mergedFromProfileRef = this.db.doc(
           `merged_pogprofiles/${mergeFromPogProfile.userId}`,
         );
+
+        // store walletAddresses in a new variable and delete array from mergeFromPogProfile
+        const deactivatedProfile: Record<string, unknown> = {
+          ...mergeFromPogProfile,
+        };
+        delete deactivatedProfile.walletAddresses;
+
+        // create the merged_pogprofiles doc
+        console.log('Creating new merged_pogprofiles doc');
         await mergedFromProfileRef.set({
-          mergeFromPogProfile,
+          deactivatedProfile,
+          mergedTo: mergeToPogProfile.userId,
         });
-        // delete the mergedFrom Pog Profile
+
+        // add wallets to oldAddresses subcollection of the merged_pogprofiles doc
+        console.log(
+          'Moving wallet addresses to oldAddresses subcollection of the merged_pogprofiles doc',
+        );
+        if (mergeFromPogProfile?.walletAddresses?.length) {
+          for (const walletAddress of mergeFromPogProfile.walletAddresses) {
+            await mergedFromProfileRef
+              .collection('oldAddresses')
+              .doc(walletAddress)
+              .set({
+                userId: mergeFromPogProfile.userId,
+                walletAddress: walletAddress,
+                transferredToUserId: mergeToPogProfile.userId,
+              });
+          }
+        }
+        // delete the mergeFromPoProfile doc from the pogprofiles collection
+        console.log(
+          'Deleting original Pog Profile that is being merged from pogprofiles',
+        );
         await this.db.doc(`pogprofiles/${mergeFromPogProfile.userId}`).delete();
 
         // fetch and return the new merged_pogprofile doc and the updated pogprofile doc

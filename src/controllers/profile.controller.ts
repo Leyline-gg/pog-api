@@ -86,14 +86,17 @@ export class ProfileController {
       // profiles for wallet and email exist, but are not the same
       console.log('emailProfile.id !== walletProfile.id');
       //merge profiles on contract
-      const eventArgs =
-        await this.proofOfGoodSmartContractService.updateProfile(
-          'mergeProfiles',
-          {
-            toUserId: emailProfile?.userId,
-            fromUserId: walletProfile?.userId,
-          },
-        );
+      console.log(
+        `Merging profile ${walletProfile?.userId} to profile ${emailProfile?.user}`,
+      );
+      await this.proofOfGoodSmartContractService.updateProfile(
+        'mergeProfiles',
+        {
+          toUserId: emailProfile?.userId,
+          fromUserId: walletProfile?.userId,
+        },
+      );
+      console.log('Merge completed');
       // merge Pog Profiles on firestore
       const updatedProfiles =
         await this.pogProfileRepository.mergeProfilesInFirestore(
