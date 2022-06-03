@@ -1,4 +1,4 @@
-import { /* inject, */ BindingScope, injectable} from '@loopback/core';
+import {/* inject, */ BindingScope, injectable} from '@loopback/core';
 import {ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
 import {
@@ -6,7 +6,7 @@ import {
   GoodCategory,
   GoodEntry,
   GoodOracle,
-  GoodType
+  GoodType,
 } from '../models';
 
 type InputModel =
@@ -92,10 +92,54 @@ export class ProofOfGoodSmartContractService {
         const receipt = await txResponse.wait();
         const events = receipt.events;
 
-        if (events) {console.log('Events Args:', events);}
-        return events.find(
-          (event: ethers.Event) => event?.event === eventName,
-        ).args;
+        if (events) {
+          console.log('Events Args:', events);
+        }
+        return events.find((event: ethers.Event) => event?.event === eventName)
+          .args;
+      },
+      {retryLimit: 5, interval: 5000},
+    );
+    return response;
+  }
+
+  async updateProfile(contractFunction: string, data: Record<string, unknown>) {
+    let attempt = 0;
+    const response = await ethers.utils.poll(
+      async () => {
+        attempt++;
+        console.log('Transaction attempt:', attempt);
+        let txResponse;
+        let eventName: string;
+        switch (true) {
+          case contractFunction == 'associateWalletAddressToUserId':
+            if (data?.walletAddress && data?.userId) {
+              txResponse = await this.contract.associateWalletAddressToUserId(
+                data.walletAddress,
+                data.userId,
+              );
+              eventName = 'WalletAddedToProfile';
+            }
+            break;
+
+          case contractFunction == 'mergeProfiles':
+            if (data?.toUserId && data?.fromUserId) {
+              txResponse = await this.contract.mergeProfiles(
+                data.toUserId,
+                data.fromUserId,
+              );
+              eventName = 'ProfilesMerged';
+            }
+            break;
+        }
+
+        const receipt = await txResponse.wait();
+        const events = receipt.events;
+        if (events) {
+          console.log('Events Args:', events);
+        }
+        return events.find((event: ethers.Event) => event?.event === eventName)
+          .args;
       },
       {retryLimit: 5, interval: 5000},
     );
