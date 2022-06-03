@@ -52,6 +52,7 @@
     "!*/__tests__"
   ],
   "dependencies": {
+    "@ethersproject/experimental": "^5.6.2",
     "@google-cloud/firestore": "^5.0.2",
     "@google-cloud/secret-manager": "^3.12.0",
     "@loopback/authentication": "^8.1.2",

@@ -1,12 +1,19 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
-import {get, getModelSchemaRef, HttpErrors, param, post, requestBody} from '@loopback/rest';
+import {
+  get,
+  getModelSchemaRef,
+  HttpErrors,
+  param,
+  post,
+  requestBody,
+} from '@loopback/rest';
 import {utils} from 'ethers';
 import {ErrorResponse, GoodEntry} from '../models';
 import {
   GoodActivityRepository,
   GoodEntryRepository,
-  PogProfileRepository
+  PogProfileRepository,
 } from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -25,7 +32,7 @@ export class GoodEntryController {
     public pogProfileRepository: PogProfileRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) { }
+  ) {}
 
   /**
    * Retrieve a Proof of Good Entry
@@ -200,7 +207,9 @@ export class GoodEntryController {
 
     const goodEntry = new GoodEntry(entry);
     Object.assign(goodEntry, pogProfile);
-    const encodedExternalId = utils.formatBytes32String(entry?.externalId ?? "");
+    const encodedExternalId = utils.formatBytes32String(
+      entry?.externalId ?? '',
+    );
     Object.assign(goodEntry, {
       externalId: encodedExternalId,
     });
@@ -210,12 +219,26 @@ export class GoodEntryController {
       email: entry.email,
       externalId: entry?.externalId,
     });
+
+    const params = new GoodEntry({
+      doGooder: goodEntry.doGooder,
+      emailHash: pogProfile?.emailHash,
+      userId: goodEntry.userId,
+      goodActivityId: goodEntry.goodActivityId,
+      goodOracleId: goodEntry.goodOracleId,
+      units: goodEntry.units,
+      timestamp: goodEntry.timestamp,
+      externalId: goodEntry.externalId,
+      imageURL: goodEntry.imageURL,
+      mediaURL: goodEntry.mediaURL,
+    });
+
     try {
       const entryData = await this.proofOfGoodSmartContractService.updateLedger(
         'post',
-        goodEntry,
+        params,
       );
-      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber(), });
+      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber()});
 
       const response = await this.goodEntryRepository.create(
         persistGoodEntryData,

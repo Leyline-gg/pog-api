@@ -94,6 +94,17 @@ export class GoodEntry extends Entity {
   })
   email: string;
 
+  /**
+   * awaiting clarification
+   */
+  @property({
+    jsonSchema: {
+      type: 'string',
+      description: 'user email hashed',
+    },
+  })
+  emailHash?: string;
+
   @property({
     jsonSchema: {
       type: 'string',
