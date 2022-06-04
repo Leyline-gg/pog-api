@@ -32,8 +32,11 @@ export class ProfileController {
         },
       },
     })
-    body: any,
-  ): Promise<any> {
+    body: {
+      email: string;
+      walletAddress: string;
+    },
+  ): Promise<Partial<PogProfile> | undefined> {
     const {email, walletAddress} = body;
     const [emailProfile, walletProfile] = await Promise.all([
       await this.pogProfileRepository.getPogProfileByEmail(email),
@@ -47,19 +50,21 @@ export class ProfileController {
       // - create profile
       // - contract handles update on good entry submission
       console.log('!emailProfile && !walletProfile');
-      await this.pogProfileRepository.createPogProfile({
+      const newProfile = await this.pogProfileRepository.createPogProfile({
         email,
         doGooder: walletAddress,
       });
+      return newProfile;
     } else if (!emailProfile && !!walletProfile) {
       // no profile for email, but wallet profile exists
       // - add email to profile found from the wallet
       // - contract handles update on good entry submission
       console.log('!emailProfile && !!walletProfile');
-      await this.pogProfileRepository.addEmailToProfile(
+      const {emailHash} = await this.pogProfileRepository.addEmailToProfile(
         walletProfile.userId!,
         email,
       );
+      return {...walletProfile, email, emailHash};
     } else if (!!emailProfile?.userId && !walletProfile) {
       // no profile for wallet, but email profile exists
       console.log('!!emailProfile && !walletProfile');
@@ -114,6 +119,6 @@ export class ProfileController {
         return updatedProfiles.mergedTo;
       }
     }
-    return null;
+    return {};
   }
 }

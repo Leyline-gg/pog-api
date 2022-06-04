@@ -41,8 +41,7 @@ export class ProofOfGoodSmartContractService {
 
   async updateLedger(crudOperation: string, data: InputModel) {
     let attempt = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let response: any;
+    let response;
     try {
       response = await ethers.utils.poll(
         async () => {
@@ -114,7 +113,7 @@ export class ProofOfGoodSmartContractService {
 
   async updateProfile(contractFunction: string, data: Record<string, unknown>) {
     let attempt = 0;
-    let response: any;
+    let response;
     try {
       response = await ethers.utils.poll(
         async () => {
@@ -123,7 +122,7 @@ export class ProofOfGoodSmartContractService {
           let txResponse;
           let eventName: string;
           switch (true) {
-            case contractFunction == 'associateWalletAddressToUserId':
+            case contractFunction === 'associateWalletAddressToUserId':
               if (data?.walletAddress && data?.userId) {
                 txResponse = await this.contract.associateWalletAddressToUserId(
                   data.walletAddress,
@@ -133,7 +132,7 @@ export class ProofOfGoodSmartContractService {
               }
               break;
 
-            case contractFunction == 'mergeProfiles':
+            case contractFunction === 'mergeProfiles':
               if (data?.toUserId && data?.fromUserId) {
                 txResponse = await this.contract.mergeProfiles(
                   data.toUserId,
