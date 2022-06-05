@@ -1,6 +1,6 @@
 import {NonceManager} from '@ethersproject/experimental';
 import {/* inject, */ BindingScope, injectable} from '@loopback/core';
-import {ethers} from 'ethers';
+import {ContractReceipt, ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
 import {
   GoodActivity,
@@ -151,6 +151,37 @@ export class ProofOfGoodSmartContractService {
           return events.find(
             (event: ethers.Event) => event?.event === eventName,
           ).args;
+        },
+        {retryLimit: 5, interval: 5000},
+      );
+    } catch (error) {
+      console.error(error);
+    }
+    return response;
+  }
+
+  async sendTx(
+    eventName: string,
+    data: unknown,
+    fn: (data: unknown) => Promise<ethers.providers.TransactionResponse>,
+  ) {
+    let attempt = 0;
+    let response;
+    try {
+      response = await ethers.utils.poll(
+        async () => {
+          attempt++;
+          console.log('Transaction attempt:', attempt);
+          console.log('Incoming data: ', data);
+          const txResponse = await fn(data);
+          const receipt: ContractReceipt = await txResponse.wait();
+          const events = receipt.events;
+          if (events) {
+            console.log('Events Args:', events);
+          }
+          return events?.find(
+            (event: ethers.Event) => eventName === event.event,
+          )?.args;
         },
         {retryLimit: 5, interval: 5000},
       );
