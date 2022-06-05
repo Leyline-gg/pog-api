@@ -92,21 +92,21 @@ export class ProfileController {
       console.log('emailProfile.id !== walletProfile.id');
       //merge profiles on contract
       console.log(
-        `Merging profile ${walletProfile?.userId} to profile ${emailProfile?.user}`,
+        `Merging profile ${walletProfile?.userId} to profile ${emailProfile?.userId}`,
       );
       await this.proofOfGoodSmartContractService.updateProfile(
         'mergeProfiles',
         {
-          toUserId: emailProfile?.userId,
           fromUserId: walletProfile?.userId,
+          toUserId: emailProfile?.userId,
         },
       );
       console.log('Merge completed');
       // merge Pog Profiles on firestore
       const updatedProfiles =
         await this.pogProfileRepository.mergeProfilesInFirestore(
-          emailProfile as PogProfile,
           walletProfile as PogProfile,
+          emailProfile as PogProfile,
         );
 
       // return updated Pog Profile

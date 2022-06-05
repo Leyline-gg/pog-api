@@ -306,8 +306,8 @@ export class PogProfileRepository extends DefaultCrudRepository<
   }
 
   async mergeProfilesInFirestore(
-    mergeToPogProfile: PogProfile,
     mergeFromPogProfile: PogProfile,
+    mergeToPogProfile: PogProfile,
   ) {
     if (mergeToPogProfile?.userId && mergeFromPogProfile?.userId) {
       try {
