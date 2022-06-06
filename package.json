@@ -1,6 +1,6 @@
 {
   "name": "pog-api",
-  "version": "0.0.1",
+  "version": "1.3.1",
   "description": "API for the Proof Of Good interactions with the backend and the blockchain",
   "keywords": [
     "loopback-application",
