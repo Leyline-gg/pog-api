@@ -1,6 +1,6 @@
 import {NonceManager} from '@ethersproject/experimental';
 import {/* inject, */ BindingScope, injectable} from '@loopback/core';
-import {ethers} from 'ethers';
+import {ContractReceipt, ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
 import {
   GoodActivity,
@@ -41,8 +41,7 @@ export class ProofOfGoodSmartContractService {
 
   async updateLedger(crudOperation: string, data: InputModel) {
     let attempt = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let response: any;
+    let response;
     try {
       response = await ethers.utils.poll(
         async () => {
@@ -109,7 +108,86 @@ export class ProofOfGoodSmartContractService {
     } catch (error) {
       console.error(error);
     }
+    return response;
+  }
 
+  async updateProfile(contractFunction: string, data: Record<string, unknown>) {
+    let attempt = 0;
+    let response;
+    try {
+      response = await ethers.utils.poll(
+        async () => {
+          attempt++;
+          console.log('Transaction attempt:', attempt);
+          let txResponse;
+          let eventName: string;
+          switch (true) {
+            case contractFunction === 'associateWalletAddressToUserId':
+              if (data?.walletAddress && data?.userId) {
+                txResponse = await this.contract.associateWalletAddressToUserId(
+                  data.walletAddress,
+                  data.userId,
+                );
+                eventName = 'WalletAddedToProfile';
+              }
+              break;
+
+            case contractFunction === 'mergeProfiles':
+              if (data?.toUserId && data?.fromUserId) {
+                txResponse = await this.contract.mergeProfiles(
+                  data.toUserId,
+                  data.fromUserId,
+                );
+                eventName = 'ProfilesMerged';
+              }
+              break;
+          }
+
+          const receipt = await txResponse.wait();
+          const events = receipt.events;
+          if (events) {
+            console.log('Events Args:', events);
+          }
+          return events.find(
+            (event: ethers.Event) => event?.event === eventName,
+          ).args;
+        },
+        {retryLimit: 5, interval: 5000},
+      );
+    } catch (error) {
+      console.error(error);
+    }
+    return response;
+  }
+
+  async sendTx(
+    eventName: string,
+    data: unknown,
+    fn: (data: unknown) => Promise<ethers.providers.TransactionResponse>,
+  ) {
+    let attempt = 0;
+    let response;
+    try {
+      response = await ethers.utils.poll(
+        async () => {
+          attempt++;
+          console.log('Transaction attempt:', attempt);
+          console.log('Incoming data: ', data);
+          const txResponse = await fn(data);
+          const receipt: ContractReceipt = await txResponse.wait();
+          const events = receipt.events;
+          if (events) {
+            console.log('Events Args:', events);
+          }
+          return events?.find(
+            (event: ethers.Event) => eventName === event.event,
+          )?.args;
+        },
+        {retryLimit: 5, interval: 5000},
+      );
+    } catch (error) {
+      console.error(error);
+    }
     return response;
   }
 }

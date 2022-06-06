@@ -1,3 +1,4 @@
+import {Timestamp} from '@google-cloud/firestore';
 import {Entity, model, property} from '@loopback/repository';
 
 @model({name: 'pogprofiles', settings: {strict: false}})
@@ -5,7 +6,7 @@ export class PogProfile extends Entity {
   @property({
     type: 'date',
   })
-  created?: number;
+  created?: number = Timestamp.now().toMillis();
 
   @property({
     type: 'string',

@@ -26,23 +26,32 @@ export class PogProfileRepository extends DefaultCrudRepository<
   }
 
   async createPogProfile(
-    pogProfile: Partial<PogProfile>,
+    pogProfileParams: Partial<PogProfile>,
   ): Promise<Partial<PogProfile> | undefined> {
+    const pogProfile: Partial<PogProfile> = {...pogProfileParams};
     const profileId = utils.formatBytes32String(nanoid());
     console.log('Creating new profile with userId:', profileId);
     Object.assign(pogProfile, {userId: profileId});
     const pogProfileRef = this.db.doc(`pogprofiles/${profileId}`);
 
+    // if email was provided but not email hash, generate email hash
+    if (!!pogProfile.email && !pogProfile.emailHash) {
+      Object.assign(pogProfile, {emailHash: this.hashEmail(pogProfile.email)});
+    }
+
+    // remove doGooder from pogprofile doc since it will go into the walletAddresses subcollection
+    delete pogProfile.doGooder;
     await pogProfileRef.set(pogProfile);
 
     // if wallet was provided and doesn't exist in firestore, add to user's profile
-    if (pogProfile.doGooder) {
+    if (pogProfileParams.doGooder) {
       await this.addWalletAddressToProfile(
         profileId,
-        pogProfile.doGooder.toLowerCase(),
+        pogProfileParams.doGooder.toLowerCase(),
       );
     }
     // if user is found with matching email, add wallet addresses to pog profile
+    // otherwise create a wallet for the profile
     if (pogProfile.email) {
       const pogUserSnapshotQuery = await this.db
         .collection('users')
@@ -62,7 +71,7 @@ export class PogProfileRepository extends DefaultCrudRepository<
         for (const address of userAddresses) {
           await this.addWalletAddressToProfile(profileId, address);
         }
-      } else if (!pogProfile.doGooder) {
+      } else if (!pogProfileParams.doGooder) {
         // generate wallet and add to pog profile
         const newWallet = await this.generateWallet();
         const newWalletAddress = newWallet!.address;
@@ -182,6 +191,20 @@ export class PogProfileRepository extends DefaultCrudRepository<
     return undefined;
   }
 
+  async addEmailToProfile(userId: string, email: string) {
+    const emailHash = this.hashEmail(email);
+    const emailQuerySnapshot = await this.db
+      .collection('pogprofiles')
+      .where('emailHash', '==', emailHash)
+      .get();
+    if (emailQuerySnapshot?.docs?.length) {
+      throw new Error('Email already exists in another profile.');
+    }
+
+    await this.db.doc(`pogprofiles/${userId}`).update({email, emailHash});
+    return {email, emailHash};
+  }
+
   async getPogProfileByWalletAddress(
     walletAddress: string,
   ): Promise<Partial<PogProfile> | undefined> {
@@ -229,26 +252,127 @@ export class PogProfileRepository extends DefaultCrudRepository<
       .collectionGroup('walletAddresses')
       .where('walletAddress', '==', lowerCasedWalletAddress)
       .get();
-    if (walletQuerySnapshot.docs.length) {
-      throw new Error('Wallet address already exists');
+    if (walletQuerySnapshot?.docs?.length) {
+      throw new Error('Wallet address already exists in another profile');
     }
-    const newWalletRef = this.db.doc(
-      `pogprofiles/${userId}/walletAddresses/${lowerCasedWalletAddress}`,
-    );
-    await newWalletRef.set({
-      userId,
-      walletAddress: lowerCasedWalletAddress,
-    });
+    await this.db
+      .doc(`pogprofiles/${userId}/walletAddresses/${lowerCasedWalletAddress}`)
+      .set({
+        userId,
+        walletAddress: lowerCasedWalletAddress,
+      });
   }
 
   async getWalletAddressesForProfile(userId: string): Promise<string[]> {
     const walletAddressesSnapshot: FirebaseFirestore.QuerySnapshot =
       await this.db.collection(`pogprofiles/${userId}/walletAddresses`).get();
-    if (walletAddressesSnapshot.docs.length) {
-      return walletAddressesSnapshot.docs.map(doc => doc.data().walletAddress);
-    } else {
-      return [];
+    return walletAddressesSnapshot.docs.length
+      ? walletAddressesSnapshot.docs.map(doc => doc.data().walletAddress)
+      : [];
+  }
+
+  async transferWalletsToProfile(
+    transferFromPogProfile: Partial<PogProfile>,
+    transferToPogProfile: Partial<PogProfile>,
+  ) {
+    if (
+      transferToPogProfile?.userId &&
+      transferFromPogProfile?.walletAddresses?.length
+    ) {
+      const wallets = transferFromPogProfile?.walletAddresses ?? [];
+      for (const wallet of wallets) {
+        // add wallet to the transferToPogProfile
+        await this.addWalletAddressToProfile(
+          transferToPogProfile.userId,
+          wallet,
+        );
+        // add wallet to the transferFromPogProfile's oldAddresses subcollection
+        await this.db
+          .doc(
+            `pogprofiles/${transferFromPogProfile.userId}/oldAddresses/${wallet}`,
+          )
+          .set({
+            userId: transferFromPogProfile?.userId,
+            walletAddress: wallet,
+          });
+        // delete the wallet from the transferFromPogProfile's walletAddresses subcollection
+        await this.db
+          .doc(
+            `pogprofiles/${transferFromPogProfile.userId}/walletAddresses/${wallet}`,
+          )
+          .delete();
+      }
     }
+  }
+
+  async mergeProfilesInFirestore(
+    mergeFromPogProfile: PogProfile,
+    mergeToPogProfile: PogProfile,
+  ) {
+    if (mergeToPogProfile?.userId && mergeFromPogProfile?.userId) {
+      try {
+        // transfer wallets
+        await this.transferWalletsToProfile(
+          mergeFromPogProfile,
+          mergeToPogProfile,
+        );
+
+        // create merged_profiles doc
+        const mergedFromProfileRef = this.db.doc(
+          `merged_pogprofiles/${mergeFromPogProfile.userId}`,
+        );
+
+        // store walletAddresses in a new variable and delete array from mergeFromPogProfile
+        const deactivatedProfile: Record<string, unknown> = {
+          ...mergeFromPogProfile,
+        };
+        delete deactivatedProfile.walletAddresses;
+
+        // create the merged_pogprofiles doc
+        console.log('Creating new merged_pogprofiles doc');
+        await mergedFromProfileRef.set({
+          deactivatedProfile,
+          mergedTo: mergeToPogProfile.userId,
+        });
+
+        // add wallets to oldAddresses subcollection of the merged_pogprofiles doc
+        console.log(
+          'Moving wallet addresses to oldAddresses subcollection of the merged_pogprofiles doc',
+        );
+        if (mergeFromPogProfile?.walletAddresses?.length) {
+          for (const walletAddress of mergeFromPogProfile.walletAddresses) {
+            await mergedFromProfileRef
+              .collection('oldAddresses')
+              .doc(walletAddress)
+              .set({
+                userId: mergeFromPogProfile.userId,
+                walletAddress: walletAddress,
+                transferredToUserId: mergeToPogProfile.userId,
+              });
+          }
+        }
+        // delete the mergeFromPoProfile doc from the pogprofiles collection
+        console.log(
+          'Deleting original Pog Profile that is being merged from pogprofiles',
+        );
+        await this.db.doc(`pogprofiles/${mergeFromPogProfile.userId}`).delete();
+
+        // fetch and return the new merged_pogprofile doc and the updated pogprofile doc
+        const mergedToProfile = await this.getPogProfileByUserId(
+          mergeToPogProfile?.userId,
+        );
+        const mergedProfile = await mergedFromProfileRef.get();
+
+        return {
+          mergedFrom: mergedProfile.data(),
+          mergedTo: mergedToProfile?.data(),
+        };
+      } catch (error) {
+        console.log(error.message);
+        return undefined;
+      }
+    }
+    return undefined;
   }
 
   generateDerivativePath(highestGeneratedCount: number) {
@@ -265,7 +389,7 @@ export class PogProfileRepository extends DefaultCrudRepository<
   }
 
   async generateWallet(): Promise<Wallet | undefined> {
-    const mnemonicId = process.env.MNEMONIC_ID ?? '';
+    const mnemonicId = process.env.MNEMONIC_ID ?? '1';
     const walletGenerationDocRef = this.db.doc(
       `walletgeneration/${mnemonicId}`,
     );
