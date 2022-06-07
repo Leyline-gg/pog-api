@@ -87,5 +87,10 @@ export class GoodOracle extends Entity {
 export interface GoodOracleRelations {
   // describe navigational properties here
 }
-
+export interface OracleCap {
+  activityId: number;
+  oracleId: number;
+  duration: number;
+  points: number;
+}
 export type GoodOracleWithRelations = GoodOracle & GoodOracleRelations;

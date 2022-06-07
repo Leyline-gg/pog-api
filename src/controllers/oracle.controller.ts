@@ -10,11 +10,11 @@ import {
   patch,
   post,
   put,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
 import {SecurityBindings} from '@loopback/security';
 import {ethers} from 'ethers';
-import {ErrorResponse, GoodOracle} from '../models';
+import {ErrorResponse, GoodOracle, OracleCap} from '../models';
 import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth.provider';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
@@ -29,7 +29,7 @@ export class OracleController {
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
     @inject(SecurityBindings.USER, {optional: true})
     private oracle: GoodOracle,
-  ) { }
+  ) {}
 
   /**
    * Create a new Oracle
@@ -451,5 +451,128 @@ export class OracleController {
     oracle: Partial<GoodOracle>,
   ): Promise<unknown> {
     return this.patchOracle(id, oracle);
+  }
+
+  /**
+   * Create a new Oracle
+   *
+   * @param oracle
+   */
+  @post('/oracle/cap', {
+    summary: 'Set Oracle cap',
+    operationId: 'post-oracle-cap',
+    responses: {
+      '201': {
+        description: 'Oracle Cap rule Created',
+      },
+      '400': {
+        description: 'Missing Required Information',
+        content: {
+          'application/json': {
+            schema: getModelSchemaRef(ErrorResponse),
+          },
+        },
+      },
+      '401': {
+        description: 'Unauthorized',
+        content: {
+          'application/json': {
+            schema: getModelSchemaRef(ErrorResponse),
+          },
+        },
+      },
+      '404': {
+        description: 'Oracle Cap Not Found',
+        content: {
+          'application/json': {
+            schema: getModelSchemaRef(ErrorResponse),
+          },
+        },
+      },
+    },
+    requestBody: {
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              activityId: {
+                description:
+                  'Id of the Activity you want to set a cap for. 0 sets a global cap for the oracle.',
+                type: 'number',
+              },
+              oracleId: {
+                description: 'Id of the Oracle you want to set a cap for',
+                type: 'number',
+              },
+              duration: {
+                description: 'Duration in seconds of the interval for the Cap',
+                type: 'number',
+              },
+              points: {
+                description: "Amount of the points that can't b",
+                type: 'number',
+              },
+            },
+            required: ['oracleId', 'duration', 'points'],
+          },
+        },
+      },
+      description:
+        'Sets the maximum amount of points that a given oracle can reward over a specific interval of time. It can also be limited by Good Activity',
+    },
+    description:
+      'Sets the maximum amount of points that a given oracle can reward over a specific interval of time. It can also be limited by Good Activity',
+    parameters: [],
+    security: [
+      {
+        pog_api_key: [],
+      },
+    ],
+  })
+  async setCap(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              activityId: {
+                description:
+                  'Id of the Activity you want to set a cap for. 0 sets a global cap for the oracle.',
+                type: 'number',
+                default: 0,
+              },
+              oracleId: {
+                description: 'Id of the Oracle you want to set a cap for',
+                type: 'number',
+              },
+              duration: {
+                description: 'Duration in seconds of the interval for the Cap',
+                type: 'number',
+              },
+              points: {
+                description: "Amount of the points that can't b",
+                type: 'number',
+              },
+            },
+            required: ['oracleId', 'duration', 'points'],
+          },
+        },
+      },
+      description:
+        'Sets the maximum amount of points that a given oracle can reward over a specific interval of time. It can also be limited by Good Activity',
+    })
+    oracleCap: OracleCap,
+  ): Promise<OracleCap> {
+    try {
+      const response = await this.proofOfGoodSmartContractService.setCap(
+        oracleCap,
+      );
+      return response as OracleCap;
+    } catch (error) {
+      console.error(error);
+    }
+    return oracleCap;
   }
 }
