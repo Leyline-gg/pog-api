@@ -8,6 +8,7 @@ import {
   GoodEntry,
   GoodOracle,
   GoodType,
+  OracleCap,
 } from '../models';
 
 type InputModel =
@@ -160,6 +161,12 @@ export class ProofOfGoodSmartContractService {
     return response;
   }
 
+  async setCap(oracleCap: OracleCap) {
+    return this.sendTx('', oracleCap, async data => {
+      const {activityId, oracleId, duration, points} = data as OracleCap;
+      return this.contract.setCap(activityId, oracleId, duration, points);
+    });
+  }
   async sendTx(
     eventName: string,
     data: unknown,
@@ -179,9 +186,10 @@ export class ProofOfGoodSmartContractService {
           if (events) {
             console.log('Events Args:', events);
           }
-          return events?.find(
-            (event: ethers.Event) => eventName === event.event,
-          )?.args;
+          return eventName
+            ? events?.find((event: ethers.Event) => eventName === event.event)
+                ?.args
+            : data;
         },
         {retryLimit: 5, interval: 5000},
       );
