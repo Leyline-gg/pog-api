@@ -86,13 +86,12 @@ export class GoodEntry extends Entity {
    * awaiting clarification
    */
   @property({
-    required: true,
     jsonSchema: {
       type: 'string',
       description: 'user email',
     },
   })
-  email: string;
+  email?: string;
 
   /**
    * awaiting clarification

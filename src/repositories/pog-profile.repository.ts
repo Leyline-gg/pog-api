@@ -163,11 +163,11 @@ export class PogProfileRepository extends DefaultCrudRepository<
   }
 
   async getPogProfileByEmail(
-    emailHash: string,
+    email: string,
   ): Promise<Partial<PogProfile> | undefined> {
     const profileQuerySnapshot: FirebaseFirestore.QuerySnapshot = await this.db
       .collection('pogprofiles')
-      .where('emailHash', '==', emailHash)
+      .where('email', '==', email)
       .get();
 
     if (profileQuerySnapshot.docs.length > 1) {

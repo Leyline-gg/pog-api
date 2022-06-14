@@ -216,7 +216,6 @@ export class GoodEntryController {
     const persistGoodEntryData = new GoodEntry({
       ...goodEntry,
       doGooder: goodEntry?.doGooder?.toLowerCase(),
-      email: entry.email,
       externalId: entry?.externalId,
     });
 
@@ -238,7 +237,10 @@ export class GoodEntryController {
         'post',
         params,
       );
-      Object.assign(persistGoodEntryData, {id: entryData.tokenId.toNumber()});
+      Object.assign(persistGoodEntryData, {
+        id: entryData.tokenId.toNumber(),
+        goodPoints: entryData?.goodPoints.toNumber(),
+      });
 
       const response = await this.goodEntryRepository.create(
         persistGoodEntryData,
