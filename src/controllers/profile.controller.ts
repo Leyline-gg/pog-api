@@ -39,7 +39,9 @@ export class ProfileController {
   ): Promise<Partial<PogProfile> | undefined> {
     const {email, walletAddress} = body;
     const [emailProfile, walletProfile] = await Promise.all([
-      await this.pogProfileRepository.getPogProfileByEmail(email),
+      await this.pogProfileRepository.getPogProfileByEmail(
+        this.pogProfileRepository.hashEmail(email),
+      ),
       await this.pogProfileRepository.getPogProfileByWalletAddress(
         walletAddress,
       ),
