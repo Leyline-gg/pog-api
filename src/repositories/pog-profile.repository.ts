@@ -535,8 +535,10 @@ export class PogProfileRepository extends DefaultCrudRepository<
 
     // if profile was found, return it along with doGooder wallet provided, or pull the first wallet associated to the profile
     if (pogProfile?.userId) {
-      if (doGooder && !pogProfileFromWalletAddress) {
-        await this.addWalletAddressToProfile(pogProfile.userId, doGooder);
+      if (doGooder) {
+        if (!pogProfileFromWalletAddress) {
+          await this.addWalletAddressToProfile(pogProfile.userId, doGooder);
+        }
         Object.assign(pogProfile, {doGooder});
       } else if (pogProfile.walletAddresses?.length) {
         Object.assign(pogProfile, {doGooder: pogProfile.walletAddresses[0]});
