@@ -1,5 +1,5 @@
 import {NonceManager} from '@ethersproject/experimental';
-import {/* inject, */ BindingScope, injectable} from '@loopback/core';
+import {BindingScope, injectable} from '@loopback/core';
 import {ContractReceipt, ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
 import {
@@ -167,6 +167,34 @@ export class ProofOfGoodSmartContractService {
       return this.contract.setCap(activityId, oracleId, duration, points);
     });
   }
+
+  async getUserGoodPoints(userId: string) {
+    try {
+      const res = await this.contract.profileByUserId(userId);
+      const [
+        profileId,
+        walletAddresses,
+        balance,
+        totalGood,
+        categories,
+        entries,
+      ] = res;
+
+      return {
+        balance: balance.toNumber(),
+        totalGood: totalGood.toNumber(),
+      };
+    } catch (error) {
+      throw error?.reason === 'profile not found'
+        ? {
+            code: 'ENTITY_NOT_FOUND',
+            entityName: 'pogprofiles',
+            entityId: userId,
+          }
+        : error;
+    }
+  }
+
   async sendTx(
     eventName: string,
     data: unknown,
