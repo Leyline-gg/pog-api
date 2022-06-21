@@ -18,7 +18,7 @@ export class AuthController {
   ) {}
 
   @authenticate(AUTH_STRATEGY_NAME)
-  @authorize({resource: 'auth'})
+  @authorize({resource: 'SYSTEM_ONLY'})
   @post('/auth')
   @response(200, {
     description: 'OracleApiKey model instance',

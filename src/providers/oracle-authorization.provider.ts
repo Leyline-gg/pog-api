@@ -48,7 +48,7 @@ export class OracleAuthorizationProvider implements Provider<Authorizer> {
         };
       return rules[request.method]() ?? this.DEFAULT_AUTH_DECISION;
     },
-    auth: ({
+    SYSTEM_ONLY: ({
       request,
       oracle,
     }: AuthorizationCheckParams): AuthorizationDecision => {
