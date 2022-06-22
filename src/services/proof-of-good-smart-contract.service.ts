@@ -170,7 +170,6 @@ export class ProofOfGoodSmartContractService {
 
   async getUserGoodPoints(userId: string) {
     try {
-      const res = await this.contract.profileByUserId(userId);
       const [
         profileId,
         walletAddresses,
@@ -178,7 +177,7 @@ export class ProofOfGoodSmartContractService {
         totalGood,
         categories,
         entries,
-      ] = res;
+      ] = await this.contract.profileByUserId(userId);
 
       return {
         balance: balance.toNumber(),
