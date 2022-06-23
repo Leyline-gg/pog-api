@@ -1,6 +1,7 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  api,
   get,
   getModelSchemaRef,
   HttpErrors,
@@ -8,26 +9,28 @@ import {
   patch,
   post,
   put,
-  requestBody
+  requestBody,
 } from '@loopback/rest';
 import {BigNumber} from 'ethers';
 import {ErrorResponse, GoodActivity} from '../models';
 import {GoodActivityRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
+
+@api({basePath: '/activity'})
 export class ActivityController {
   constructor(
     @repository(GoodActivityRepository)
     public goodActivityRepository: GoodActivityRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
-  ) { }
+  ) {}
 
   /**
    * Create a new Activity
    *
    * @param activity
    */
-  @post('/activity', {
+  @post('/', {
     summary: 'Create an Activity',
     operationId: 'post-activity',
     responses: {
@@ -152,7 +155,7 @@ export class ActivityController {
    * @param id The PoG ID of the Activity
    * @param oracle
    */
-  @patch('/activity/{id}', {
+  @patch('/{id}', {
     summary: 'Change Activity Details',
     operationId: 'put-activity',
     responses: {
@@ -302,7 +305,7 @@ export class ActivityController {
    * @param id The PoG ID of the activity
    * @param activity
    */
-  @put('/activity/{id}', {
+  @put('/{id}', {
     summary: 'Change Activity Details',
     operationId: 'put-activity',
     responses: {
@@ -401,7 +404,7 @@ export class ActivityController {
    * @param id The PoG ID of the activity
    * @returns A Proof of Good Activity
    */
-  @get('/activity/{id}', {
+  @get('/{id}', {
     summary: 'Get Activity',
     operationId: 'get-activity',
     responses: {
@@ -449,7 +452,7 @@ export class ActivityController {
     return this.goodActivityRepository.findById(id);
   }
 
-  @get('/activity', {
+  @get('/', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Activities',

@@ -3,6 +3,7 @@ import {authorize} from '@loopback/authorization';
 import {inject, service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  api,
   get,
   getModelSchemaRef,
   HttpErrors,
@@ -19,6 +20,7 @@ import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth.provider';
 import {GoodOracleRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
+@api({basePath: '/oracle'})
 @authenticate(AUTH_STRATEGY_NAME)
 @authorize({resource: 'oracle'})
 export class OracleController {
@@ -36,7 +38,7 @@ export class OracleController {
    *
    * @param oracle
    */
-  @post('/oracle', {
+  @post('/', {
     summary: 'Create an Oracle',
     operationId: 'post-oracle',
     responses: {
@@ -149,7 +151,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @returns A Proof of Good Oracle
    */
-  @get('/oracle/{id}', {
+  @get('/{id}', {
     summary: 'Get Oracle',
     operationId: 'get-oracle',
     responses: {
@@ -203,7 +205,7 @@ export class OracleController {
     return this.goodOracleRepository.findById(id);
   }
 
-  @get('/oracle', {
+  @get('/', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Oracles',
@@ -232,7 +234,7 @@ export class OracleController {
    * @param id The ID of the oracle
    * @param oracle
    */
-  @patch('/oracle/{id}', {
+  @patch('/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'patch-oracle',
     responses: {
@@ -376,7 +378,7 @@ export class OracleController {
    * @param id The PoG ID of the oracle
    * @param oracle
    */
-  @put('/oracle/{id}', {
+  @put('/{id}', {
     summary: 'Change Oracle Details',
     operationId: 'put-oracle',
     responses: {
@@ -458,7 +460,7 @@ export class OracleController {
    *
    * @param oracle
    */
-  @post('/oracle/cap', {
+  @post('/cap', {
     summary: 'Set Oracle cap',
     operationId: 'post-oracle-cap',
     responses: {

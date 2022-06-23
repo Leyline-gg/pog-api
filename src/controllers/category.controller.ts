@@ -1,6 +1,7 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  api,
   get,
   getModelSchemaRef,
   HttpErrors,
@@ -14,6 +15,7 @@ import {ErrorResponse, GoodCategory} from '../models';
 import {GoodCategoryRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
+@api({basePath: '/category'})
 export class CategoryController {
   constructor(
     @repository(GoodCategoryRepository)
@@ -28,7 +30,7 @@ export class CategoryController {
    * @param id The PoG ID of the category
    * @param category
    */
-  @post('/category', {
+  @post('/', {
     summary: 'Create a Category',
     operationId: 'post-category',
     responses: {
@@ -125,7 +127,7 @@ export class CategoryController {
     return response;
   }
 
-  @patch('/category/{id}', {
+  @patch('/{id}', {
     summary: 'Change Category Details',
     operationId: 'patch-category',
     responses: {
@@ -256,7 +258,7 @@ export class CategoryController {
    * @param id The PoG ID of the category
    * @param category
    */
-  @put('/category/{id}', {
+  @put('/{id}', {
     summary: 'Change Category Details',
     operationId: 'put-category',
     responses: {
@@ -353,7 +355,7 @@ export class CategoryController {
    * @param id The PoG ID of the category
    * @returns A Proof of Good Category
    */
-  @get('/category/{id}', {
+  @get('/{id}', {
     summary: 'Get Category',
     operationId: 'get-category',
     responses: {
@@ -405,7 +407,7 @@ export class CategoryController {
     return this.goodCategoryRepository.findById(id);
   }
 
-  @get('/category', {
+  @get('/', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Categories',
