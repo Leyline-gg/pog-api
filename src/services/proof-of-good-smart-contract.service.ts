@@ -1,5 +1,5 @@
 import {NonceManager} from '@ethersproject/experimental';
-import {/* inject, */ BindingScope, injectable} from '@loopback/core';
+import {BindingScope, injectable} from '@loopback/core';
 import {ContractReceipt, ethers} from 'ethers';
 import ProofOfGoodLedger from '../abi/ProofOfGoodLedger';
 import {
@@ -167,6 +167,45 @@ export class ProofOfGoodSmartContractService {
       return this.contract.setCap(activityId, oracleId, duration, points);
     });
   }
+
+  async getUserGoodPoints(userId: string) {
+    let attempt = 0;
+    let response;
+    try {
+      response = await ethers.utils.poll(
+        async () => {
+          attempt++;
+          console.log('Transaction attempt:', attempt);
+          console.log('Incoming data: ', userId);
+          const [
+            _profileId,
+            _walletAddresses,
+            balance,
+            totalGood,
+            _categories,
+            _entries,
+          ] = await this.contract.profileByUserId(userId);
+          const result = {
+            balance: balance.toNumber(),
+            totalGood: totalGood.toNumber(),
+          };
+          console.log('result : ', result);
+          return result;
+        },
+        {retryLimit: 5, interval: 5000},
+      );
+    } catch (error) {
+      throw error?.reason === 'profile not found'
+        ? {
+            code: 'ENTITY_NOT_FOUND',
+            entityName: 'pogprofiles',
+            entityId: userId,
+          }
+        : error;
+    }
+    return response;
+  }
+
   async sendTx(
     eventName: string,
     data: unknown,

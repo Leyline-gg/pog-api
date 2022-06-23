@@ -1,7 +1,11 @@
-import {service} from '@loopback/core';
+import {authenticate} from '@loopback/authentication';
+import {authorize} from '@loopback/authorization';
+import {inject, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {post, requestBody} from '@loopback/rest';
-import {PogProfile} from '../models';
+import {get, param, post, requestBody} from '@loopback/rest';
+import {SecurityBindings} from '@loopback/security';
+import {GoodOracle, PogProfile} from '../models';
+import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth.provider';
 import {PogProfileRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
@@ -11,9 +15,13 @@ export class ProfileController {
     private pogProfileRepository: PogProfileRepository,
     @service(ProofOfGoodSmartContractService)
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
+    @inject(SecurityBindings.USER, {optional: true})
+    private oracle: GoodOracle,
   ) {}
 
-  @post('/consolidate')
+  @authenticate(AUTH_STRATEGY_NAME)
+  @authorize({resource: 'SYSTEM_ONLY'})
+  @post('/profile/consolidate')
   async merge(
     @requestBody({
       content: {
@@ -122,5 +130,23 @@ export class ProfileController {
       }
     }
     return {};
+  }
+
+  @get('/profile/{id}/points')
+  async getUserGoodPoints(
+    @param({
+      schema: {
+        type: 'string',
+        example:
+          '0x4471393036347831484966773861515059465a616c0000000000000000000000',
+      },
+      name: 'id',
+      in: 'path',
+      required: true,
+      description: 'The profile ID of the POG user',
+    })
+    id: string,
+  ): Promise<{balance: number; totalGood: number}> {
+    return this.proofOfGoodSmartContractService.getUserGoodPoints(id);
   }
 }
