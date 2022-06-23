@@ -169,20 +169,29 @@ export class ProofOfGoodSmartContractService {
   }
 
   async getUserGoodPoints(userId: string) {
+    let attempt = 0;
+    let response;
     try {
-      const [
-        profileId,
-        walletAddresses,
-        balance,
-        totalGood,
-        categories,
-        entries,
-      ] = await this.contract.profileByUserId(userId);
-
-      return {
-        balance: balance.toNumber(),
-        totalGood: totalGood.toNumber(),
-      };
+      response = await ethers.utils.poll(
+        async () => {
+          attempt++;
+          console.log('Transaction attempt:', attempt);
+          console.log('Incoming data: ', userId);
+          const [
+            profileId,
+            walletAddresses,
+            balance,
+            totalGood,
+            categories,
+            entries,
+          ] = await this.contract.profileByUserId(userId);
+          return {
+            balance: balance.toNumber(),
+            totalGood: totalGood.toNumber(),
+          };
+        },
+        {retryLimit: 5, interval: 5000},
+      );
     } catch (error) {
       throw error?.reason === 'profile not found'
         ? {
@@ -192,6 +201,7 @@ export class ProofOfGoodSmartContractService {
           }
         : error;
     }
+    return response;
   }
 
   async sendTx(
