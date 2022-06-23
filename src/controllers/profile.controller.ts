@@ -2,13 +2,14 @@ import {authenticate} from '@loopback/authentication';
 import {authorize} from '@loopback/authorization';
 import {inject, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {get, param, post, requestBody} from '@loopback/rest';
+import {api, get, param, post, requestBody} from '@loopback/rest';
 import {SecurityBindings} from '@loopback/security';
 import {GoodOracle, PogProfile} from '../models';
 import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth.provider';
 import {PogProfileRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
+@api({basePath: '/profile'})
 export class ProfileController {
   constructor(
     @repository(PogProfileRepository)
@@ -21,7 +22,7 @@ export class ProfileController {
 
   @authenticate(AUTH_STRATEGY_NAME)
   @authorize({resource: 'SYSTEM_ONLY'})
-  @post('/profile/consolidate')
+  @post('/consolidate')
   async merge(
     @requestBody({
       content: {
@@ -132,7 +133,7 @@ export class ProfileController {
     return {};
   }
 
-  @get('/profile/{id}/points')
+  @get('/{id}/points')
   async getUserGoodPoints(
     @param({
       schema: {

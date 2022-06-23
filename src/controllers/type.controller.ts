@@ -1,6 +1,7 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  api,
   get,
   getModelSchemaRef,
   HttpErrors,
@@ -14,6 +15,7 @@ import {ErrorResponse, GoodType} from '../models';
 import {GoodTypeRepository} from '../repositories';
 import {ProofOfGoodSmartContractService} from '../services';
 
+@api({basePath: '/type'})
 export class GoodTypeController {
   constructor(
     @repository(GoodTypeRepository)
@@ -22,7 +24,7 @@ export class GoodTypeController {
     private proofOfGoodSmartContractService: ProofOfGoodSmartContractService,
   ) {}
 
-  @post('/type', {
+  @post('/', {
     summary: 'Create a Good Type',
     operationId: 'post-good-type',
     responses: {
@@ -115,7 +117,7 @@ export class GoodTypeController {
     } as GoodType);
   }
 
-  @patch('/type/{id}', {
+  @patch('/{id}', {
     summary: 'Update a Good Type',
     operationId: 'patch-good-type',
     responses: {
@@ -238,7 +240,7 @@ export class GoodTypeController {
       });
   }
 
-  @put('/type/{id}', {
+  @put('/{id}', {
     summary: 'Change Good Type Details',
     operationId: 'put-good-type',
     responses: {
@@ -322,7 +324,7 @@ export class GoodTypeController {
     return this.patchGoodType(id, goodType);
   }
 
-  @get('/type/{id}', {
+  @get('/{id}', {
     summary: 'Get Good Type',
     operationId: 'get-good-type',
     responses: {
@@ -374,7 +376,7 @@ export class GoodTypeController {
     return this.goodTypeRepository.findById(id);
   }
 
-  @get('/type', {
+  @get('/', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Categories',

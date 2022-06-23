@@ -2,13 +2,21 @@ import {authenticate} from '@loopback/authentication';
 import {authorize} from '@loopback/authorization';
 import {inject, service} from '@loopback/core';
 import {repository} from '@loopback/repository';
-import {getModelSchemaRef, post, requestBody, response} from '@loopback/rest';
+import {
+  api,
+  getModelSchemaRef,
+  post,
+  requestBody,
+  response,
+} from '@loopback/rest';
 import {SecurityBindings} from '@loopback/security';
 import {GoodOracle, OracleApiKey} from '../models';
 import {AUTH_STRATEGY_NAME} from '../providers/passport-bearer-auth.provider';
 import {AuthRepository} from '../repositories';
 import {AuthService} from '../services';
 
+@api({basePath: '/auth'})
+@authenticate(AUTH_STRATEGY_NAME)
 export class AuthController {
   constructor(
     @repository(AuthRepository) public authRepository: AuthRepository,
@@ -17,9 +25,8 @@ export class AuthController {
     private oracle: GoodOracle,
   ) {}
 
-  @authenticate(AUTH_STRATEGY_NAME)
   @authorize({resource: 'SYSTEM_ONLY'})
-  @post('/auth')
+  @post('/')
   @response(200, {
     description: 'OracleApiKey model instance',
     content: {'application/json': {schema: getModelSchemaRef(OracleApiKey)}},
@@ -47,7 +54,6 @@ export class AuthController {
     return this.authRepository.create(oracleApiKey);
   }
 
-  @authenticate(AUTH_STRATEGY_NAME)
   @post('/refresh')
   @response(200, {
     description: 'OracleApiKey model instance',

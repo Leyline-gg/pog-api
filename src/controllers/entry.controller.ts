@@ -1,6 +1,7 @@
 import {service} from '@loopback/core';
 import {Filter, repository} from '@loopback/repository';
 import {
+  api,
   get,
   getModelSchemaRef,
   HttpErrors,
@@ -22,6 +23,8 @@ export type PogProfileParams = {
   email: string;
   doGooder: string;
 };
+
+@api({basePath: '/entry'})
 export class GoodEntryController {
   constructor(
     @repository(GoodEntryRepository)
@@ -40,7 +43,7 @@ export class GoodEntryController {
    * @param id The PoG ID of the entry
    * @returns A Proof of Good Entry
    */
-  @get('/entry/{id}', {
+  @get('/{id}', {
     summary: 'Get Proof of Good Entry',
     operationId: 'get-entry',
     responses: {
@@ -88,7 +91,7 @@ export class GoodEntryController {
     return this.goodEntryRepository.findById(id);
   }
 
-  @get('/entry', {
+  @get('/', {
     responses: {
       '200': {
         description: 'Retrieve all Proof of Good Entries',
@@ -117,7 +120,7 @@ export class GoodEntryController {
    * @param entry The PoG ID of the entry
    * @returns A Proof of Good Entry
    */
-  @post('/entry', {
+  @post('/', {
     summary: 'Create a GoodEntry',
     operationId: 'post-pog-entry',
     responses: {
