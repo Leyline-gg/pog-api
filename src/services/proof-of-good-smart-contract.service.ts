@@ -178,17 +178,19 @@ export class ProofOfGoodSmartContractService {
           console.log('Transaction attempt:', attempt);
           console.log('Incoming data: ', userId);
           const [
-            profileId,
-            walletAddresses,
+            _profileId,
+            _walletAddresses,
             balance,
             totalGood,
-            categories,
-            entries,
+            _categories,
+            _entries,
           ] = await this.contract.profileByUserId(userId);
-          return {
+          const result = {
             balance: balance.toNumber(),
             totalGood: totalGood.toNumber(),
           };
+          console.log('result : ', result);
+          return result;
         },
         {retryLimit: 5, interval: 5000},
       );
