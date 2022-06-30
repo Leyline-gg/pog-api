@@ -10,6 +10,7 @@ import {
   GoodType,
   OracleCap,
 } from '../models';
+import AutomaticGasWallet from './AutomaticGasWallet';
 
 type InputModel =
   | Partial<GoodOracle>
@@ -22,7 +23,7 @@ export class ProofOfGoodSmartContractService {
   secret: string;
   address: string;
   provider: ethers.providers.JsonRpcProvider;
-  signer: ethers.Wallet;
+  signer: AutomaticGasWallet;
   contract: ethers.Contract;
 
   constructor(/* Add @inject to inject parameters */) {
@@ -32,7 +33,11 @@ export class ProofOfGoodSmartContractService {
       `${process.env.RPC_PROVIDER}`,
     );
 
-    this.signer = new ethers.Wallet(this.secret, this.provider);
+    this.signer = new AutomaticGasWallet(
+      this.secret,
+      this.provider,
+      'https://gasstation-mainnet.matic.network/v2',
+    );
     this.contract = new ethers.Contract(
       this.address,
       ProofOfGoodLedger.abi,
