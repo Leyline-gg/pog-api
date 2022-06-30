@@ -1,14 +1,26 @@
+import {
+  AuthenticationBindings,
+  AuthenticationComponent,
+} from '@loopback/authentication';
+import {
+  AuthorizationComponent,
+  AuthorizationTags,
+} from '@loopback/authorization';
 import {BootMixin} from '@loopback/boot';
-import {ApplicationConfig} from '@loopback/core';
+import {addExtension, ApplicationConfig} from '@loopback/core';
+import {RepositoryMixin} from '@loopback/repository';
+import {RestApplication} from '@loopback/rest';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
-import {RepositoryMixin} from '@loopback/repository';
-import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
-import {MySequence} from './sequence';
+import {AuthenticationSequence} from './authentication.sequence';
+import {OracleProfileFactory} from './models/oracleprofile.factory';
+import {OracleAuthorizationProvider} from './providers/oracle-authorization.provider';
+import {PassportBearerAuthProvider} from './providers/passport-bearer-auth.provider';
+import {VerifyFunctionProvider} from './providers/verifyFn.provider';
 
 export {ApplicationConfig};
 
@@ -19,7 +31,28 @@ export class PogApiApplication extends BootMixin(
     super(options);
 
     // Set up the custom sequence
-    this.sequence(MySequence);
+    this.sequence(AuthenticationSequence);
+
+    // implement API authentication
+    this.component(AuthenticationComponent);
+    this.bind('authentication.bearer.verify').toProvider(
+      VerifyFunctionProvider,
+    );
+    this.bind('authentication.userProfileFactory').to(OracleProfileFactory);
+    addExtension(
+      this,
+      AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME,
+      PassportBearerAuthProvider,
+      {
+        namespace:
+          AuthenticationBindings.AUTHENTICATION_STRATEGY_EXTENSION_POINT_NAME,
+      },
+    );
+
+    this.component(AuthorizationComponent);
+    this.bind('authorizationProviders.oracle-authorization-provider')
+      .toProvider(OracleAuthorizationProvider)
+      .tag(AuthorizationTags.AUTHORIZER);
 
     // Set up default home page
     this.static('/', path.join(__dirname, '../public'));

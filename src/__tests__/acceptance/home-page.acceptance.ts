@@ -1,13 +1,13 @@
 import {Client} from '@loopback/testlab';
 import {PogApiApplication} from '../..';
-import {setupApplication} from './test-helper';
+import {givenRunningApplicationWithCustomConfiguration} from './test-helper';
 
 describe('HomePage', () => {
   let app: PogApiApplication;
   let client: Client;
 
   before('setupApplication', async () => {
-    ({app, client} = await setupApplication());
+    ({app, client} = await givenRunningApplicationWithCustomConfiguration());
   });
 
   after(async () => {

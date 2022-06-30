@@ -1,13 +1,13 @@
 import {Client, expect} from '@loopback/testlab';
-import {PogApiApplication} from '../..';
-import {setupApplication} from './test-helper';
+import {PogApiApplication} from '../../..';
+import {givenRunningApplicationWithCustomConfiguration} from '../test-helper';
 
 describe('PingController', () => {
   let app: PogApiApplication;
   let client: Client;
 
   before('setupApplication', async () => {
-    ({app, client} = await setupApplication());
+    ({app, client} = await givenRunningApplicationWithCustomConfiguration());
   });
 
   after(async () => {

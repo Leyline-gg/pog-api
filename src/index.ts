@@ -1,9 +1,11 @@
 import {ApplicationConfig, PogApiApplication} from './application';
+import {spec} from './openapi-spec';
 
 export * from './application';
 
 export async function main(options: ApplicationConfig = {}) {
   const app = new PogApiApplication(options);
+  app.api(spec);
   await app.boot();
   await app.start();
 
