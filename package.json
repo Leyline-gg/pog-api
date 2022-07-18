@@ -78,7 +78,7 @@
   "devDependencies": {
     "@loopback/build": "^9.0.1",
     "@loopback/cli": "^4.1.0",
-    "@loopback/eslint-config": "^13.0.0",
+    "@loopback/eslint-config": "^13.0.2",
     "@loopback/testlab": "^5.0.1",
     "@types/node": "^18.0.3",
     "@types/passport-http-bearer": "^1.0.37",
