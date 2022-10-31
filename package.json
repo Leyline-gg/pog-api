@@ -79,7 +79,7 @@
     "@loopback/build": "^9.0.2",
     "@loopback/cli": "^4.1.3",
     "@loopback/eslint-config": "^13.0.4",
-    "@loopback/testlab": "^5.0.2",
+    "@loopback/testlab": "^5.0.4",
     "@types/node": "^18.7.9",
     "@types/passport-http-bearer": "^1.0.37",
     "@types/uuid": "^8.3.4",
