@@ -56,7 +56,7 @@
     "@google-cloud/firestore": "^6.0.0",
     "@google-cloud/secret-manager": "^4.2.1",
     "@loopback/authentication": "^8.1.2",
-    "@loopback/authentication-passport": "^4.1.2",
+    "@loopback/authentication-passport": "^5.0.4",
     "@loopback/authorization": "^0.11.2",
     "@loopback/boot": "^4.1.2",
     "@loopback/core": "^3.1.2",
